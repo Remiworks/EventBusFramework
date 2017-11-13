@@ -67,5 +67,11 @@ namespace RabbitFramework.Test
             _sut.Password = password;
             _sut.Password.ShouldBe(password);
         }
+
+        [TestMethod]
+        public void HostnameHasDefaultValue_localhost()
+        {
+            _sut.Hostname.ShouldBe("localhost");
+        }
     }
 }

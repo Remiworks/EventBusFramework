@@ -10,6 +10,8 @@ namespace RabbitFramework
 
         void BasicPublish(EventMessage message);
 
+        // void CreateQueueWithTopics(string queueName, IEnumerable<string> topics);
+
         void BasicConsume(string queueName, EventReceivedCallback callback);
     }
 
