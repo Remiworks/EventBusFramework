@@ -2,6 +2,6 @@
 {
     public interface IEventPublisher
     {
-        IBusOptions BusOptions { get; set; }
+        BusOptions BusOptions { get; set; }
     }
 }

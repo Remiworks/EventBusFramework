@@ -4,7 +4,7 @@ namespace RabbitFramework
 {
     public interface IBusProvider : IDisposable
     {
-        IBusOptions BusOptions { get; }
+        BusOptions BusOptions { get; }
 
         void CreateConnection();
 
