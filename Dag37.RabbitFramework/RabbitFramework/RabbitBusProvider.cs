@@ -74,7 +74,8 @@ namespace RabbitFramework
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _connection.Dispose();
+            _channel.Dispose();
         }
 
         private void HandleReceivedEvent(BasicDeliverEventArgs args, EventReceivedCallback callback)
