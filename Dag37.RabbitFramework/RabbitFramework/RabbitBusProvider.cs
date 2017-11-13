@@ -41,7 +41,7 @@ namespace RabbitFramework
 
         public void CreateQueueWithTopics(string queueName, IEnumerable<string> topics)
         {
-            _channel.QueueDeclare(queue: queueName);
+            _channel.QueueDeclare(queueName);
 
             topics.ToList().ForEach(topic =>
                 _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
