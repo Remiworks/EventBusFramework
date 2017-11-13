@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RabbitMQ.Client;
 using Shouldly;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
@@ -10,11 +11,12 @@ namespace RabbitFramework.Test
     public class RabbitBusProviderIntegrationTests
     {
         private const string Host = "localhost";
-        private const int Port = 4369;
+        private const int Port = 5672;
         private const string UserName = "guest";
         private const string Password = "guest";
         private const string ExchangeName = "testExchange";
         private const string Queue = "testQueue";
+        private const string Topic = "testTopic";
 
         private RabbitBusProvider _sut;
 
@@ -47,6 +49,7 @@ namespace RabbitFramework.Test
             };
 
             _sut.CreateConnection();
+            _sut.CreateQueueWithTopics(Queue, new List<string> { Topic });
             _sut.BasicConsume(Queue, eventReceivedCallback);
 
             SendRabbitEvent(jsonMessage);
@@ -71,18 +74,11 @@ namespace RabbitFramework.Test
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: Queue,
-                                     durable: false,
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
-
-                var body = Encoding.UTF8.GetBytes(json);
-
+                channel.ExchangeDeclare(ExchangeName, "topic");
                 channel.BasicPublish(exchange: ExchangeName,
-                                     routingKey: "hello",
+                                     routingKey: Topic,
                                      basicProperties: null,
-                                     body: body);
+                                     body: Encoding.UTF8.GetBytes(json));
             }
         }
     }

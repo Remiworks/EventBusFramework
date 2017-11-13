@@ -12,6 +12,7 @@
         public BusOptions()
         {
             Hostname = "localhost";
+            VirtualHost = "/";
         }
     }
 }

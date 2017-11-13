@@ -73,5 +73,11 @@ namespace RabbitFramework.Test
         {
             _sut.Hostname.ShouldBe("localhost");
         }
+
+        [TestMethod]
+        public void VirtualHostHasDefaultValue_ForwardSlash()
+        {
+            _sut.VirtualHost.ShouldBe("/");
+        }
     }
 }

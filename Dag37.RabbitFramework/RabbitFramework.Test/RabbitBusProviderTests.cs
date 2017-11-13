@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using System;
 
 namespace RabbitFramework.Test
 {
@@ -21,6 +22,40 @@ namespace RabbitFramework.Test
         public void ConstructorSetsBusOptions()
         {
             _sut.BusOptions.ShouldBe(_busOptionsMock.Object);
+        }
+
+        [TestMethod]
+        public void BasicConsumeThrowsArgumentExceptionWhenQueueNameIsNull()
+        {
+            EventReceivedCallback callback = new EventReceivedCallback((message) => { });
+
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume(null, callback));
+            exception.Message.ShouldBe("queueName");
+        }
+
+        [TestMethod]
+        public void BasicConsumeThrowsArgumentExceptionWhenQueueNameIsEmpty()
+        {
+            EventReceivedCallback callback = new EventReceivedCallback((message) => { });
+
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("", callback));
+            exception.Message.ShouldBe("queueName");
+        }
+
+        [TestMethod]
+        public void BasicConsumeThrowsArgumentExceptionWhenQueueNameIsWhiteSpace()
+        {
+            EventReceivedCallback callback = new EventReceivedCallback((message) => { });
+
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume(" ", callback));
+            exception.Message.ShouldBe("queueName");
+        }
+
+        [TestMethod]
+        public void BasicConsumeThrowsArgumentExceptionWhenCallbackIsNull()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("SomeQueue", null));
+            exception.Message.ShouldBe("callback");
         }
     }
 }
