@@ -41,7 +41,7 @@ namespace RabbitFramework
 
         public void CreateQueueWithTopics(string queueName, IEnumerable<string> topics)
         {
-            _channel.QueueDeclare(queueName);
+            _channel.QueueDeclare(queue: queueName, exclusive: false);
 
             topics.ToList().ForEach(topic =>
                 _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
@@ -49,7 +49,10 @@ namespace RabbitFramework
 
         public void BasicPublish(EventMessage message)
         {
-            throw new NotImplementedException();
+            _channel.BasicPublish(exchange: BusOptions.ExchangeName,
+                                 routingKey: message.RoutingKey,
+                                 basicProperties: null,
+                                 body: Encoding.UTF8.GetBytes(message.JsonMessage));
         }
 
         public void CreateConnection()
@@ -66,9 +69,7 @@ namespace RabbitFramework
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            _channel.ExchangeDeclare(
-                exchange: BusOptions.ExchangeName,
-                type: ExchangeType);
+            _channel.ExchangeDeclare(BusOptions.ExchangeName, ExchangeType);
         }
 
         public void Dispose()
