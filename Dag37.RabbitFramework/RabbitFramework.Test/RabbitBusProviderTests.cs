@@ -57,5 +57,32 @@ namespace RabbitFramework.Test
             var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("SomeQueue", null));
             exception.Message.ShouldBe("callback");
         }
+
+        [TestMethod]
+        public void BasicConsumeThrowsArgumentExceptionWhenTopicIsNull()
+        {
+            EventReceivedCallback callback = new EventReceivedCallback((message) => { });
+
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("queue", null, callback));
+            exception.Message.ShouldBe("topic");
+        }
+
+        [TestMethod]
+        public void BasicConsumeThrowsArgumentExceptionWhenTopicIsEmpty()
+        {
+            EventReceivedCallback callback = new EventReceivedCallback((message) => { });
+
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("queue", "", callback));
+            exception.Message.ShouldBe("topic");
+        }
+
+        [TestMethod]
+        public void BasicConsumeThrowsArgumentExceptionWhenTopicIsWhiteSpace()
+        {
+            EventReceivedCallback callback = new EventReceivedCallback((message) => { });
+
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("queue", " ", callback));
+            exception.Message.ShouldBe("topic");
+        }
     }
 }
