@@ -17,27 +17,18 @@ namespace RabbitFramework.Test
         private const string UserName = "guest";
         private const string Password = "guest";
         private const string ExchangeName = "testExchange";
-        private const string QueueName = "testQueue";
-        private const string TopicName = "testTopic";
         private const string TopicType = "topic";
 
+        private IConnection _connection;
+        private IModel _channel;
+
         private RabbitBusProvider _sut;
-
-        [ClassInitialize]
-        public static void ClassInitialize()
-        {
-
-        }
-
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-
-        }
 
         [TestInitialize]
         public void Initialize()
         {
+            OpenRabbitConnection();
+
             BusOptions busOptions = new BusOptions()
             {
                 Hostname = Host,
@@ -50,9 +41,18 @@ namespace RabbitFramework.Test
             _sut = new RabbitBusProvider(busOptions);
         }
 
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _connection.Dispose();
+            _channel.Dispose();
+        }
+
         [TestMethod]
         public void EventReceivedCallbackIsInvokedWithEvent()
         {
+            string queue = UniqueQueue();
+            string topic = UniqueTopic();
             string jsonMessage = "Something";
 
             EventMessage passedMessage = null;
@@ -64,10 +64,10 @@ namespace RabbitFramework.Test
             };
 
             _sut.CreateConnection();
-            _sut.CreateQueueWithTopics(QueueName, new List<string> { TopicName });
-            _sut.BasicConsume(QueueName, eventReceivedCallback);
+            _sut.CreateQueueWithTopics(queue, new List<string> { topic });
+            _sut.BasicConsume(queue, eventReceivedCallback);
 
-            SendRabbitEvent(jsonMessage);
+            SendRabbitEvent(topic, jsonMessage);
 
             waitHandle.WaitOne(2000).ShouldBeTrue();
             passedMessage.ShouldNotBeNull();
@@ -77,68 +77,78 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void EventIsSentAndCanBeReceived()
         {
+            string queue = UniqueQueue();
+            string topic = UniqueTopic();
+
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             BasicDeliverEventArgs passedArgs = null;
 
             EventMessage message = new EventMessage
             {
                 JsonMessage = "Something",
-                RoutingKey = TopicName,
+                RoutingKey = topic,
                 Type = TopicType
             };
 
-            ConsumeRabbitEvent((sender, args) =>
+            ConsumeRabbitEvent(queue, topic, (sender, args) =>
             {
                 waitHandle.Set();
                 passedArgs = args;
             });
-            
+
+            _sut.CreateConnection();
+            _sut.CreateQueueWithTopics(queue, new List<string> { topic });
+            _sut.BasicPublish(message);
+
             waitHandle.WaitOne(2000).ShouldBeTrue();
             string receivedMessage = Encoding.UTF8.GetString(passedArgs.Body);
             receivedMessage.ShouldBe(message.JsonMessage);
             passedArgs.RoutingKey.ShouldBe(message.RoutingKey);
-            passedArgs.BasicProperties.Type.ShouldBe(message.Type);
         }
 
-        private void SendRabbitEvent(string json)
+        private string UniqueQueue()
         {
-            var factory = CreateConnectionFactory();
-
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                channel.ExchangeDeclare(ExchangeName, TopicType);
-                channel.BasicPublish(exchange: ExchangeName,
-                                     routingKey: TopicName,
-                                     basicProperties: null,
-                                     body: Encoding.UTF8.GetBytes(json));
-            }
+            return $"TestQueue-{Guid.NewGuid()}";
         }
 
-        private void ConsumeRabbitEvent(EventHandler<BasicDeliverEventArgs> callback)
+        private string UniqueTopic()
         {
-            var factory = CreateConnectionFactory();
-
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                channel.QueueDeclare(QueueName);
-                channel.QueueBind(QueueName, ExchangeName, TopicName);
-
-                var consumer = new EventingBasicConsumer(channel);
-                consumer.Received += callback;
-            }
+            return $"TestTopic.{Guid.NewGuid()}";
         }
 
-        private IConnectionFactory CreateConnectionFactory()
+        private void OpenRabbitConnection()
         {
-            return new ConnectionFactory()
+            var factory = new ConnectionFactory()
             {
                 HostName = Host,
                 Port = Port,
                 UserName = UserName,
                 Password = Password
             };
+
+            _connection = factory.CreateConnection();
+            _channel = _connection.CreateModel();
+
+            _channel.ExchangeDeclare(ExchangeName, TopicType);
+        }
+
+        private void SendRabbitEvent(string topic, string json)
+        {
+            _channel.BasicPublish(exchange: ExchangeName,
+                                 routingKey: topic,
+                                 basicProperties: null,
+                                 body: Encoding.UTF8.GetBytes(json));
+        }
+
+        private void ConsumeRabbitEvent(string queue, string topic, EventHandler<BasicDeliverEventArgs> callback)
+        {
+            _channel.QueueDeclare(queue: queue, exclusive: false);
+            _channel.QueueBind(queue, ExchangeName, topic);
+
+            var consumer = new EventingBasicConsumer(_channel);
+            consumer.Received += callback;
+
+            _channel.BasicConsume(queue, true, consumer);
         }
     }
 }
