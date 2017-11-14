@@ -49,9 +49,11 @@ namespace RpcTest
                 var body = ea.Body;
                 var response = Encoding.UTF8.GetString(body);
 
-                if (ea.BasicProperties.CorrelationId == correlationId)
+                var correlationId = ea.BasicProperties.CorrelationId;
+                
+                if(stuff.ContainsKey(correlationId))
                 {
-                    respQueue.Add(response);
+                    stuff[correlationId].Set();
                 }
             };
 
@@ -70,14 +72,14 @@ namespace RpcTest
 
             stuff[correlationId] = resetEvent;
 
-
-
-
-
             string messageJson = JsonConvert.SerializeObject(message);
             var messageBytes = Encoding.UTF8.GetBytes(messageJson);
 
-            props = _channel.CreateBasicProperties();
+
+
+
+
+            var props = _channel.CreateBasicProperties();
             props.CorrelationId = correlationId;
             props.ReplyTo = replyQueueName;
 
