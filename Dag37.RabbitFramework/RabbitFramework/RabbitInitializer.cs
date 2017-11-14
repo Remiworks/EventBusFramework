@@ -33,7 +33,6 @@ namespace RabbitFramework
 
                 if (eventAttribute != null)
                 {
-                    RegisterQueue(eventAttribute.QueueName);
                     SearchMethodsInType(type, eventAttribute);
                 }
             }
@@ -50,11 +49,6 @@ namespace RabbitFramework
                     RegisterTopic(eventAttribute.QueueName, topicAttribute.Topic, type, methodInfo);
                 }
             }
-        }
-
-        public void RegisterQueue(string queue)
-        {
-            _busProvider.CreateQueue(queue);
         }
 
         public void RegisterTopic(string queue, string topic, Type type, MethodInfo methodInfo)

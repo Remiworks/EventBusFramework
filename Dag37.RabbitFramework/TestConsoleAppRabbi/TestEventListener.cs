@@ -6,16 +6,16 @@ using System.Text;
 
 namespace TestConsoleAppRabbi
 {
-    [EventListener("TestEvent")]
+    [EventListener("user")]
     public class TestEventListener
     {
-        [Topic("test.event")]
+        [Topic("event.created")]
         public void TestTopic(TestModel testModel)
         {
             Console.WriteLine(testModel.Name);
         }
 
-        [Topic("test.eventtwo")]
+        [Topic("event.deleted")]
         public void TestTopicTwo(TestModel testModel)
         {
             Console.WriteLine("eventtwo" + testModel.Name);

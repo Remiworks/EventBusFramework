@@ -22,7 +22,7 @@ namespace TestConsoleAppRabbi
                 UserName = UserName,
                 Password = Password,
                 ExchangeName = ExchangeName
-            }));
+            }, new BusHelper()));
 
             initializer.Initialize();
 

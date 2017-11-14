@@ -18,7 +18,7 @@ namespace TestConsoleAppPublisher
 
                 while (true)
                 {
-                    var routingKey = "test.event";
+                    var routingKey = "user.event.deleted";
                     var json = @"{'Name': 'Bad Boys'}";
                     var body = Encoding.UTF8.GetBytes(json);
                     channel.BasicPublish(exchange: "testExchange",

@@ -45,39 +45,9 @@ namespace RabbitFramework.Test
         }
 
         [TestMethod]
-        public void EventReceivedCallbackIsInvokedWithEvent()
-        {
-            using (var sut = new RabbitBusProvider(BusOptions))
-            {
-                string queue = UniqueQueue();
-                string topic = UniqueTopic();
-                string jsonMessage = "Something";
-
-                EventMessage passedMessage = null;
-                ManualResetEvent waitHandle = new ManualResetEvent(false);
-                EventReceivedCallback eventReceivedCallback = (message) =>
-                {
-                    passedMessage = message;
-                    waitHandle.Set();
-                };
-
-                sut.CreateConnection();
-                sut.CreateQueueWithTopics(queue, new List<string> { topic });
-                sut.BasicConsume(queue, eventReceivedCallback);
-
-                SendRabbitEvent(topic, jsonMessage);
-
-                waitHandle.WaitOne(2000).ShouldBeTrue();
-                passedMessage.ShouldNotBeNull();
-                passedMessage.JsonMessage.ShouldBe(jsonMessage);
-            }
-        }
-
-
-        [TestMethod]
         public void EventIsSentAndCanBeReceived()
         {
-            using (var sut = new RabbitBusProvider(BusOptions))
+            using (var sut = new RabbitBusProvider(BusOptions, new BusHelper()))
             {
                 string queue = UniqueQueue();
                 string topic = UniqueTopic();
@@ -99,7 +69,6 @@ namespace RabbitFramework.Test
                 });
 
                 sut.CreateConnection();
-                sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicPublish(message);
 
                 waitHandle.WaitOne(2000).ShouldBeTrue();
@@ -109,36 +78,38 @@ namespace RabbitFramework.Test
             }
         }
 
-        #region Overloaded methods
         [TestMethod]
-        public void EventReceivedCallbackIsInvokedWithEventWithBaseConsumeOverload()
+        public void BasicConsumeCreatesExclusiveQueueWithCallback()
         {
-            //using (var sut = new RabbitBusProvider(BusOptions))
-            //{
-            //    string queue = UniqueQueue();
-            //    string topic = UniqueTopic();
-            //    string jsonMessage = "Something";
+            using (var sut = new RabbitBusProvider(BusOptions, new BusHelper()))
+            {
+                string queue = "user";
+                string topic = "event.created";
+                var eventMessage = new EventMessage
+                {
+                    JsonMessage = "Something",
+                    RoutingKey = "user.event.created",
+                    Type = TopicType
+                };
 
-            //    EventMessage passedMessage = null;
-            //    ManualResetEvent waitHandle = new ManualResetEvent(false);
-            //    EventReceivedCallback eventReceivedCallback = (message, null) =>
-            //    {
-            //        passedMessage = message;
-            //        waitHandle.Set();
-            //    };
+                ManualResetEvent waitHandle = new ManualResetEvent(false);
+                EventMessage passedMessage = null;
 
-            //    sut.CreateConnection();
-            //    sut.CreateQueue(queue);
-            //    sut.BasicConsume(queue, topic, eventReceivedCallback, null);
+                sut.CreateConnection();
+                sut.BasicConsume(queue, topic, (message) =>
+                {
+                    waitHandle.Set();
+                    passedMessage = message;
+                });
 
-            //    SendRabbitEvent(topic, jsonMessage);
+                sut.BasicPublish(eventMessage);
 
-            //    waitHandle.WaitOne(2000).ShouldBeTrue();
-            //    passedMessage.ShouldNotBeNull();
-            //    passedMessage.JsonMessage.ShouldBe(jsonMessage);
-            //}
+                waitHandle.WaitOne(2000).ShouldBeTrue();
+                passedMessage.JsonMessage.ShouldBe(eventMessage.JsonMessage);
+                passedMessage.RoutingKey.ShouldBe("user.event.created");
+            }
         }
-#endregion
+
         private string UniqueQueue()
         {
             return $"TestQueue-{Guid.NewGuid()}";

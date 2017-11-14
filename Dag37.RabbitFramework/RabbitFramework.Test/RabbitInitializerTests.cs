@@ -23,28 +23,27 @@ namespace RabbitFramework.Test
         public void InitializeCallsCreateConnection()
         {
             _busProviderMock.Setup(b => b.CreateConnection());
-            _busProviderMock.Setup(b => b.CreateQueue(It.IsAny<string>()));
             _busProviderMock.Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<EventReceivedCallback>()));
             RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object);
 
             target.Initialize();
 
-            _busProviderMock.Verify(b => b.CreateConnection(), Times.AtMostOnce);
+            _busProviderMock.Verify(b => b.CreateConnection(), Times.Once);
         }
 
         [TestMethod]
         public void RegisterTopicCallsBasicConsume()
         {
-            var methodInfo = typeof(TestModel).GetMethod("TestModelTestFunction");
-            var queue = "testQueue";
-            var topic = "testTopic";
+            var methodInfo = typeof(RabbitInitializerTestClass).GetMethod("TestModelTestFunction");
+            var queue = "user";
+            var topic = "event.created";
 
             _busProviderMock.Setup(b => b.BasicConsume(queue, topic, It.IsAny<EventReceivedCallback>()));
             var target = new RabbitInitializer(_busProviderMock.Object);
 
-            target.RegisterTopic(queue, topic, typeof(TestModel), methodInfo);
+            target.RegisterTopic(queue, topic, typeof(RabbitInitializerTestClass), methodInfo);
 
-            _busProviderMock.Verify(b => b.BasicConsume(queue, topic, null), Times.AtMostOnce);
+            _busProviderMock.Verify(b => b.BasicConsume(queue, topic, It.IsAny<EventReceivedCallback>()), Times.Once);
         }
 
         [TestMethod]
@@ -82,18 +81,6 @@ namespace RabbitFramework.Test
             var json = @"{'Name': 'Bad Boys'}";
 
             Should.Throw<TargetInvocationException>(() => result(new EventMessage() { JsonMessage = json }));
-        }
-
-        [TestMethod]
-        public void CreateQueueCallsCreateQueue()
-        {
-            var queue = "queue";
-            _busProviderMock.Setup(b => b.CreateQueue(queue));
-            RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object);
-
-            target.RegisterQueue(queue);
-
-            _busProviderMock.Verify(b => b.CreateConnection(), Times.AtMostOnce);
         }
     }
 }
