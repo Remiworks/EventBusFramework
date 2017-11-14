@@ -75,13 +75,9 @@ namespace RpcTest
             string messageJson = JsonConvert.SerializeObject(message);
             var messageBytes = Encoding.UTF8.GetBytes(messageJson);
 
-
-
-
-
-            var props = _channel.CreateBasicProperties();
-            props.CorrelationId = correlationId;
-            props.ReplyTo = replyQueueName;
+            var properties = _channel.CreateBasicProperties();
+            properties.CorrelationId = correlationId;
+            properties.ReplyTo = "";
 
             _channel.BasicPublish(
                 exchange: "",
@@ -89,9 +85,12 @@ namespace RpcTest
                 basicProperties: props,
                 body: messageBytes);
 
-            string responseJson = respQueue.Take();
+            stuff[correlationId].WaitOne();
 
-            return JsonConvert.DeserializeObject<T>(responseJson);
+            return default(T);
+            // string responseJson = respQueue.Take();
+
+            // return JsonConvert.DeserializeObject<T>(responseJson);
         }
 
         public void Dispose()
