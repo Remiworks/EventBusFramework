@@ -45,32 +45,6 @@ namespace RabbitFramework.Test
         }
 
         [TestMethod]
-        public void CreateEventReceivedCallbackInvokeTestModelTestFunctionShouldNotThrowException()
-        {
-            var methodInfo = typeof(RabbitInitializerTestClass).GetMethod("TestModelTestFunction");
-            var target = new RabbitInitializer(_busProviderMock.Object);
-
-            var result = target.CreateEventReceivedCallback(typeof(RabbitInitializerTestClass), null);
-
-            var json = @"{'Name': 'Bad Boys'}";
-
-            result(new EventMessage() { JsonMessage = json, RoutingKey = "test.test.test" });
-        }
-
-        [TestMethod]
-        public void CreateEventReceivedCallbackInvokeTestModelTestFunctionShouldThrowTargetIncovationException()
-        {
-            var methodInfo = typeof(RabbitInitializerTestClass).GetMethod("TestModelTestTwoFunctionThrowsArgumentException");
-            var target = new RabbitInitializer(_busProviderMock.Object);
-
-            var result = target.CreateEventReceivedCallback(typeof(RabbitInitializerTestClass), null);
-
-            var json = @"{'Name': 'Bad Boys'}";
-
-            Should.Throw<TargetInvocationException>(() => result(new EventMessage() { JsonMessage = json, RoutingKey = "test.test.test" }));
-        }
-
-        [TestMethod]
         public void GetTopicWithMethodsReturnsDictionary()
         {
             var target = new RabbitInitializer(_busProviderMock.Object);

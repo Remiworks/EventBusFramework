@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace RabbitFramework
 {
@@ -68,9 +69,9 @@ namespace RabbitFramework
 
                 var topicMatches = GetTopicMatches(message.RoutingKey, topics);
 
-                try
+                foreach (var topic in topicMatches)
                 {
-                    foreach (var topic in topicMatches)
+                    try
                     {
                         var parameters = topic.Value.GetParameters();
                         var parameter = parameters.FirstOrDefault();
@@ -79,10 +80,10 @@ namespace RabbitFramework
 
                         topic.Value.Invoke(instance, new object[] { arguments });
                     }
-                }
-                catch (TargetInvocationException)
-                {
-                    throw;
+                    catch (TargetInvocationException)
+                    {
+                        throw;
+                    }
                 }
             };
         }
@@ -109,14 +110,6 @@ namespace RabbitFramework
             }
 
             return topicMatches;
-        }
-
-        private bool MatchTopic(string routingKey, Dictionary<string, MethodInfo> topics)
-        {
-            var regex = "";
-
-            //topics.Any(t => t.Key);
-            return false;
         }
     }
 }
