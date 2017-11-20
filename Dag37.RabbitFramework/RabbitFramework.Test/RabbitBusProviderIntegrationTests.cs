@@ -109,36 +109,6 @@ namespace RabbitFramework.Test
             }
         }
 
-        #region Overloaded methods
-        [TestMethod]
-        public void EventReceivedCallbackIsInvokedWithEventWithBaseConsumeOverload()
-        {
-            //using (var sut = new RabbitBusProvider(BusOptions))
-            //{
-            //    string queue = UniqueQueue();
-            //    string topic = UniqueTopic();
-            //    string jsonMessage = "Something";
-
-            //    EventMessage passedMessage = null;
-            //    ManualResetEvent waitHandle = new ManualResetEvent(false);
-            //    EventReceivedCallback eventReceivedCallback = (message, null) =>
-            //    {
-            //        passedMessage = message;
-            //        waitHandle.Set();
-            //    };
-
-            //    sut.CreateConnection();
-            //    sut.CreateQueue(queue);
-            //    sut.BasicConsume(queue, topic, eventReceivedCallback, null);
-
-            //    SendRabbitEvent(topic, jsonMessage);
-
-            //    waitHandle.WaitOne(2000).ShouldBeTrue();
-            //    passedMessage.ShouldNotBeNull();
-            //    passedMessage.JsonMessage.ShouldBe(jsonMessage);
-            //}
-        }
-#endregion
         private string UniqueQueue()
         {
             return $"TestQueue-{Guid.NewGuid()}";

@@ -102,36 +102,5 @@ namespace RabbitFramework
 
             callback(eventMessage);
         }
-
-
-        public void BasicConsume(string queueName, string topic, EventReceivedCallback callback)
-        {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-
-            if (string.IsNullOrWhiteSpace(topic))
-            {
-                throw new ArgumentException(nameof(topic));
-            }
-
-            if (callback == null)
-            {
-                throw new ArgumentException(nameof(callback));
-            }
-
-            _channel.QueueBind(queueName, BusOptions.ExchangeName, topic);
-
-            var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
-
-            _channel.BasicConsume(queueName, true, consumer);
-        }
-
-        public void CreateQueue(string queueName)
-        {
-            _channel.QueueDeclare(queue: queueName, exclusive: false);
-        }
     }
 }

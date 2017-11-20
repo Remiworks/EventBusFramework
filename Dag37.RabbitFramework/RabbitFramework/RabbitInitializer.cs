@@ -1,8 +1,11 @@
 ﻿using AttributeLibrary;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace RabbitFramework
 {
@@ -33,55 +36,87 @@ namespace RabbitFramework
 
                 if (eventAttribute != null)
                 {
-                    RegisterQueue(eventAttribute.QueueName);
-                    SearchMethodsInType(type, eventAttribute);
+                    Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
+                    _busProvider.CreateQueueWithTopics(eventAttribute.QueueName, topicsWithMethods.Keys);
+                    var callback = CreateEventReceivedCallback(type, topicsWithMethods);
+                    _busProvider.BasicConsume(eventAttribute.QueueName, callback);
                 }
             }
         }
 
-        private void SearchMethodsInType(Type type, EventListenerAttribute eventAttribute)
+        public Dictionary<string, MethodInfo> GetTopicsWithMethods(Type type)
         {
+            var topicsWithMethods = new Dictionary<string, MethodInfo>();
             foreach (var methodInfo in type.GetMethods())
             {
                 var topicAttribute = methodInfo.GetCustomAttribute<TopicAttribute>();
 
                 if (topicAttribute != null)
                 {
-                    RegisterTopic(eventAttribute.QueueName, topicAttribute.Topic, type, methodInfo);
+                    topicsWithMethods.Add(topicAttribute.Topic, methodInfo);
                 }
             }
+
+            return topicsWithMethods;
         }
 
-        public void RegisterQueue(string queue)
-        {
-            _busProvider.CreateQueue(queue);
-        }
-
-        public void RegisterTopic(string queue, string topic, Type type, MethodInfo methodInfo)
-        {
-            _busProvider.BasicConsume(queue, topic, CreateEventReceivedCallback(type, methodInfo));
-        }
-
-        public EventReceivedCallback CreateEventReceivedCallback(Type type, MethodInfo methodInfo)
+        public EventReceivedCallback CreateEventReceivedCallback(Type type, Dictionary<string, MethodInfo> topics)
         {
             return (message) =>
             {
                 var instance = Activator.CreateInstance(type);
 
-                var parameters = methodInfo.GetParameters();
-                var parameter = parameters.FirstOrDefault();
-                var paramType = parameter.ParameterType;
-                var arguments = JsonConvert.DeserializeObject(message.JsonMessage, paramType);
+                var topicMatches = GetTopicMatches(message.RoutingKey, topics);
 
                 try
                 {
-                    methodInfo.Invoke(instance, new object[] { arguments });
+                    foreach (var topic in topicMatches)
+                    {
+                        var parameters = topic.Value.GetParameters();
+                        var parameter = parameters.FirstOrDefault();
+                        var paramType = parameter.ParameterType;
+                        var arguments = JsonConvert.DeserializeObject(message.JsonMessage, paramType);
+
+                        topic.Value.Invoke(instance, new object[] { arguments });
+                    }
                 }
                 catch (TargetInvocationException)
                 {
                     throw;
                 }
             };
+        }
+
+        public Dictionary<string, MethodInfo> GetTopicMatches(string routingKey, Dictionary<string, MethodInfo> topics)
+        {
+            var regexHashTag = @"\w+(\.\w+)*";
+            var regexStar = @"[\w]+";
+            var topicMatches = new Dictionary<string, MethodInfo>();
+
+            foreach (var topic in topics)
+            {
+                var pattern = topic.Key
+                    .Replace(".", "\\.")
+                    .Replace("*", regexStar)
+                    .Replace("#", regexHashTag);
+
+                pattern = $"^{pattern}$";
+
+                if (Regex.IsMatch(routingKey, pattern))
+                {
+                    topicMatches.Add(topic.Key, topic.Value);
+                }
+            }
+
+            return topicMatches;
+        }
+
+        private bool MatchTopic(string routingKey, Dictionary<string, MethodInfo> topics)
+        {
+            var regex = "";
+
+            //topics.Any(t => t.Key);
+            return false;
         }
     }
 }
