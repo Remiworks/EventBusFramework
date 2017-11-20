@@ -3,9 +3,9 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RpcTest
 {
@@ -18,19 +18,30 @@ namespace RpcTest
             var command = new SomeCommand { Name = "Something", Value = 10 };
             Console.WriteLine($" [x] Requesting fib({command.Value})");
 
-            int response = rpcClient.Call<int>(command);
+            Task<string> responseTask = rpcClient.Call<string>(command);
+
+            for (int i = 0; i < 1000; i++)
+            {
+                Console.WriteLine($"Something else {i}");
+            }
+
+            string response = responseTask.Result;
             Console.WriteLine(" [.] Got '{0}'", response);
+
+            Console.ReadLine();
 
             rpcClient.Dispose();
         }
     }
 
-    public class RpcClient
+    public class RpcClient : IDisposable
     {
         private readonly IConnection _connection;
         private readonly IModel _channel;
-        private readonly BlockingCollection<string> respQueue = new BlockingCollection<string>();
-        private readonly IBasicProperties props;
+        private readonly string _replyQueueName;
+        private readonly EventingBasicConsumer _consumer;
+
+        private readonly ConcurrentDictionary<string, Action<string>> _stuff;
 
         public RpcClient()
         {
@@ -38,59 +49,73 @@ namespace RpcTest
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-            var replyQueueName = _channel.QueueDeclare().QueueName;
+            _replyQueueName = _channel.QueueDeclare().QueueName;
 
-            // End of initialization
+            _stuff = new ConcurrentDictionary<string, Action<string>>();
 
-            var consumer = new EventingBasicConsumer(_channel);
-
-            consumer.Received += (model, ea) =>
-            {
-                var body = ea.Body;
-                var response = Encoding.UTF8.GetString(body);
-
-                var correlationId = ea.BasicProperties.CorrelationId;
-                
-                if(stuff.ContainsKey(correlationId))
-                {
-                    stuff[correlationId].Set();
-                }
-            };
-
-            _channel.BasicConsume(
-                consumer: consumer,
-                queue: replyQueueName,
-                autoAck: true);
+            _consumer = new EventingBasicConsumer(_channel);
+            _consumer.Received += HandleResponse;
         }
 
-        ConcurrentDictionary<string, ManualResetEvent> stuff = new ConcurrentDictionary<string, ManualResetEvent>();
-
-        public T Call<T>(object message)
+        public async Task<T> Call<T>(object message)
         {
             var correlationId = Guid.NewGuid().ToString();
-            var resetEvent = new ManualResetEvent(false);
 
-            stuff[correlationId] = resetEvent;
+            var waitHandle = new ManualResetEvent(false);
+            string responseJson = null;
 
-            string messageJson = JsonConvert.SerializeObject(message);
-            var messageBytes = Encoding.UTF8.GetBytes(messageJson);
+            _stuff[correlationId] = (resp) =>
+            {
+                responseJson = resp;
+                waitHandle.Set();
+            };
 
-            var properties = _channel.CreateBasicProperties();
-            properties.CorrelationId = correlationId;
-            properties.ReplyTo = "";
+            SendCommand(correlationId, message);
+            Task<bool> waitForHandle = Task.Factory.StartNew(() => waitHandle.WaitOne(5000));
+
+            bool gotResponse = await waitForHandle;
+
+            return gotResponse
+                ? JsonConvert.DeserializeObject<T>(responseJson)
+                : throw new TimeoutException();
+        }
+
+        private void SendCommand(string correlationId, object message)
+        {
+            var messageBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
             _channel.BasicPublish(
                 exchange: "",
                 routingKey: "rpc_queue",
-                basicProperties: props,
+                basicProperties: CreateProperties(correlationId),
                 body: messageBytes);
 
-            stuff[correlationId].WaitOne();
+            _channel.BasicConsume(
+                consumer: _consumer,
+                queue: _replyQueueName,
+                autoAck: true);
+        }
 
-            return default(T);
-            // string responseJson = respQueue.Take();
+        private IBasicProperties CreateProperties(string correlationId)
+        {
+            var properties = _channel.CreateBasicProperties();
+            properties.CorrelationId = correlationId;
+            properties.ReplyTo = _replyQueueName;
 
-            // return JsonConvert.DeserializeObject<T>(responseJson);
+            return properties;
+        }
+
+        private void HandleResponse(object model, BasicDeliverEventArgs eventArgs)
+        {
+            var body = eventArgs.Body;
+            string responsejson = Encoding.UTF8.GetString(body);
+
+            string correlationId = eventArgs.BasicProperties.CorrelationId;
+
+            if (_stuff.ContainsKey(correlationId))
+            {
+                _stuff[correlationId](responsejson);
+            }
         }
 
         public void Dispose()
