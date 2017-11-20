@@ -71,7 +71,7 @@ namespace RpcTest
             };
 
             SendCommand(correlationId, message);
-            Task<bool> waitForHandle = Task.Factory.StartNew(() => waitHandle.WaitOne(5000));
+            Task<bool> waitForHandle = Task.Run(() => waitHandle.WaitOne(5000));
 
             bool gotResponse = await waitForHandle;
 
