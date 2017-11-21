@@ -26,9 +26,9 @@ namespace RabbitFramework.Test
             _busProviderMock.Setup(b => b.CreateConnection());
             _busProviderMock.Setup(b => b.CreateQueueWithTopics(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()));
             _busProviderMock.Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<EventReceivedCallback>()));
-            RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object);
+            RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object, null);
 
-            target.Initialize();
+            target.Initialize(Assembly.GetCallingAssembly());
 
             _busProviderMock.Verify(b => b.CreateConnection(), Times.Once);
         }
@@ -37,7 +37,7 @@ namespace RabbitFramework.Test
         public void CreateEventReceivedCallbackReturnsCallback()
         {
             var methodInfo = typeof(TestModel).GetMethod("TestModelTestFunction");
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.CreateEventReceivedCallback(typeof(TestModel), null);
 
@@ -47,7 +47,7 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicWithMethodsReturnsDictionary()
         {
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicsWithMethods(typeof(RabbitInitializerTestClass));
 
@@ -65,7 +65,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.added";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 
@@ -82,7 +82,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 
@@ -99,7 +99,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.test.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 
@@ -116,7 +116,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user..";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 
@@ -133,7 +133,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user..";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 
@@ -150,7 +150,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.test.iets.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 
@@ -167,7 +167,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "blablabla.user.event.test.iets.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 
@@ -183,7 +183,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.test.iets.deleted.blablabla";
 
-            var target = new RabbitInitializer(_busProviderMock.Object);
+            var target = new RabbitInitializer(_busProviderMock.Object, null);
 
             var result = target.GetTopicMatches(routingKey, topics);
 

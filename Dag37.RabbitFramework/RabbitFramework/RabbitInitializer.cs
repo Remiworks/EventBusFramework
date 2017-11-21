@@ -1,4 +1,5 @@
 ﻿using AttributeLibrary;
+using log4net;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
@@ -13,17 +14,17 @@ namespace RabbitFramework
     public class RabbitInitializer
     {
         private IBusProvider _busProvider;
+        private readonly IServiceProvider _serviceProvider;
 
-        public RabbitInitializer(IBusProvider busProvider)
+        public RabbitInitializer(IBusProvider busProvider, IServiceProvider serviceProvider)
         {
             _busProvider = busProvider;
+            _serviceProvider = serviceProvider;
         }
 
-        public void Initialize()
+        public void Initialize(Assembly executingAssembly)
         {
             _busProvider.CreateConnection();
-
-            var executingAssembly = Assembly.GetCallingAssembly();
 
             var types = executingAssembly.GetTypes();
             InitializeEventListeners(types);
@@ -65,7 +66,7 @@ namespace RabbitFramework
         {
             return (message) =>
             {
-                var instance = Activator.CreateInstance(type);
+                var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
 
                 var topicMatches = GetTopicMatches(message.RoutingKey, topics);
 
