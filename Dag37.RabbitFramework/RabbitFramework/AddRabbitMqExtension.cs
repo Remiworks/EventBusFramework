@@ -18,6 +18,13 @@ namespace RabbitFramework
 
         public static void UseRabbitMq(this IServiceProvider serviceProvider)
         {
+            var busProvider = serviceProvider.GetService<IBusProvider>();
+
+            if(busProvider == null)
+            {
+                throw new NotImplementedException("You did not use the AddRabbitMq method on the service collection");
+            }
+
             var initializer = new RabbitInitializer(serviceProvider.GetService<IBusProvider>(), serviceProvider);
 
             initializer.Initialize(Assembly.GetCallingAssembly());

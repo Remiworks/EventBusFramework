@@ -66,7 +66,7 @@ namespace RabbitFramework
         {
             return (message) =>
             {
-                var instance = ActivatorUtilities.CreateInstance(_serviceProvider, type);
+                var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
 
                 var topicMatches = GetTopicMatches(message.RoutingKey, topics);
 
