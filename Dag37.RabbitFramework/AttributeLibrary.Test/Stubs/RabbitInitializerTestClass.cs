@@ -1,9 +1,10 @@
 ﻿using AttributeLibrary;
+using AttributeLibrary.Attributes;
 using System;
 
 namespace RabbitFramework.Test
 {
-    [EventListener("testQueue")]
+    [QueueListener("testQueue")]
     public class RabbitInitializerTestClass
     {
         [Topic("testTopic")]

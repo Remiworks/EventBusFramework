@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using AttributeLibrary.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using RabbitFramework;
 using System;
@@ -32,7 +33,7 @@ namespace AttributeLibrary
         {
             foreach (var type in types)
             {
-                var eventAttribute = type.GetCustomAttribute<EventListenerAttribute>();
+                var eventAttribute = type.GetCustomAttribute<QueueListenerAttribute>();
 
                 if (eventAttribute != null)
                 {

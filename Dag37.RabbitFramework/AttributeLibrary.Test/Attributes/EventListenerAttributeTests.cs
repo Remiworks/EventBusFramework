@@ -1,9 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using AttributeLibrary.Attributes;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System;
 using System.Linq;
 
-namespace AttributeLibrary.Test
+namespace AttributeLibrary.Test.Attributes
 {
     [TestClass]
     public class EventListenerAttributeTests
@@ -12,7 +13,7 @@ namespace AttributeLibrary.Test
         public void EventListenerAttributeMustInitializeWithQueueName()
         {
             string queueName = "queueName";
-            EventListenerAttribute attribute = new EventListenerAttribute(queueName);
+            QueueListenerAttribute attribute = new QueueListenerAttribute(queueName);
 
             attribute.QueueName.ShouldBe(queueName);
         }
@@ -20,7 +21,7 @@ namespace AttributeLibrary.Test
         [TestMethod]
         public void EventListenerHasAttributeUsageAnnotation()
         {
-            var type = typeof(EventListenerAttribute);
+            var type = typeof(QueueListenerAttribute);
 
             var attributes = type.GetCustomAttributes(false);
 
