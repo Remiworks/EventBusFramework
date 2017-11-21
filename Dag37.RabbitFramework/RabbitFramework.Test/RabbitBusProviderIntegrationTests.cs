@@ -61,7 +61,6 @@ namespace RabbitFramework.Test
                     waitHandle.Set();
                 };
 
-                sut.CreateConnection();
                 sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicConsume(queue, eventReceivedCallback);
 
@@ -97,7 +96,6 @@ namespace RabbitFramework.Test
                     passedArgs = args;
                 });
 
-                sut.CreateConnection();
                 sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicPublish(message);
 

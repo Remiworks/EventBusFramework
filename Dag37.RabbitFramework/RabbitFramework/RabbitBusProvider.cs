@@ -86,6 +86,16 @@ namespace RabbitFramework
 
         public void CreateQueueWithTopics(string queueName, IEnumerable<string> topics)
         {
+            if(string.IsNullOrWhiteSpace(queueName))
+            {
+                throw new ArgumentException(nameof(queueName));
+            }
+
+            if(topics == null || !topics.Any())
+            {
+                throw new ArgumentException(nameof(topics));
+            }
+
             _channel.QueueDeclare(queue: queueName, exclusive: false);
 
             topics.ToList().ForEach(topic =>
