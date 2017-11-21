@@ -5,4 +5,13 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="newtonsoft.json" Version="10.0.3" />
+    <PackageReference Include="rabbitmq.client" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RabbitmqReceiver\RabbitmqReceiver.csproj" />
+  </ItemGroup>
+
 </Project>

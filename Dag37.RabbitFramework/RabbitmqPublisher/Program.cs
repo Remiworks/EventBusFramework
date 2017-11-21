@@ -1,36 +1,31 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RabbitMQ.Client;
+using RabbitmqReceiver;
+using System;
+using System.Text;
 
 namespace RabbitmqPublisher
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-        }
-
-        private void OpenRabbitConnection()
-        {
-            var factory = new ConnectionFactory()
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
             {
-                HostName = Host,
-                Port = Port,
-                UserName = UserName,
-                Password = Password
-            };
+                channel.ExchangeDeclare(exchange: "testExchange",
+                                        type: "topic");
 
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
-
-            _channel.ExchangeDeclare(ExchangeName, TopicType);
-        }
-
-        private void SendRabbitEvent(string topic, string json)
-        {
-            _channel.BasicPublish(exchange: ExchangeName,
-                                 routingKey: topic,
-                                 basicProperties: null,
-                                 body: Encoding.UTF8.GetBytes(json));
+                UserModel userModel = new UserModel() { Name = "test" };
+                var message = JsonConvert.SerializeObject(userModel);
+                var body = Encoding.UTF8.GetBytes(message);
+                channel.BasicPublish(exchange: "testExchange",
+                                     routingKey: "user.event.created",
+                                     basicProperties: null,
+                                     body: body);
+                Console.WriteLine(" [x] Sent '{0}':'{1}'");
+            }
         }
     }
 }

@@ -28,7 +28,7 @@ namespace RabbitFramework.Test
             _busProviderMock.Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<EventReceivedCallback>()));
             RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object, null);
 
-            target.Initialize();
+            target.Initialize(Assembly.GetCallingAssembly());
 
             _busProviderMock.Verify(b => b.CreateConnection(), Times.Once);
         }

@@ -21,11 +21,9 @@ namespace RabbitFramework
             _serviceProvider = serviceProvider;
         }
 
-        public void Initialize()
+        public void Initialize(Assembly executingAssembly)
         {
             _busProvider.CreateConnection();
-
-            var executingAssembly = Assembly.GetCallingAssembly();
 
             var types = executingAssembly.GetTypes();
             InitializeEventListeners(types);
