@@ -56,6 +56,6 @@ namespace RabbitFramework.Test
         {
             var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("SomeQueue", null));
             exception.Message.ShouldBe("callback");
-        }
+        }       
     }
 }
