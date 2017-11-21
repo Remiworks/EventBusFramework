@@ -8,7 +8,7 @@ using System.Text;
 namespace AttributeLibrary.Test
 {
     [TestClass]
-    public class TopicAttributeTestss
+    public class TopicAttributeTests
     {
         [TestMethod]
         public void TopicAttributeMustBeInitializeWithTopic()

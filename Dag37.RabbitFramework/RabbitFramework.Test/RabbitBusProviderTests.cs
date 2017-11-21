@@ -18,7 +18,5 @@ namespace RabbitFramework.Test
         {
             _sut.BusOptions.ShouldBe(_busOptionsMock.Object);
         }
-
-       
     }
 }

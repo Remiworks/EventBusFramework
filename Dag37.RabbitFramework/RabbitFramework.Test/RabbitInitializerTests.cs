@@ -41,7 +41,7 @@ namespace RabbitFramework.Test
 
             var result = target.CreateEventReceivedCallback(typeof(TestModel), null);
 
-            result.ShouldBeOfType<EventReceivedCallback>();
+            result.ShouldNotBeNull();
         }
 
         [TestMethod]
@@ -144,7 +144,6 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyMoreThanTwoWordsTopic()
         {
-
             var topics = new Dictionary<string, MethodInfo>();
             topics.Add("user.#.deleted", null);
             topics.Add("user.event.added", null);
@@ -162,7 +161,6 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyStartwithRandomtextTopic()
         {
-
             var topics = new Dictionary<string, MethodInfo>();
             topics.Add("user.#.deleted", null);
             topics.Add("user.event.added", null);
@@ -179,7 +177,6 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyEndWithRandomtextTopic()
         {
-
             var topics = new Dictionary<string, MethodInfo>();
             topics.Add("user.#.deleted", null);
             topics.Add("user.event.added", null);

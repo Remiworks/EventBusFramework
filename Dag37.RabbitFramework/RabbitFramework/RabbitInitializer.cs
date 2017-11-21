@@ -26,10 +26,10 @@ namespace RabbitFramework
             var executingAssembly = Assembly.GetCallingAssembly();
 
             var types = executingAssembly.GetTypes();
-            SearchTypes(types);
+            InitializeEventListeners(types);
         }
 
-        private void SearchTypes(Type[] types)
+        private void InitializeEventListeners(Type[] types)
         {
             foreach (var type in types)
             {
@@ -71,19 +71,7 @@ namespace RabbitFramework
 
                 foreach (var topic in topicMatches)
                 {
-                    try
-                    {
-                        var parameters = topic.Value.GetParameters();
-                        var parameter = parameters.FirstOrDefault();
-                        var paramType = parameter.ParameterType;
-                        var arguments = JsonConvert.DeserializeObject(message.JsonMessage, paramType);
-
-                        topic.Value.Invoke(instance, new object[] { arguments });
-                    }
-                    catch (TargetInvocationException)
-                    {
-                        throw;
-                    }
+                    InvokeTopic(message, instance, topic);
                 }
             };
         }
@@ -110,6 +98,23 @@ namespace RabbitFramework
             }
 
             return topicMatches;
+        }
+
+        private void InvokeTopic(EventMessage message, object instance, KeyValuePair<string, MethodInfo> topic)
+        {
+            try
+            {
+                var parameters = topic.Value.GetParameters();
+                var parameter = parameters.FirstOrDefault();
+                var paramType = parameter.ParameterType;
+                var arguments = JsonConvert.DeserializeObject(message.JsonMessage, paramType);
+
+                topic.Value.Invoke(instance, new object[] { arguments });
+            }
+            catch (TargetInvocationException)
+            {
+                throw;
+            }
         }
     }
 }
