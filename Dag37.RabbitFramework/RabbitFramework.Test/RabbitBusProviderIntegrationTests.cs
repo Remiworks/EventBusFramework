@@ -45,7 +45,7 @@ namespace RabbitFramework.Test
         }
 
         [TestMethod]
-        public void EventReceivedCallbackIsInvokedWithEvent()
+        public void EventCanBeReceived()
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
@@ -64,7 +64,7 @@ namespace RabbitFramework.Test
                 sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicConsume(queue, eventReceivedCallback);
 
-                SendRabbitEvent(topic, jsonMessage);
+                SendRabbitEventToExchange(topic, jsonMessage);
 
                 waitHandle.WaitOne(2000).ShouldBeTrue();
                 passedMessage.ShouldNotBeNull();
@@ -73,7 +73,7 @@ namespace RabbitFramework.Test
         }
 
         [TestMethod]
-        public void EventIsSentAndCanBeReceived()
+        public void EventCanBePublished()
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
@@ -106,6 +106,38 @@ namespace RabbitFramework.Test
             }
         }
 
+        [TestMethod]
+        public void EventCanBePublishedAndReceived()
+        {
+            using (var sut = new RabbitBusProvider(BusOptions))
+            {
+                string queue = UniqueQueue();
+                string topic = UniqueTopic();
+                
+                EventMessage receivedMessage = null;
+                ManualResetEvent waitHandle = new ManualResetEvent(false);
+                EventReceivedCallback eventReceivedCallback = (message) =>
+                {
+                    receivedMessage = message;
+                    waitHandle.Set();
+                };
+
+                EventMessage sentMessage = new EventMessage
+                {
+                    JsonMessage = "Something",
+                    RoutingKey = topic,
+                    Type = TopicType
+                };
+
+                sut.CreateQueueWithTopics(queue, new List<string> { topic });
+                sut.BasicConsume(queue, eventReceivedCallback);
+                sut.BasicPublish(sentMessage);
+
+                waitHandle.WaitOne(2000).ShouldBeTrue();
+                receivedMessage.JsonMessage.ShouldBe(sentMessage.JsonMessage);
+            }
+        }
+
         private string UniqueQueue()
         {
             return $"TestQueue-{Guid.NewGuid()}";
@@ -132,7 +164,7 @@ namespace RabbitFramework.Test
             _channel.ExchangeDeclare(ExchangeName, TopicType);
         }
 
-        private void SendRabbitEvent(string topic, string json)
+        private void SendRabbitEventToExchange(string topic, string json)
         {
             _channel.BasicPublish(exchange: ExchangeName,
                                  routingKey: topic,
