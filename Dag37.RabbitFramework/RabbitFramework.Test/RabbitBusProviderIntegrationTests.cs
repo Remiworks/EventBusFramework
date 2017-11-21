@@ -45,39 +45,9 @@ namespace RabbitFramework.Test
         }
 
         [TestMethod]
-        public void EventReceivedCallbackIsInvokedWithEvent()
-        {
-            using (var sut = new RabbitBusProvider(BusOptions))
-            {
-                string queue = UniqueQueue();
-                string topic = UniqueTopic();
-                string jsonMessage = "Something";
-
-                EventMessage passedMessage = null;
-                ManualResetEvent waitHandle = new ManualResetEvent(false);
-                EventReceivedCallback eventReceivedCallback = (message) =>
-                {
-                    passedMessage = message;
-                    waitHandle.Set();
-                };
-
-                sut.CreateConnection();
-                sut.CreateQueueWithTopics(queue, new List<string> { topic });
-                sut.BasicConsume(queue, eventReceivedCallback);
-
-                SendRabbitEvent(topic, jsonMessage);
-
-                waitHandle.WaitOne(2000).ShouldBeTrue();
-                passedMessage.ShouldNotBeNull();
-                passedMessage.JsonMessage.ShouldBe(jsonMessage);
-            }
-        }
-
-
-        [TestMethod]
         public void EventIsSentAndCanBeReceived()
         {
-            using (var sut = new RabbitBusProvider(BusOptions))
+            using (var sut = new RabbitBusProvider(BusOptions, new BusHelper()))
             {
                 string queue = UniqueQueue();
                 string topic = UniqueTopic();
@@ -99,7 +69,6 @@ namespace RabbitFramework.Test
                 });
 
                 sut.CreateConnection();
-                sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicPublish(message);
 
                 waitHandle.WaitOne(2000).ShouldBeTrue();

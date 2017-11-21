@@ -13,38 +13,14 @@ namespace RabbitFramework
 
         private IConnection _connection;
         private IModel _channel;
+        private readonly IBusHelper _busHelper;
 
         public BusOptions BusOptions { get; }
 
-        public RabbitBusProvider(BusOptions busOptions)
+        public RabbitBusProvider(BusOptions busOptions, IBusHelper busHelper)
         {
             BusOptions = busOptions;
-        }
-
-        public void BasicConsume(string queueName, EventReceivedCallback callback)
-        {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-
-            if (callback == null)
-            {
-                throw new ArgumentException(nameof(callback));
-            }
-
-            var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
-
-            _channel.BasicConsume(queueName, true, consumer);
-        }
-
-        public void CreateQueueWithTopics(string queueName, IEnumerable<string> topics)
-        {
-            _channel.QueueDeclare(queue: queueName, exclusive: false);
-
-            topics.ToList().ForEach(topic =>
-                _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
+            _busHelper = busHelper;
         }
 
         public void BasicPublish(EventMessage message)
@@ -70,6 +46,36 @@ namespace RabbitFramework
             _channel = _connection.CreateModel();
 
             _channel.ExchangeDeclare(BusOptions.ExchangeName, ExchangeType);
+        }
+
+        public void BasicConsume(string queue, string topic, EventReceivedCallback callback)
+        {
+            if (string.IsNullOrWhiteSpace(queue))
+            {
+                throw new ArgumentException("Queue is required");
+            }
+
+            if (string.IsNullOrWhiteSpace(topic))
+            {
+                throw new ArgumentException(nameof(topic));
+            }
+
+            if (callback == null)
+            {
+                throw new ArgumentException(nameof(callback));
+            }
+
+            var queueName = _busHelper.GenerateQueueName(queue, topic);
+            var topicName = _busHelper.GenerateTopicName(queue, topic);
+
+            _channel.QueueDeclare(queue: queueName, exclusive: true);
+
+            _channel.QueueBind(queueName, BusOptions.ExchangeName, topicName);
+
+            var consumer = new EventingBasicConsumer(_channel);
+            consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
+
+            _channel.BasicConsume(queueName, true, consumer);
         }
 
         public void Dispose()

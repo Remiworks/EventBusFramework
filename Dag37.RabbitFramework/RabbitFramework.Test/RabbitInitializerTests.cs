@@ -30,7 +30,7 @@ namespace RabbitFramework.Test
 
             target.Initialize();
 
-            _busProviderMock.Verify(b => b.CreateConnection(), Times.AtMostOnce);
+            _busProviderMock.Verify(b => b.CreateConnection(), Times.Once);
         }
 
         [TestMethod]
@@ -174,7 +174,6 @@ namespace RabbitFramework.Test
             var result = target.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
-            //result.Any(r => r.Key == "user.#.deleted").ShouldBeTrue();
         }
 
         [TestMethod]
@@ -192,7 +191,6 @@ namespace RabbitFramework.Test
             var result = target.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
-            //result.Any(r => r.Key == "user.#.deleted").ShouldBeTrue();
         }
     }
 }
