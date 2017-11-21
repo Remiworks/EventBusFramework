@@ -1,5 +1,5 @@
-
-# Created by https://www.gitignore.io/api/csharp,visualstudio
+# VS code
+.vscode
 
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and
