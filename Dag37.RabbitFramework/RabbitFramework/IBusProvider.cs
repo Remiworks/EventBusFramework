@@ -8,7 +8,7 @@ namespace RabbitFramework
     {
         BusOptions BusOptions { get; }
 
-        void BasicPublish(EventMessage message);
+        void BasicPublish(EventMessage eventMessage);
 
         void CreateQueueWithTopics(string queueName, IEnumerable<string> topics);
 
@@ -16,7 +16,7 @@ namespace RabbitFramework
 
         Task<T> Call<T>(string queueName, object message, int timeout = 5000);
 
-        void SetupRpcListener<TParam>(string queue, CommandReceivedCallback<TParam> function);
+        void SetupRpcListener<TParam>(string queueName, CommandReceivedCallback<TParam> function);
     }
 
     public delegate void EventReceivedCallback(EventMessage message);
