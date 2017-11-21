@@ -18,12 +18,6 @@ namespace RabbitFramework
 
         public static void UseRabbitMq(this IServiceProvider serviceProvider)
         {
-            string Host = "localhost";
-            int Port = 5672;
-            string UserName = "guest";
-            string Password = "guest";
-            string ExchangeName = "testExchange";
-
             var initializer = new RabbitInitializer(serviceProvider.GetService<IBusProvider>(), serviceProvider);
 
             initializer.Initialize(Assembly.GetCallingAssembly());

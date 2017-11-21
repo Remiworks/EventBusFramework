@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AttributeLibrary", "Attribu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AttributeLibrary.Test", "AttributeLibrary.Test\AttributeLibrary.Test.csproj", "{4EFBE6E5-12F5-43BE-8DCD-96EBD85422E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitmqReceiver", "RabbitmqReceiver\RabbitmqReceiver.csproj", "{D87458D0-94EB-4547-9D8C-7EB1564BCAC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitmqReceiver", "RabbitmqReceiver\RabbitmqReceiver.csproj", "{D87458D0-94EB-4547-9D8C-7EB1564BCAC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitmqPublisher", "RabbitmqPublisher\RabbitmqPublisher.csproj", "{12FD7B60-D3C5-42AC-B671-FCE2078420E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitmqPublisher", "RabbitmqPublisher\RabbitmqPublisher.csproj", "{12FD7B60-D3C5-42AC-B671-FCE2078420E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitmqReceiverTwo", "RabbitmqReceiverTwo\RabbitmqReceiverTwo.csproj", "{C21549E7-5C73-45F3-BDE3-D98108EA26AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{12FD7B60-D3C5-42AC-B671-FCE2078420E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12FD7B60-D3C5-42AC-B671-FCE2078420E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12FD7B60-D3C5-42AC-B671-FCE2078420E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C21549E7-5C73-45F3-BDE3-D98108EA26AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C21549E7-5C73-45F3-BDE3-D98108EA26AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C21549E7-5C73-45F3-BDE3-D98108EA26AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C21549E7-5C73-45F3-BDE3-D98108EA26AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
