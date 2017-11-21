@@ -37,28 +37,42 @@ namespace AttributeLibrary
 
                 if (eventAttribute != null)
                 {
-                    Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
-                    _busProvider.CreateQueueWithTopics(eventAttribute.QueueName, topicsWithMethods.Keys);
-                    var callback = CreateEventReceivedCallback(type, topicsWithMethods);
-                    _busProvider.BasicConsume(eventAttribute.QueueName, callback);
+                    SetUpTopicMethods(type, eventAttribute.QueueName);
                 }
             }
         }
 
+        private void SetUpCommandMethods(Type type, string queueName)
+        {
+            Dictionary<string, MethodInfo> commandsWithMethods = GetCommandsWithMethods(type);
+            // Setup RPC listener met dingen
+        }
+
+        private void SetUpTopicMethods(Type type, string queueName)
+        {
+            Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
+            _busProvider.CreateQueueWithTopics(queueName, topicsWithMethods.Keys);
+            var callback = CreateEventReceivedCallback(type, topicsWithMethods);
+            _busProvider.BasicConsume(queueName, callback);
+        }
+
+        private Dictionary<string, MethodInfo> GetCommandsWithMethods(Type type)
+        {
+            return GetAttributeValuesWithMethod<CommandAttribute>(type, (a) => a.CommandType);
+        }
+
         public Dictionary<string, MethodInfo> GetTopicsWithMethods(Type type)
         {
-            var topicsWithMethods = new Dictionary<string, MethodInfo>();
-            foreach (var methodInfo in type.GetMethods())
-            {
-                var topicAttribute = methodInfo.GetCustomAttribute<TopicAttribute>();
+            return GetAttributeValuesWithMethod<TopicAttribute>(type, (a) => a.Topic);
+        }
 
-                if (topicAttribute != null)
-                {
-                    topicsWithMethods.Add(topicAttribute.Topic, methodInfo);
-                }
-            }
 
-            return topicsWithMethods;
+        private Dictionary<string, MethodInfo> GetAttributeValuesWithMethod<TAttribute>(Type type, Func<TAttribute, string> predicate) where TAttribute : Attribute
+        {
+            return type.GetMethods()
+                .Select(methodInfo => new { methodInfo, attribute = methodInfo.GetCustomAttribute<TAttribute>() })
+                .Where(methodInfo => methodInfo != null)
+                .ToDictionary(m => predicate(m.attribute), m => m.methodInfo);
         }
 
         public EventReceivedCallback CreateEventReceivedCallback(Type type, Dictionary<string, MethodInfo> topics)
