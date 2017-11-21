@@ -1,7 +1,5 @@
 ﻿using AttributeLibrary;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RabbitFramework.Test
 {
@@ -19,7 +17,6 @@ namespace RabbitFramework.Test
         {
             throw new ArgumentException();
         }
-
     }
 
     public class TestModel

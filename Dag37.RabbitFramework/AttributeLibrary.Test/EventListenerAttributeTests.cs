@@ -1,12 +1,9 @@
-﻿using AttributeLibrary;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace RabbitFramework.Test
+namespace AttributeLibrary.Test
 {
     [TestClass]
     public class EventListenerAttributeTests
