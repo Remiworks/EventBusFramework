@@ -8,6 +8,8 @@ namespace RabbitFramework
     {
         BusOptions BusOptions { get; }
 
+        void CreateConnection();
+
         void BasicPublish(EventMessage eventMessage);
 
         void CreateQueueWithTopics(string queueName, IEnumerable<string> topics);

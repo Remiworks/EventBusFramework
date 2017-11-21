@@ -63,6 +63,7 @@ namespace RabbitFramework.Test
                     waitHandle.Set();
                 };
 
+                sut.CreateConnection();
                 sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicConsume(queue, eventReceivedCallback);
 
@@ -98,6 +99,7 @@ namespace RabbitFramework.Test
                     passedArgs = args;
                 });
 
+                sut.CreateConnection();
                 sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicPublish(message);
 
@@ -131,6 +133,7 @@ namespace RabbitFramework.Test
                     Type = TopicType
                 };
 
+                sut.CreateConnection();
                 sut.CreateQueueWithTopics(queue, new List<string> { topic });
                 sut.BasicConsume(queue, eventReceivedCallback);
                 sut.BasicPublish(sentMessage);
@@ -161,6 +164,7 @@ namespace RabbitFramework.Test
                     return "Something";
                 };
 
+                sut.CreateConnection();
                 sut.SetupRpcListener(queue, commandReceivedCallback);
                 SendRabbitEventToQueue(queue, correlationId, sentCommandJson);
 
@@ -185,6 +189,7 @@ namespace RabbitFramework.Test
                     waitHandle.Set();
                 };
 
+                sut.CreateConnection();
                 ConsumeRabbitEvent(queue, commandCallback);
 
                 // Timeout exception is expected. We dont send a response to the calling party
@@ -209,7 +214,9 @@ namespace RabbitFramework.Test
             {
                 string queue = UniqueQueue();
                 CommandStub sentCommand = new CommandStub { Value = "SomeValue" };
-                
+
+                sut.CreateConnection();
+
                 sut.SetupRpcListener<CommandStub>(queue, (command) => command.Value.Reverse().ToString());
                 string result = sut.Call<string>(queue, sentCommand).Result;
 

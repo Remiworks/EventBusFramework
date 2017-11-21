@@ -15,29 +15,20 @@ namespace RabbitFramework
     {
         private const string ExchangeType = "topic";
 
-        private readonly ConcurrentDictionary<string, Action<string>> _commandCallbacks;
-        private readonly string _replyQueueName;
-        private readonly EventingBasicConsumer _consumer;
-
         private IConnection _connection;
         private IModel _channel;
+        private ConcurrentDictionary<string, Action<string>> _commandCallbacks;
+        private EventingBasicConsumer _consumer;
+        private string _replyQueueName;
 
         public BusOptions BusOptions { get; }
 
         public RabbitBusProvider(BusOptions busOptions)
         {
             BusOptions = busOptions;
-
-            CreateConnection();
-
-            _replyQueueName = _channel.QueueDeclare().QueueName;
-            _commandCallbacks = new ConcurrentDictionary<string, Action<string>>();
-
-            _consumer = new EventingBasicConsumer(_channel);
-            _consumer.Received += HandleReceivedCommandCallback;
         }
 
-        private void CreateConnection()
+        public void CreateConnection()
         {
             var factory = new ConnectionFactory()
             {
@@ -64,6 +55,12 @@ namespace RabbitFramework
             _channel = _connection.CreateModel();
 
             _channel.ExchangeDeclare(BusOptions.ExchangeName, ExchangeType);
+
+            _replyQueueName = _channel.QueueDeclare().QueueName;
+            _commandCallbacks = new ConcurrentDictionary<string, Action<string>>();
+
+            _consumer = new EventingBasicConsumer(_channel);
+            _consumer.Received += HandleReceivedCommandCallback;
         }
 
         public void BasicConsume(string queueName, EventReceivedCallback callback)
