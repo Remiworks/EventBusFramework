@@ -1,23 +1,23 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace RabbitFramework.Test
 {
     [TestClass]
     public class RabbitInitializerTests
     {
-        private Mock<IBusProvider> _busProviderMock;
+        private readonly Mock<IBusProvider> _busProviderMock = new Mock<IBusProvider>(MockBehavior.Strict);
+
+        private RabbitInitializer _sut;
 
         [TestInitialize]
         public void Initialize()
         {
-            _busProviderMock = new Mock<IBusProvider>(MockBehavior.Strict);
+            _sut = new RabbitInitializer(_busProviderMock.Object, null);
         }
 
         [TestMethod]
@@ -36,10 +36,7 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void CreateEventReceivedCallbackReturnsCallback()
         {
-            var methodInfo = typeof(TestModel).GetMethod("TestModelTestFunction");
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.CreateEventReceivedCallback(typeof(TestModel), null);
+            var result = _sut.CreateEventReceivedCallback(typeof(TestModel), null);
 
             result.ShouldNotBeNull();
         }
@@ -47,9 +44,7 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicWithMethodsReturnsDictionary()
         {
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicsWithMethods(typeof(RabbitInitializerTestClass));
+            var result = _sut.GetTopicsWithMethods(typeof(RabbitInitializerTestClass));
 
             result.Count.ShouldBe(2);
             result.Any(r => r.Key == "testTopic").ShouldBeTrue();
@@ -65,9 +60,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.added";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == routingKey).ShouldBeTrue();
@@ -82,9 +75,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == "user.*.deleted").ShouldBeTrue();
@@ -99,9 +90,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.test.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == "user.#.deleted").ShouldBeTrue();
@@ -116,9 +105,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user..";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
             result.Any(r => r.Key == "user.#").ShouldBeFalse();
@@ -133,9 +120,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user..";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
             result.Any(r => r.Key == "user.*").ShouldBeFalse();
@@ -150,9 +135,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.test.iets.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == "user.#.deleted").ShouldBeTrue();
@@ -167,9 +150,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "blablabla.user.event.test.iets.deleted";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
         }
@@ -183,9 +164,7 @@ namespace RabbitFramework.Test
 
             var routingKey = "user.event.test.iets.deleted.blablabla";
 
-            var target = new RabbitInitializer(_busProviderMock.Object, null);
-
-            var result = target.GetTopicMatches(routingKey, topics);
+            var result = _sut.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
         }

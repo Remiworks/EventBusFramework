@@ -13,7 +13,7 @@ namespace RabbitFramework
 {
     public class RabbitInitializer
     {
-        private IBusProvider _busProvider;
+        private readonly IBusProvider _busProvider;
         private readonly IServiceProvider _serviceProvider;
 
         public RabbitInitializer(IBusProvider busProvider, IServiceProvider serviceProvider)
