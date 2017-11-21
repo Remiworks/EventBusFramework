@@ -44,7 +44,69 @@ namespace RabbitFramework.Test
             _channel.Dispose();
         }
 
-     
+        [TestMethod]
+        public void EventReceivedCallbackIsInvokedWithEvent()
+        {
+            using (var sut = new RabbitBusProvider(BusOptions))
+            {
+                string queue = UniqueQueue();
+                string topic = UniqueTopic();
+                string jsonMessage = "Something";
+
+                EventMessage passedMessage = null;
+                ManualResetEvent waitHandle = new ManualResetEvent(false);
+                EventReceivedCallback eventReceivedCallback = (message) =>
+                {
+                    passedMessage = message;
+                    waitHandle.Set();
+                };
+
+                sut.CreateConnection();
+                sut.CreateQueueWithTopics(queue, new List<string> { topic });
+                sut.BasicConsume(queue, eventReceivedCallback);
+
+                SendRabbitEvent(topic, jsonMessage);
+
+                waitHandle.WaitOne(2000).ShouldBeTrue();
+                passedMessage.ShouldNotBeNull();
+                passedMessage.JsonMessage.ShouldBe(jsonMessage);
+            }
+        }
+
+        [TestMethod]
+        public void EventIsSentAndCanBeReceived()
+        {
+            using (var sut = new RabbitBusProvider(BusOptions))
+            {
+                string queue = UniqueQueue();
+                string topic = UniqueTopic();
+
+                ManualResetEvent waitHandle = new ManualResetEvent(false);
+                BasicDeliverEventArgs passedArgs = null;
+
+                EventMessage message = new EventMessage
+                {
+                    JsonMessage = "Something",
+                    RoutingKey = topic,
+                    Type = TopicType
+                };
+
+                ConsumeRabbitEvent(queue, topic, (sender, args) =>
+                {
+                    waitHandle.Set();
+                    passedArgs = args;
+                });
+
+                sut.CreateConnection();
+                sut.CreateQueueWithTopics(queue, new List<string> { topic });
+                sut.BasicPublish(message);
+
+                waitHandle.WaitOne(2000).ShouldBeTrue();
+                string receivedMessage = Encoding.UTF8.GetString(passedArgs.Body);
+                receivedMessage.ShouldBe(message.JsonMessage);
+                passedArgs.RoutingKey.ShouldBe(message.RoutingKey);
+            }
+        }
 
         private string UniqueQueue()
         {
