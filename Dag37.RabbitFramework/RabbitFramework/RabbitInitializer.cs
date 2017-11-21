@@ -13,10 +13,12 @@ namespace RabbitFramework
     public class RabbitInitializer
     {
         private IBusProvider _busProvider;
+        private readonly IServiceProvider _serviceProvider;
 
-        public RabbitInitializer(IBusProvider busProvider)
+        public RabbitInitializer(IBusProvider busProvider, IServiceProvider serviceProvider)
         {
             _busProvider = busProvider;
+            _serviceProvider = serviceProvider;
         }
 
         public void Initialize()
@@ -65,7 +67,7 @@ namespace RabbitFramework
         {
             return (message) =>
             {
-                var instance = Activator.CreateInstance(type);
+                var instance = ActivatorUtilities.CreateInstance(_serviceProvider, type);
 
                 var topicMatches = GetTopicMatches(message.RoutingKey, topics);
 
