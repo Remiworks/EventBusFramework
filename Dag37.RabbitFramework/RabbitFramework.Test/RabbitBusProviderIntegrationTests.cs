@@ -44,39 +44,7 @@ namespace RabbitFramework.Test
             _channel.Dispose();
         }
 
-        [TestMethod]
-        public void EventIsSentAndCanBeReceived()
-        {
-            using (var sut = new RabbitBusProvider(BusOptions, new BusHelper()))
-            {
-                string queue = UniqueQueue();
-                string topic = UniqueTopic();
-
-                ManualResetEvent waitHandle = new ManualResetEvent(false);
-                BasicDeliverEventArgs passedArgs = null;
-
-                EventMessage message = new EventMessage
-                {
-                    JsonMessage = "Something",
-                    RoutingKey = topic,
-                    Type = TopicType
-                };
-
-                ConsumeRabbitEvent(queue, topic, (sender, args) =>
-                {
-                    waitHandle.Set();
-                    passedArgs = args;
-                });
-
-                sut.CreateConnection();
-                sut.BasicPublish(message);
-
-                waitHandle.WaitOne(2000).ShouldBeTrue();
-                string receivedMessage = Encoding.UTF8.GetString(passedArgs.Body);
-                receivedMessage.ShouldBe(message.JsonMessage);
-                passedArgs.RoutingKey.ShouldBe(message.RoutingKey);
-            }
-        }
+     
 
         private string UniqueQueue()
         {
