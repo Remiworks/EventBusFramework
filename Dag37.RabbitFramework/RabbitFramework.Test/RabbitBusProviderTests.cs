@@ -12,9 +12,13 @@ namespace RabbitFramework.Test
         private const string TopicsParamName = "topics";
         private const string CallbackParamName = "callback";
         private const string QueueNameParamName = "queueName";
+        private const string EventMessageParamName = "eventMessage";
+        private const string FunctionParamName = "function";
+        private const string MessageParamName = "message";
 
         private readonly IEnumerable<string> _topics = new List<string> { "SomeTopic1", "SomeTopic2" };
         private readonly Mock<BusOptions> _busOptionsMock = new Mock<BusOptions>();
+        private readonly CommandReceivedCallback<string> _commandReceivedCallback = (p) => { return new object(); };
 
         private RabbitBusProvider _sut;
 
@@ -97,6 +101,69 @@ namespace RabbitFramework.Test
         {
             var exception = Should.Throw<ArgumentException>(() => _sut.CreateQueueWithTopics("SomeQueue", new List<string>()));
             exception.Message.ShouldBe(TopicsParamName);
+        }
+
+        [TestMethod]
+        public void BasicPublishThrowsArgumentExceptionWhenMessageIsNull()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.BasicPublish(null));
+            exception.Message.ShouldBe(EventMessageParamName);
+        }
+
+        [TestMethod]
+        public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsNull()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener(null, _commandReceivedCallback));
+            exception.Message.ShouldBe(QueueNameParamName);
+        }
+
+        [TestMethod]
+        public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsEmpty()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener("", _commandReceivedCallback));
+            exception.Message.ShouldBe(QueueNameParamName);
+        }
+
+        [TestMethod]
+        public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsWhitespace()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener(" ", _commandReceivedCallback));
+            exception.Message.ShouldBe(QueueNameParamName);
+        }
+
+        [TestMethod]
+        public void SetupRpcListenerThrowsArgumentExceptionWhenFuntionIsNull()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener<string>("SomeQueue", null));
+            exception.Message.ShouldBe(FunctionParamName);
+        }
+
+        [TestMethod]
+        public void CallThrowsArgumentExceptionWhenQueueNameIsNull()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.Call<string>(null, new object(), 0));
+            exception.Message.ShouldBe(QueueNameParamName);
+        }
+
+        [TestMethod]
+        public void CallThrowsArgumentExceptionWhenQueueNameIsEmpty()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.Call<string>("", new object(), 0));
+            exception.Message.ShouldBe(QueueNameParamName);
+        }
+
+        [TestMethod]
+        public void CallThrowsArgumentExceptionWhenQueueNameIsWhitespace()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.Call<string>(" ", new object(), 0));
+            exception.Message.ShouldBe(QueueNameParamName);
+        }
+
+        [TestMethod]
+        public void CallThrowsArgumentExceptionWhenMessageIsNull()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.Call<string>("SomeQueue", null, 0));
+            exception.Message.ShouldBe(MessageParamName);
         }
     }
 }

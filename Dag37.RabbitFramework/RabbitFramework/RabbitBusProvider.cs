@@ -72,8 +72,7 @@ namespace RabbitFramework
             {
                 throw new ArgumentException(nameof(queueName));
             }
-
-            if (callback == null)
+            else if (callback == null)
             {
                 throw new ArgumentException(nameof(callback));
             }
@@ -86,12 +85,11 @@ namespace RabbitFramework
 
         public void CreateQueueWithTopics(string queueName, IEnumerable<string> topics)
         {
-            if(string.IsNullOrWhiteSpace(queueName))
+            if (string.IsNullOrWhiteSpace(queueName))
             {
                 throw new ArgumentException(nameof(queueName));
             }
-
-            if(topics == null || !topics.Any())
+            else if (topics == null || !topics.Any())
             {
                 throw new ArgumentException(nameof(topics));
             }
@@ -102,18 +100,32 @@ namespace RabbitFramework
                 _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
         }
 
-        public void BasicPublish(EventMessage message)
+        public void BasicPublish(EventMessage eventMessage)
         {
+            if (eventMessage == null)
+            {
+                throw new ArgumentException(nameof(eventMessage));
+            }
+
             _channel.BasicPublish(exchange: BusOptions.ExchangeName,
-                                 routingKey: message.RoutingKey,
+                                 routingKey: eventMessage.RoutingKey,
                                  basicProperties: null,
-                                 body: Encoding.UTF8.GetBytes(message.JsonMessage));
+                                 body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
         }
 
-        public void SetupRpcListener<TParam>(string queue, CommandReceivedCallback<TParam> function)
+        public void SetupRpcListener<TParam>(string queueName, CommandReceivedCallback<TParam> function)
         {
+            if (string.IsNullOrWhiteSpace(queueName))
+            {
+                throw new ArgumentException(nameof(queueName));
+            }
+            else if (function == null)
+            {
+                throw new ArgumentException(nameof(function));
+            }
+
             _channel.QueueDeclare(
-                queue: queue,
+                queue: queueName,
                 durable: false,
                 exclusive: false,
                 autoDelete: false,
@@ -125,13 +137,22 @@ namespace RabbitFramework
             consumer.Received += (sender, args) => HandleReceivedCommand(function, args);
 
             _channel.BasicConsume(
-                queue: queue,
+                queue: queueName,
                 autoAck: false,
                 consumer: consumer);
         }
 
         public async Task<T> Call<T>(string queueName, object message, int timeout = 5000)
         {
+            if (string.IsNullOrWhiteSpace(queueName))
+            {
+                throw new ArgumentException(nameof(queueName));
+            }
+            else if (message == null)
+            {
+                throw new ArgumentException(nameof(message));
+            }
+
             var correlationId = Guid.NewGuid().ToString();
 
             var waitHandle = new ManualResetEvent(false);
