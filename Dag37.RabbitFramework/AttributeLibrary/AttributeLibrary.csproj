@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageId>RabbitFramework.Attributes</PackageId>
+    <Authors>Rene Buunk, Mike Derksen</Authors>
+    <Company>ReneMike&amp;Co</Company>
+    <Product>RabbitFramework.Attributes</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
