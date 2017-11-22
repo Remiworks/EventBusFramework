@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DebugType>Full</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.0</Version>
+    <Authors>Rene Buunk, Mike Derksen</Authors>
+    <Company>ReneMike&amp;Co</Company>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
