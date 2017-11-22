@@ -33,13 +33,28 @@ namespace AttributeLibrary
         {
             foreach (var type in types)
             {
-                var eventAttribute = type.GetCustomAttribute<QueueListenerAttribute>();
+                var queueAttribute = type.GetCustomAttribute<QueueListenerAttribute>();
 
-                if (eventAttribute != null)
+                if (queueAttribute != null)
                 {
-                    SetUpTopicMethods(type, eventAttribute.QueueName);
+                    if(TypeContainsBothCommandsAndEvents(type))
+                    {
+                        throw new InvalidOperationException("Type {} can't contain both events and commands. Events and commands should not be sent to the same queue");
+                    }
+
+                    SetUpTopicMethods(type, queueAttribute.QueueName);
+                    SetUpCommandMethods(type, queueAttribute.QueueName);
                 }
             }
+        }
+
+        private bool TypeContainsBothCommandsAndEvents(Type type)
+        {
+            var methods = type.GetMethods();
+
+            return
+                methods.Any(m => m.GetCustomAttributes<TopicAttribute>() != null) &&
+                methods.Any(m => m.GetCustomAttribute<CommandAttribute>() != null);
         }
 
         private void SetUpCommandMethods(Type type, string queueName)
