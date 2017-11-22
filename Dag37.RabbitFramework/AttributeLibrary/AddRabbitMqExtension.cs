@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RabbitFramework;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
-namespace RabbitFramework
+namespace AttributeLibrary
 {
     public static class AddRabbitMqExtension
     {
@@ -20,7 +19,7 @@ namespace RabbitFramework
         {
             var busProvider = serviceProvider.GetService<IBusProvider>();
 
-            if(busProvider == null)
+            if (busProvider == null)
             {
                 throw new NotImplementedException("You did not use the AddRabbitMq method on the service collection");
             }

@@ -1,11 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using RabbitFramework;
+using RabbitFramework.Test;
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace RabbitFramework.Test
+namespace AttributeLibrary.Test
 {
     [TestClass]
     public class RabbitInitializerTests

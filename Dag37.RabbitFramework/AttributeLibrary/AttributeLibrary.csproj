@@ -7,12 +7,16 @@
     <Company>ReneMike&amp;Co</Company>
     <Product>RabbitFramework.Attributes</Product>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
+    <Description>Extension for RabbitFramework.Core using attributes for handling events.</Description>
+    <Title>RabbitFramework.Attributes</Title>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="RabbitFramework.Core" Version="1.1.0" />
   </ItemGroup>
 
 </Project>

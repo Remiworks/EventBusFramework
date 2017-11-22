@@ -1,15 +1,13 @@
-﻿using AttributeLibrary;
-using log4net;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using RabbitFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace RabbitFramework
+namespace AttributeLibrary
 {
     public class RabbitInitializer
     {
