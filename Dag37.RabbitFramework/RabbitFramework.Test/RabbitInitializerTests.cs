@@ -54,9 +54,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyEqualsTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.event.deleted", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.event.deleted", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "user.event.added";
 
@@ -69,9 +71,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyStarTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.*.deleted", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.*.deleted", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "user.event.deleted";
 
@@ -84,9 +88,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyHashTagTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.#.deleted", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.#.deleted", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "user.event.test.deleted";
 
@@ -99,9 +105,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyHashTagAndStarTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.#", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.#", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "user..";
 
@@ -114,9 +122,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyStarDotsTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.*", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.*", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "user..";
 
@@ -129,9 +139,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyMoreThanTwoWordsTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.#.deleted", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.#.deleted", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "user.event.test.iets.deleted";
 
@@ -144,9 +156,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyStartwithRandomtextTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.#.deleted", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.#.deleted", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "blablabla.user.event.test.iets.deleted";
 
@@ -158,9 +172,11 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void GetTopicMatchesRoutingKeyEndWithRandomtextTopic()
         {
-            var topics = new Dictionary<string, MethodInfo>();
-            topics.Add("user.#.deleted", null);
-            topics.Add("user.event.added", null);
+            var topics = new Dictionary<string, MethodInfo>
+            {
+                { "user.#.deleted", null },
+                { "user.event.added", null }
+            };
 
             var routingKey = "user.event.test.iets.deleted.blablabla";
 

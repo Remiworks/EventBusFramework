@@ -257,11 +257,27 @@ namespace RabbitFramework
 
             return properties;
         }
+        
+        private bool isDisposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!isDisposed)
+            {
+                if (disposing)
+                {
+                    _connection.Dispose();
+                    _channel.Dispose();
+                }
+
+                isDisposed = true;
+            }
+        }
 
         public void Dispose()
         {
-            _connection.Dispose();
-            _channel.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
