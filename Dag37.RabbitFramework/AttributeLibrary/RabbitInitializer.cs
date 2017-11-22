@@ -39,7 +39,7 @@ namespace AttributeLibrary
                 {
                     if(TypeContainsBothCommandsAndEvents(type))
                     {
-                        throw new InvalidOperationException("Type {} can't contain both events and commands. Events and commands should not be sent to the same queue");
+                        throw new InvalidOperationException("Type {} can't contain both events and commands. Events and commands should not be sent to the same queue.");
                     }
 
                     SetUpTopicMethods(type, queueAttribute.QueueName);
