@@ -10,8 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using RabbitFramework.IntegrationTest.Stubs;
 
-namespace RabbitFramework.Test
+namespace RabbitFramework.IntegrationTest
 {
     [TestClass]
     public class RabbitBusProviderIntegrationTests
@@ -66,7 +67,7 @@ namespace RabbitFramework.Test
                 };
 
                 sut.CreateConnection();
-                sut.CreateQueueWithTopics(queue, new List<string> { topic });
+                sut.CreateTopicsForQueue(queue, topic);
                 sut.BasicConsume(queue, eventReceivedCallback);
 
                 SendRabbitEventToExchange(topic, jsonMessage);
@@ -102,7 +103,7 @@ namespace RabbitFramework.Test
                 });
 
                 sut.CreateConnection();
-                sut.CreateQueueWithTopics(queue, new List<string> { topic });
+                sut.CreateTopicsForQueue(queue, topic);
                 sut.BasicPublish(message);
 
                 waitHandle.WaitOne(2000).ShouldBeTrue();
@@ -136,7 +137,7 @@ namespace RabbitFramework.Test
                 };
 
                 sut.CreateConnection();
-                sut.CreateQueueWithTopics(queue, new List<string> { topic });
+                sut.CreateTopicsForQueue(queue, topic);
                 sut.BasicConsume(queue, eventReceivedCallback);
                 sut.BasicPublish(sentMessage);
 
@@ -274,7 +275,7 @@ namespace RabbitFramework.Test
 
         private void ConsumeRabbitEvent(string queue, EventHandler<BasicDeliverEventArgs> callback)
         {
-            _channel.QueueDeclare(queue: queue, exclusive: false);
+            _channel.QueueDeclare(queue: queue, exclusive: false, autoDelete: false);
 
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += callback;
