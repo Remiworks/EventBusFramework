@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
@@ -14,6 +15,7 @@ namespace RabbitFramework
     public class RabbitBusProvider : IBusProvider
     {
         private const string ExchangeType = "topic";
+        private ILogger _logger { get; } =  RabbitLogging.CreateLogger<RabbitBusProvider>();
 
         private IConnection _connection;
         private IModel _channel;
