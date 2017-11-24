@@ -109,6 +109,7 @@ namespace AttributeLibrary
         {
             try
             {
+                _logger.LogInformation($"Topic {topic.Key} has been invoked", message);
                 var parameters = topic.Value.GetParameters();
                 var parameter = parameters.FirstOrDefault();
                 var paramType = parameter.ParameterType;

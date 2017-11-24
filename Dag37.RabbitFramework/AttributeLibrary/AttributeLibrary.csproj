@@ -19,4 +19,8 @@
     <PackageReference Include="RabbitFramework.Core" Version="1.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RabbitFramework\RabbitFramework.csproj" />
+  </ItemGroup>
+
 </Project>
