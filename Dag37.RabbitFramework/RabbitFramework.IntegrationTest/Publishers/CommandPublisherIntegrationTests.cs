@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using RabbitFramework.Contracts;
 using RabbitFramework.IntegrationTest.Stubs;
 using RabbitFramework.Publishers;
 using RabbitMQ.Client.Events;
@@ -15,15 +16,23 @@ namespace RabbitFramework.IntegrationTest.Publishers
     {
         private const string Key = "testKey";
 
+        private IBusProvider _busProvider;
+
         private CommandPublisher _sut;
 
         [TestInitialize]
         public void Initialize()
         {
-            var busProvider = new RabbitBusProvider(BusOptions);
-            busProvider.CreateConnection();
+            _busProvider = new RabbitBusProvider(BusOptions);
+            _busProvider.CreateConnection();
 
-            _sut = new CommandPublisher(busProvider);
+            _sut = new CommandPublisher(_busProvider);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _busProvider.Dispose();
         }
 
         [TestMethod]
