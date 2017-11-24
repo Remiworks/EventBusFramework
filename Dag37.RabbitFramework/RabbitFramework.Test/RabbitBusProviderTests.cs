@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
 using Shouldly;
 using System;
 using System.Collections.Generic;

@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shouldly;

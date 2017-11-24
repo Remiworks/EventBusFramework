@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
@@ -15,7 +17,7 @@ namespace RabbitFramework
     public class RabbitBusProvider : IBusProvider
     {
         private const string ExchangeType = "topic";
-        private ILogger _logger { get; } =  RabbitLogging.CreateLogger<RabbitBusProvider>();
+        private ILogger _logger { get; } = RabbitLogging.CreateLogger<RabbitBusProvider>();
 
         private IConnection _connection;
         private IModel _channel;
@@ -259,7 +261,7 @@ namespace RabbitFramework
 
             return properties;
         }
-        
+
         private bool isDisposed = false;
 
         protected virtual void Dispose(bool disposing)

@@ -1,4 +1,6 @@
-﻿namespace RabbitFramework
+﻿using RabbitFramework.Models;
+
+namespace RabbitFramework.Contracts
 {
     public interface IEventPublisher
     {

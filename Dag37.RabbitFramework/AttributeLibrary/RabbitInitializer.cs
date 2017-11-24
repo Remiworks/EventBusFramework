@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitFramework;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

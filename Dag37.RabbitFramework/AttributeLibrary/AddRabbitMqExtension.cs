@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RabbitFramework;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
 using System;
 using System.Reflection;
 
@@ -10,7 +12,7 @@ namespace AttributeLibrary
     {
         public static IServiceCollection AddRabbitMq(this IServiceCollection serviceCollection, BusOptions options, ILoggerFactory logger = null)
         {
-            if(logger != null)
+            if (logger != null)
             {
                 RabbitLogging.LoggerFactory = logger;
             }
