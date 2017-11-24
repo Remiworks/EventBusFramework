@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AttributeLibrary\AttributeLibrary.csproj" />
     <ProjectReference Include="..\RabbitFramework\RabbitFramework.csproj" />
   </ItemGroup>
 
