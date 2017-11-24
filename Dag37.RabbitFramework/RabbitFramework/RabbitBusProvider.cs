@@ -7,11 +7,13 @@ using RabbitFramework.Contracts;
 using RabbitFramework.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace RabbitFramework
 {
     public class RabbitBusProvider : IBusProvider
     {
+        private const int NotFound = 404;
         private const string ExchangeType = "topic";
         private ILogger _logger { get; } = RabbitLogging.CreateLogger<RabbitBusProvider>();
 
@@ -68,7 +70,22 @@ namespace RabbitFramework
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
 
-            _channel.BasicConsume(queueName, true, consumer);
+            try
+            {
+                _channel.BasicConsume(queueName, true, consumer);
+            }
+            catch (OperationInterruptedException ex)
+            {
+                if (ex.ShutdownReason.ReplyCode == NotFound)
+                {
+                    QueueDeclare(queueName);
+                    _channel.BasicConsume(queueName, true, consumer);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public void CreateTopicsForQueue(string queueName, params string[] topics)
@@ -82,10 +99,7 @@ namespace RabbitFramework
                 throw new ArgumentNullException(nameof(topics));
             }
 
-            _channel.QueueDeclare(
-                queue: queueName,
-                exclusive: false,
-                autoDelete: false);
+            QueueDeclare(queueName);
 
             topics.ToList().ForEach(topic =>
                 _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
@@ -202,6 +216,14 @@ namespace RabbitFramework
             _channel.BasicAck(
                 deliveryTag: args.DeliveryTag,
                 multiple: false);
+        }
+
+        private void QueueDeclare(string queueName)
+        {
+            _channel.QueueDeclare(
+                queue: queueName,
+                exclusive: false,
+                autoDelete: false);
         }
 
         private bool isDisposed = false;
