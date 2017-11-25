@@ -35,20 +35,9 @@ namespace RabbitFramework
                 VirtualHost = BusOptions.VirtualHost
             };
 
-            if (BusOptions.Port != null)
-            {
-                factory.Port = BusOptions.Port.Value;
-            }
-
-            if (BusOptions.UserName != null)
-            {
-                factory.UserName = BusOptions.UserName;
-            }
-
-            if (BusOptions.Password != null)
-            {
-                factory.Password = BusOptions.Password;
-            }
+            if (BusOptions.Port != null) factory.Port = BusOptions.Port.Value;
+            if (BusOptions.UserName != null) factory.UserName = BusOptions.UserName;
+            if (BusOptions.Password != null) factory.Password = BusOptions.Password;
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
@@ -58,14 +47,8 @@ namespace RabbitFramework
 
         public void BasicConsume(string queueName, EventReceivedCallback callback)
         {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-            else if (callback == null)
-            {
-                throw new ArgumentException(nameof(callback));
-            }
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
+            else if (callback == null) throw new ArgumentException(nameof(callback));
 
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
@@ -90,14 +73,8 @@ namespace RabbitFramework
 
         public void CreateTopicsForQueue(string queueName, params string[] topics)
         {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentNullException(nameof(queueName));
-            }
-            else if (topics == null || !topics.Any() || topics.Any(t => t == null))
-            {
-                throw new ArgumentNullException(nameof(topics));
-            }
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
+            else if (topics == null || !topics.Any() || topics.Any(t => t == null)) throw new ArgumentNullException(nameof(topics));
 
             QueueDeclare(queueName);
 
@@ -107,10 +84,7 @@ namespace RabbitFramework
 
         public void BasicPublish(EventMessage eventMessage)
         {
-            if (eventMessage == null)
-            {
-                throw new ArgumentException(nameof(eventMessage));
-            }
+            if (eventMessage == null) throw new ArgumentException(nameof(eventMessage));
 
             var properties = _channel.CreateBasicProperties();
 
@@ -142,14 +116,8 @@ namespace RabbitFramework
 
         public void SetupRpcListener<TParam>(string queueName, CommandReceivedCallback<TParam> function)
         {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-            else if (function == null)
-            {
-                throw new ArgumentException(nameof(function));
-            }
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
+            else if (function == null) throw new ArgumentException(nameof(function));
 
             _channel.QueueDeclare(
                 queue: queueName,

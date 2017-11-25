@@ -20,7 +20,6 @@ namespace RabbitFramework.Publishers
             _commandCallbacks = new ConcurrentDictionary<Guid, Action<string>>();
 
             _callbackQueue = $"CommandQueue-{Guid.NewGuid().ToString()}";
-            // TODO: Declare Queue
             _busProvider.BasicConsume(_callbackQueue, HandleCommandCallback);
         }
 
