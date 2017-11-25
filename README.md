@@ -21,6 +21,13 @@ Event routing is handled by an exchange. The exchange will determine, based on t
 **Note:** In a next version of this framework (which will come soon) we use a higher level class for sending and listening to events. This will be done by using a `EventProvider` class and a `EventListener` class. This way we won't have to deal with low-level `EventMessage` objects.
 
 ```csharp
+public class PersonCreatedEvent
+{
+    public string Name { get; set; }
+}
+```
+
+```csharp
 // Matches on "foo.something.bar"
 // Doesn't match on "foo.something.else.bar"
 busProvider.CreateTopicsForQueue("SomeRandomQueue", "foo.*.bar");
@@ -29,11 +36,19 @@ busProvider.CreateTopicsForQueue("SomeRandomQueue", "foo.*.bar");
 // Matches on "test.something.else.toost"
 busProvider.CreateTopicsForQueue("AnotherRandomQueue", "test.#.toost");
 
+PersonCreatedEvent personEvent = new PersonCreatedEvent
+{
+    Name = "Jan"
+};
+
+// Newtonsoft.JSON functionality
+string personEventJson = JsonConvert.SerializeObject(personEvent);
+
 EventMessage message = new EventMessage
 {
     // Matches on the first topic declaration, meaning this event will be published to the queue `SomeRandomQueue`
     RoutingKey = "foo.bla.bar",
-    JsonMessage = "{ \"Name\":\"Jan\" }"
+    JsonMessage = personEventJson
 };
 
 busProvider.BasicPublish(message);
@@ -105,3 +120,38 @@ string fullName = await SendCommand<string>(person, "PersonCommandQueue", "Perso
 
 ### Listening to command messages
 Right now we are refactoring this part a bit. This will be updated tomorrow.
+
+# Attributes
+Besides using the core functionality of the framework there also is an attribute implementation for listening to commands and events.
+
+## Setting up the attributes
+Using attributes requires to calls to dependency injection extension methods. This is very similar to using MVC.
+
+```csharp
+var options = new BusOptions();
+
+var serviceProvider = new ServiceCollection()
+    .AddRabbitMq(options)
+    .BuildServiceProvider();
+
+serviceProvider.UseRabbitMq();
+```
+
+## Listening to events
+To listen to a event in a specific queue we use the `QueueListenerAttribute` and the `TopicAttribute` attributes.
+
+```csharp
+[QueueListener ("SomeRandomQueue")]
+public class SomeController
+{
+    // the '*' and '#' wildcards can be used to listen to events
+    [Topic ("foo.*.bar")]
+    public void HandleFooBarEvent(PersonCreatedEvent personEvent)
+    {
+        // Do something with the event
+    }
+}
+```
+
+## Listening to commands
+This will be updated in the very very very near future
