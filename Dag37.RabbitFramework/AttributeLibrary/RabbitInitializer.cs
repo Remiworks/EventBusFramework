@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitFramework;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,11 +31,11 @@ namespace AttributeLibrary
             _busProvider.CreateConnection();
 
             var types = executingAssembly.GetTypes();
-            InitializeEventListeners(types);
+            InitializeQueueListeners(types);
             _logger.LogInformation($"Initialization completed. Now listening...");
         }
 
-        private void InitializeEventListeners(Type[] types)
+        private void InitializeQueueListeners(Type[] types)
         {
             _logger.LogInformation("Initializing event listeners");
             foreach (var type in types)
@@ -42,19 +44,28 @@ namespace AttributeLibrary
 
                 if (queueAttribute != null)
                 {
-                    if(TypeContainsBothCommandsAndEvents(type))
+                    if (TypeContainsBothCommandsAndEvents(type))
                     {
                         throw new InvalidOperationException("Type {} can't contain both events and commands. Events and commands should not be sent to the same queue.");
                     }
 
-                    SetUpTopicMethods(type, queueAttribute.QueueName);
-                    SetUpCommandMethods(type, queueAttribute.QueueName);
+                    var methods = type.GetMethods();
 
-                    _logger.LogInformation($"Initializing event {type}");
-                    Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
-                    _busProvider.CreateQueueWithTopics(queueAttribute.QueueName, topicsWithMethods.Keys);
-                    var callback = CreateEventReceivedCallback(type, topicsWithMethods);
-                    _busProvider.BasicConsume(queueAttribute.QueueName, callback);
+                    if (methods.Any(m => m.GetCustomAttributes<TopicAttribute>() != null))
+                    {
+                        SetUpTopicMethods(type, queueAttribute.QueueName);
+                        _logger.LogInformation($"Initializing event {type}");
+
+                        Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
+                        _busProvider.CreateTopicsForQueue(queueAttribute.QueueName, topicsWithMethods.Keys.ToArray());
+
+                        var callback = CreateEventReceivedCallback(type, topicsWithMethods);
+                        _busProvider.BasicConsume(queueAttribute.QueueName, callback);
+                    }
+                    else if (methods.Any(m => m.GetCustomAttributes<CommandAttribute>() != null))
+                    {
+                        SetUpCommandMethods(type, queueAttribute.QueueName);
+                    }
                 }
             }
         }
@@ -65,7 +76,7 @@ namespace AttributeLibrary
 
             return
                 methods.Any(m => m.GetCustomAttributes<TopicAttribute>() != null) &&
-                methods.Any(m => m.GetCustomAttribute<CommandAttribute>() != null);
+                methods.Any(m => m.GetCustomAttributes<CommandAttribute>() != null);
         }
 
         private void SetUpCommandMethods(Type type, string queueName)
@@ -77,12 +88,12 @@ namespace AttributeLibrary
         private void SetUpTopicMethods(Type type, string queueName)
         {
             Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
-            _busProvider.CreateQueueWithTopics(queueName, topicsWithMethods.Keys);
+            _busProvider.CreateTopicsForQueue(queueName, topicsWithMethods.Keys.ToArray());
             var callback = CreateEventReceivedCallback(type, topicsWithMethods);
             _busProvider.BasicConsume(queueName, callback);
         }
 
-        private Dictionary<string, MethodInfo> GetCommandsWithMethods(Type type)
+        public Dictionary<string, MethodInfo> GetCommandsWithMethods(Type type)
         {
             return GetAttributeValuesWithMethod<CommandAttribute>(type, (a) => a.CommandType);
         }
@@ -92,13 +103,11 @@ namespace AttributeLibrary
             return GetAttributeValuesWithMethod<TopicAttribute>(type, (a) => a.Topic);
         }
 
-
         private Dictionary<string, MethodInfo> GetAttributeValuesWithMethod<TAttribute>(Type type, Func<TAttribute, string> predicate) where TAttribute : Attribute
         {
             return type.GetMethods()
-                .Select(methodInfo => new { methodInfo, attribute = methodInfo.GetCustomAttribute<TAttribute>() })
-                .Where(methodInfo => methodInfo != null)
-                .ToDictionary(m => predicate(m.attribute), m => m.methodInfo);
+                .Where(m => m.GetCustomAttribute<TAttribute>() != null)
+                .ToDictionary(m => predicate(m.GetCustomAttribute<TAttribute>()), m => m);
         }
 
         public EventReceivedCallback CreateEventReceivedCallback(Type type, Dictionary<string, MethodInfo> topics)

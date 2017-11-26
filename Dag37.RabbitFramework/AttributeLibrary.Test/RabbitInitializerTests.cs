@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using RabbitFramework;
+using RabbitFramework.Contracts;
 using RabbitFramework.Test;
 using Shouldly;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace AttributeLibrary.Test
         public void InitializeCallsCreateConnection()
         {
             _busProviderMock.Setup(b => b.CreateConnection());
-            _busProviderMock.Setup(b => b.CreateQueueWithTopics(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()));
+            _busProviderMock.Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
             _busProviderMock.Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<EventReceivedCallback>()));
             RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object, null);
 
@@ -51,6 +51,16 @@ namespace AttributeLibrary.Test
             result.Count.ShouldBe(2);
             result.Any(r => r.Key == "testTopic").ShouldBeTrue();
             result.Any(r => r.Key == "testTwoTopic").ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void GetCommandWithMethodsReturnsDictionary()
+        {
+            var result = _sut.GetCommandsWithMethods(typeof(RabbitInitializerTestClass));
+
+            result.Count.ShouldBe(2);
+            result.Any(r => r.Key == "testCommand").ShouldBeTrue();
+            result.Any(r => r.Key == "testTwoCommand").ShouldBeTrue();
         }
 
         [TestMethod]

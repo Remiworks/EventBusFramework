@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RabbitFramework
+namespace RabbitFramework.Models
 {
     public class BusOptions
     {

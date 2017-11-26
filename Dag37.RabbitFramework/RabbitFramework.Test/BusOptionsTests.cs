@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RabbitFramework.Models;
 using Shouldly;
 
 namespace RabbitFramework.Test

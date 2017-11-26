@@ -1,27 +1,23 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace RabbitFramework
 {
     public class RabbitBusProvider : IBusProvider
     {
         private const string ExchangeType = "topic";
-        private ILogger _logger { get; } =  RabbitLogging.CreateLogger<RabbitBusProvider>();
+        private ILogger _logger { get; } = RabbitLogging.CreateLogger<RabbitBusProvider>();
 
         private IConnection _connection;
         private IModel _channel;
-        private ConcurrentDictionary<string, Action<string>> _commandCallbacks;
-        private EventingBasicConsumer _consumer;
-        private string _replyQueueName;
 
         public BusOptions BusOptions { get; }
 
@@ -38,62 +34,34 @@ namespace RabbitFramework
                 VirtualHost = BusOptions.VirtualHost
             };
 
-            if (BusOptions.Port != null)
-            {
-                factory.Port = BusOptions.Port.Value;
-            }
-
-            if (BusOptions.UserName != null)
-            {
-                factory.UserName = BusOptions.UserName;
-            }
-
-            if (BusOptions.Password != null)
-            {
-                factory.Password = BusOptions.Password;
-            }
+            if (BusOptions.Port != null) factory.Port = BusOptions.Port.Value;
+            if (BusOptions.UserName != null) factory.UserName = BusOptions.UserName;
+            if (BusOptions.Password != null) factory.Password = BusOptions.Password;
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
             _channel.ExchangeDeclare(BusOptions.ExchangeName, ExchangeType);
-
-            _replyQueueName = _channel.QueueDeclare().QueueName;
-            _commandCallbacks = new ConcurrentDictionary<string, Action<string>>();
-
-            _consumer = new EventingBasicConsumer(_channel);
-            _consumer.Received += HandleReceivedCommandCallback;
         }
 
         public void BasicConsume(string queueName, EventReceivedCallback callback)
         {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-            else if (callback == null)
-            {
-                throw new ArgumentException(nameof(callback));
-            }
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
+            else if (callback == null) throw new ArgumentException(nameof(callback));
 
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
 
+            QueueDeclare(queueName);
             _channel.BasicConsume(queueName, true, consumer);
         }
 
-        public void CreateQueueWithTopics(string queueName, IEnumerable<string> topics)
+        public void CreateTopicsForQueue(string queueName, params string[] topics)
         {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-            else if (topics == null || !topics.Any())
-            {
-                throw new ArgumentException(nameof(topics));
-            }
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
+            else if (topics == null || !topics.Any() || topics.Any(t => t == null)) throw new ArgumentNullException(nameof(topics));
 
-            _channel.QueueDeclare(queue: queueName, exclusive: false);
+            QueueDeclare(queueName);
 
             topics.ToList().ForEach(topic =>
                 _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
@@ -101,27 +69,40 @@ namespace RabbitFramework
 
         public void BasicPublish(EventMessage eventMessage)
         {
-            if (eventMessage == null)
+            if (eventMessage == null) throw new ArgumentException(nameof(eventMessage));
+
+            var properties = _channel.CreateBasicProperties();
+
+            if (eventMessage.CorrelationId != null && eventMessage.CorrelationId != Guid.Empty)
             {
-                throw new ArgumentException(nameof(eventMessage));
+                properties.CorrelationId = eventMessage.CorrelationId.Value.ToString();
+            }
+
+            if (!string.IsNullOrWhiteSpace(eventMessage.ReplyQueueName))
+            {
+                properties.ReplyTo = eventMessage.ReplyQueueName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(eventMessage.Type))
+            {
+                properties.Type = eventMessage.Type;
+            }
+
+            if (eventMessage.Timestamp != null)
+            {
+                properties.Timestamp = new AmqpTimestamp(eventMessage.Timestamp.Value);
             }
 
             _channel.BasicPublish(exchange: BusOptions.ExchangeName,
                                  routingKey: eventMessage.RoutingKey,
-                                 basicProperties: null,
+                                 basicProperties: properties,
                                  body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
         }
 
         public void SetupRpcListener<TParam>(string queueName, CommandReceivedCallback<TParam> function)
         {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-            else if (function == null)
-            {
-                throw new ArgumentException(nameof(function));
-            }
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
+            else if (function == null) throw new ArgumentException(nameof(function));
 
             _channel.QueueDeclare(
                 queue: queueName,
@@ -139,38 +120,6 @@ namespace RabbitFramework
                 queue: queueName,
                 autoAck: false,
                 consumer: consumer);
-        }
-
-        public async Task<T> Call<T>(string queueName, object message, int timeout = 5000)
-        {
-            if (string.IsNullOrWhiteSpace(queueName))
-            {
-                throw new ArgumentException(nameof(queueName));
-            }
-            else if (message == null)
-            {
-                throw new ArgumentException(nameof(message));
-            }
-
-            var correlationId = Guid.NewGuid().ToString();
-
-            var waitHandle = new ManualResetEvent(false);
-            string responseJson = null;
-
-            _commandCallbacks[correlationId] = (response) =>
-            {
-                responseJson = response;
-                waitHandle.Set();
-            };
-
-            SendCommand(queueName, correlationId, message);
-            Task<bool> waitForHandle = Task.Run(() => waitHandle.WaitOne(timeout));
-
-            bool gotResponse = await waitForHandle;
-
-            return gotResponse
-                ? JsonConvert.DeserializeObject<T>(responseJson)
-                : throw new TimeoutException($"Could not get response for the command '{correlationId}' in queue '{queueName}'");
         }
 
         private void HandleReceivedEvent(BasicDeliverEventArgs args, EventReceivedCallback callback)
@@ -222,44 +171,14 @@ namespace RabbitFramework
                 multiple: false);
         }
 
-        private void SendCommand(string queueName, string correlationId, object message)
+        private void QueueDeclare(string queueName)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
-
-            _channel.BasicPublish(
-                exchange: "",
-                routingKey: queueName,
-                basicProperties: CreateProperties(correlationId),
-                body: messageBytes);
-
-            _channel.BasicConsume(
-                consumer: _consumer,
-                queue: _replyQueueName,
-                autoAck: true);
+            _channel.QueueDeclare(
+                queue: queueName,
+                exclusive: false,
+                autoDelete: false);
         }
 
-        private void HandleReceivedCommandCallback(object model, BasicDeliverEventArgs args)
-        {
-            var body = args.Body;
-            string responsejson = Encoding.UTF8.GetString(body);
-
-            string correlationId = args.BasicProperties.CorrelationId;
-
-            if (_commandCallbacks.ContainsKey(correlationId))
-            {
-                _commandCallbacks[correlationId](responsejson);
-            }
-        }
-
-        private IBasicProperties CreateProperties(string correlationId)
-        {
-            var properties = _channel.CreateBasicProperties();
-            properties.CorrelationId = correlationId;
-            properties.ReplyTo = _replyQueueName;
-
-            return properties;
-        }
-        
         private bool isDisposed = false;
 
         protected virtual void Dispose(bool disposing)
