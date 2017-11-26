@@ -115,6 +115,20 @@ namespace RabbitFramework.Test.Publishers
             exception.ParamName.ShouldBe(KeyParamName);
         }
 
+        [TestMethod]
+        public void SendCommandThrowsArgumentExceptionWhenKeyContainsWildCardStar()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SendCommand<string>(new object(), QueueName, "test.*.event", Timeout));
+            exception.Message.ShouldBe("Key may not contain wildcards");
+        }
+
+        [TestMethod]
+        public void SendCommandThrowsArgumentExceptionWhenKeyContainsWildCardHashtag()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SendCommand<string>(new object(), QueueName, "test.#.event", Timeout));
+            exception.Message.ShouldBe("Key may not contain wildcards");
+        }
+
         private Expression<Func<EventMessage, bool>> CorrectEventMessage =>
             eventMessage =>
                 eventMessage.RoutingKey == Key &&

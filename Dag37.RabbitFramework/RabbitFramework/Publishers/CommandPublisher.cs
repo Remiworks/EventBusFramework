@@ -28,6 +28,7 @@ namespace RabbitFramework.Publishers
             if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
             else if (message == null) throw new ArgumentNullException(nameof(message));
             else if (string.IsNullOrWhiteSpace(key)) throw new ArgumentNullException(nameof(key));
+            else if (key.Contains("*") || key.Contains("#")) throw new ArgumentException("Key may not contain wildcards");
 
             var correlationId = Guid.NewGuid();
 
