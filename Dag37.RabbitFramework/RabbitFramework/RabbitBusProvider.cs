@@ -13,7 +13,6 @@ namespace RabbitFramework
 {
     public class RabbitBusProvider : IBusProvider
     {
-        private const int NotFound = 404;
         private const string ExchangeType = "topic";
         private ILogger _logger { get; } = RabbitLogging.CreateLogger<RabbitBusProvider>();
 
@@ -53,22 +52,8 @@ namespace RabbitFramework
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
 
-            try
-            {
-                _channel.BasicConsume(queueName, true, consumer);
-            }
-            catch (OperationInterruptedException ex)
-            {
-                if (ex.ShutdownReason.ReplyCode == NotFound)
-                {
-                    QueueDeclare(queueName);
-                    _channel.BasicConsume(queueName, true, consumer);
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            QueueDeclare(queueName);
+            _channel.BasicConsume(queueName, true, consumer);
         }
 
         public void CreateTopicsForQueue(string queueName, params string[] topics)

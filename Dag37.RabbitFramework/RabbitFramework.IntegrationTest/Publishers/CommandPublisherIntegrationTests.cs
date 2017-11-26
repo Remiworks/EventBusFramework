@@ -52,10 +52,12 @@ namespace RabbitFramework.IntegrationTest.Publishers
             ConsumeRabbitEvent(queue, commandCallback);
 
             // Timeout exception is expected. We dont send a response to the calling party
-            var exception = Should.Throw<AggregateException>(() => _sut.SendCommand<string>(sentCommand, queue, Key, 0).Wait());
+            var exception = Should.Throw<AggregateException>(() => _sut.SendCommand<string>(sentCommand, queue, Key).Wait());
             exception.InnerException.ShouldBeOfType<TimeoutException>();
 
             waitHandle.WaitOne(2000).ShouldBeTrue();
+
+            Thread.Sleep(5000);
 
             receivedEventArgs.BasicProperties.CorrelationId.ShouldNotBeNullOrEmpty();
             receivedEventArgs.BasicProperties.ReplyTo.ShouldNotBeNullOrEmpty();

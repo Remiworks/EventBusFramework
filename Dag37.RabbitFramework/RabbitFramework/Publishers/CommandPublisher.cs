@@ -40,7 +40,7 @@ namespace RabbitFramework.Publishers
                 waitHandle.Set();
             };
 
-            PublishCommandMessage(correlationId, key, message);
+            PublishCommandMessage(message, queueName, key, correlationId);
 
             bool gotResponse = await Task.Run(() => waitHandle.WaitOne(timeout));
 
@@ -49,8 +49,10 @@ namespace RabbitFramework.Publishers
                 : throw new TimeoutException($"Could not get response for the command '{correlationId}' in queue '{queueName}'");
         }
 
-        private void PublishCommandMessage(Guid correlationId, string key, object message)
+        private void PublishCommandMessage(object message, string queueName, string key, Guid correlationId)
         {
+            _busProvider.CreateTopicsForQueue(queueName, key);
+
             _busProvider.BasicPublish(new EventMessage
             {
                 CorrelationId = correlationId,
