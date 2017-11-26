@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitFramework;
+using RabbitFramework.Contracts;
+using RabbitFramework.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +45,7 @@ namespace AttributeLibrary
                 {
                     _logger.LogInformation($"Initializing event {type}");
                     Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
-                    _busProvider.CreateQueueWithTopics(eventAttribute.QueueName, topicsWithMethods.Keys);
+                    _busProvider.CreateTopicsForQueue(eventAttribute.QueueName, topicsWithMethods.Keys.ToArray());
                     var callback = CreateEventReceivedCallback(type, topicsWithMethods);
                     _busProvider.BasicConsume(eventAttribute.QueueName, callback);
                 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using RabbitFramework;
+using RabbitFramework.Contracts;
 using RabbitFramework.Test;
 using Shouldly;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace AttributeLibrary.Test
         public void InitializeCallsCreateConnection()
         {
             _busProviderMock.Setup(b => b.CreateConnection());
-            _busProviderMock.Setup(b => b.CreateQueueWithTopics(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()));
+            _busProviderMock.Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
             _busProviderMock.Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<EventReceivedCallback>()));
             RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object, null);
 

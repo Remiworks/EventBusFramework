@@ -1,4 +1,4 @@
-﻿namespace RabbitFramework.Test
+﻿namespace RabbitFramework.IntegrationTest.Stubs
 {
     public class CommandStub
     {
