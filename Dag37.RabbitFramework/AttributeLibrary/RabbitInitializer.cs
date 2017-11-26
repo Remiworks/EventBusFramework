@@ -55,16 +55,11 @@ namespace AttributeLibrary
                     {
                         SetUpTopicMethods(type, queueAttribute.QueueName);
                         _logger.LogInformation($"Initializing event {type}");
-
-                        Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
-                        _busProvider.CreateTopicsForQueue(queueAttribute.QueueName, topicsWithMethods.Keys.ToArray());
-
-                        var callback = CreateEventReceivedCallback(type, topicsWithMethods);
-                        _busProvider.BasicConsume(queueAttribute.QueueName, callback);
                     }
                     else if (methods.Any(m => m.GetCustomAttributes<CommandAttribute>() != null))
                     {
                         SetUpCommandMethods(type, queueAttribute.QueueName);
+                        _logger.LogInformation($"Initializing commands {type}");
                     }
                 }
             }
@@ -82,7 +77,7 @@ namespace AttributeLibrary
         private void SetUpCommandMethods(Type type, string queueName)
         {
             Dictionary<string, MethodInfo> commandsWithMethods = GetCommandsWithMethods(type);
-            // Setup RPC listener met dingen
+            _busProvider.SetupRpcListeners(queueName, commandsWithMethods.Keys.ToArray(), CreateCommandReceivedCallback(type, commandsWithMethods));
         }
 
         private void SetUpTopicMethods(Type type, string queueName)
@@ -125,6 +120,25 @@ namespace AttributeLibrary
             };
         }
 
+        public CommandReceivedCallback CreateCommandReceivedCallback(Type type, Dictionary<string, MethodInfo> commands)
+        {
+            return (message) =>
+            {
+                var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
+
+                (string name, MethodInfo method) = GetCommandMatch(message.RoutingKey, commands);
+
+                return InvokeCommand(message, name, instance, method);
+            };
+        }
+
+        private (string, MethodInfo) GetCommandMatch(string routingKey, Dictionary<string, MethodInfo> commands)
+        {
+            var command = commands.SingleOrDefault(c => c.Key == routingKey);
+
+            return (command.Key, command.Value);
+        }
+
         public Dictionary<string, MethodInfo> GetTopicMatches(string routingKey, Dictionary<string, MethodInfo> topics)
         {
             var regexHashTag = @"\w+(\.\w+)*";
@@ -147,6 +161,33 @@ namespace AttributeLibrary
             }
 
             return topicMatches;
+        }
+
+        private CommandMessage InvokeCommand(CommandMessage message, string name, object instance, MethodInfo method)
+        {
+            try
+            {
+                _logger.LogInformation($"Command {name} has been invoked", message);
+                var parameters = method.GetParameters();
+                var parameter = parameters.FirstOrDefault();
+
+                var paramType = parameter.ParameterType;
+                var arguments = JsonConvert.DeserializeObject(message.JsonMessage, paramType);
+
+                var result = method.Invoke(instance, new object[] { arguments });
+
+
+                message.Content = result;
+                return message;
+            }
+            catch (TargetInvocationException ex)
+            {
+                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), name, method });
+
+                message.IsError = true;
+                message.exception = ex.InnerException;
+                return message;
+            }
         }
 
         private void InvokeTopic(EventMessage message, object instance, KeyValuePair<string, MethodInfo> topic)

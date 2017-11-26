@@ -122,6 +122,33 @@ namespace RabbitFramework
                 consumer: consumer);
         }
 
+        public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function)
+        {
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
+            else if (function == null) throw new ArgumentException(nameof(function));
+
+            _channel.QueueDeclare(
+                queue: queueName,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            _channel.BasicQos(0, 1, false);
+
+            keys.ToList().ForEach(key =>
+                _channel.QueueBind(queueName, "", key));
+
+            var consumer = new EventingBasicConsumer(_channel);
+
+            consumer.Received += (sender, args) => HandleReceivedCommand(function, args);
+
+            _channel.BasicConsume(
+                queue: queueName,
+                autoAck: false,
+                consumer: consumer);
+        }
+
         private void HandleReceivedEvent(BasicDeliverEventArgs args, EventReceivedCallback callback)
         {
             var message = Encoding.UTF8.GetString(args.Body);
@@ -157,6 +184,48 @@ namespace RabbitFramework
 
             object functionResult = function(bodyObject);
             string response = JsonConvert.SerializeObject(functionResult);
+
+            var responseBytes = Encoding.UTF8.GetBytes(response);
+
+            _channel.BasicPublish(
+                exchange: "",
+                routingKey: args.BasicProperties.ReplyTo,
+                basicProperties: replyProps,
+                body: responseBytes);
+
+            _channel.BasicAck(
+                deliveryTag: args.DeliveryTag,
+                multiple: false);
+        }
+
+        private void HandleReceivedCommand(CommandReceivedCallback function, BasicDeliverEventArgs args)
+        {
+            var replyProps = _channel.CreateBasicProperties();
+            replyProps.CorrelationId = args.BasicProperties.CorrelationId;
+
+            var message = Encoding.UTF8.GetString(args.Body);
+
+            Guid? correlationId = null;
+
+            if (args.BasicProperties.CorrelationId != null &&
+               Guid.TryParse(args.BasicProperties.CorrelationId, out Guid parsedId))
+            {
+                correlationId = parsedId;
+            }
+
+            CommandMessage commandMessage = new CommandMessage()
+            {
+                JsonMessage = message,
+                RoutingKey = args.RoutingKey,
+                CorrelationId = correlationId,
+                Timestamp = args.BasicProperties.Timestamp.UnixTime,
+                ReplyQueueName = args.BasicProperties.ReplyTo,
+                Type = args.BasicProperties.Type
+            };
+
+            var result = function(commandMessage);
+
+            var response = JsonConvert.SerializeObject(result);
 
             var responseBytes = Encoding.UTF8.GetBytes(response);
 
