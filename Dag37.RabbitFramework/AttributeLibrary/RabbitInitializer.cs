@@ -1,5 +1,6 @@
 ﻿using AttributeLibrary.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitFramework;
 using System;
@@ -12,6 +13,7 @@ namespace AttributeLibrary
 {
     public class RabbitInitializer
     {
+        private ILogger _logger { get; } = RabbitLogging.CreateLogger<RabbitInitializer>();
         private readonly IBusProvider _busProvider;
         private readonly IServiceProvider _serviceProvider;
 
@@ -23,14 +25,17 @@ namespace AttributeLibrary
 
         public void Initialize(Assembly executingAssembly)
         {
+            _logger.LogInformation("Initializing event bus");
             _busProvider.CreateConnection();
 
             var types = executingAssembly.GetTypes();
             InitializeEventListeners(types);
+            _logger.LogInformation($"Initialization completed. Now listening...");
         }
 
         private void InitializeEventListeners(Type[] types)
         {
+            _logger.LogInformation("Initializing event listeners");
             foreach (var type in types)
             {
                 var queueAttribute = type.GetCustomAttribute<QueueListenerAttribute>();
@@ -44,6 +49,12 @@ namespace AttributeLibrary
 
                     SetUpTopicMethods(type, queueAttribute.QueueName);
                     SetUpCommandMethods(type, queueAttribute.QueueName);
+
+                    _logger.LogInformation($"Initializing event {type}");
+                    Dictionary<string, MethodInfo> topicsWithMethods = GetTopicsWithMethods(type);
+                    _busProvider.CreateQueueWithTopics(queueAttribute.QueueName, topicsWithMethods.Keys);
+                    var callback = CreateEventReceivedCallback(type, topicsWithMethods);
+                    _busProvider.BasicConsume(queueAttribute.QueueName, callback);
                 }
             }
         }
@@ -133,6 +144,7 @@ namespace AttributeLibrary
         {
             try
             {
+                _logger.LogInformation($"Topic {topic.Key} has been invoked", message);
                 var parameters = topic.Value.GetParameters();
                 var parameter = parameters.FirstOrDefault();
                 var paramType = parameter.ParameterType;
@@ -140,9 +152,9 @@ namespace AttributeLibrary
 
                 topic.Value.Invoke(instance, new object[] { arguments });
             }
-            catch (TargetInvocationException)
+            catch (TargetInvocationException ex)
             {
-                throw;
+                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), topic.Key, topic.Value });
             }
         }
     }

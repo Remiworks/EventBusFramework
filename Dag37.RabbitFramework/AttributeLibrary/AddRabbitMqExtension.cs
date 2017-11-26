@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitFramework;
 using System;
 using System.Reflection;
@@ -7,8 +8,13 @@ namespace AttributeLibrary
 {
     public static class AddRabbitMqExtension
     {
-        public static IServiceCollection AddRabbitMq(this IServiceCollection serviceCollection, BusOptions options)
+        public static IServiceCollection AddRabbitMq(this IServiceCollection serviceCollection, BusOptions options, ILoggerFactory logger = null)
         {
+            if(logger != null)
+            {
+                RabbitLogging.LoggerFactory = logger;
+            }
+
             return serviceCollection.AddTransient<IBusProvider>((ctx) =>
             {
                 return new RabbitBusProvider(options);
