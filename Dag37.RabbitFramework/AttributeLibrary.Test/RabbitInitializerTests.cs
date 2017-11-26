@@ -56,7 +56,7 @@ namespace AttributeLibrary.Test
         [TestMethod]
         public void GetCommandWithMethodsReturnsDictionary()
         {
-            var result = _sut.GetCommandsWithMethods(typeof(RabbitInitializerTestClass));
+            var result = _sut.GetCommandsWithMethods(typeof(RabbitInitializerCommandTestclass));
 
             result.Count.ShouldBe(2);
             result.Any(r => r.Key == "testCommand").ShouldBeTrue();
