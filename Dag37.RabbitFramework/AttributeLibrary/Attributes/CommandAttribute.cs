@@ -5,11 +5,11 @@ namespace AttributeLibrary.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public class CommandAttribute : Attribute
     {
-        public string CommandType { get; }
+        public string Key { get; }
 
         public CommandAttribute(string commandType)
         {
-            CommandType = commandType;
+            Key = commandType;
         }
     }
 }

@@ -35,37 +35,37 @@ namespace RabbitFramework.IntegrationTest.Publishers
             _busProvider.Dispose();
         }
 
-        [TestMethod]
-        public void CommandCanBeSent()
-        {
-            string queue = GetUniqueQueue();
-            CommandStub sentCommand = new CommandStub { Value = "SomeValue" };
+        //[TestMethod]
+        //public void CommandCanBeSent()
+        //{
+        //    string queue = GetUniqueQueue();
+        //    CommandStub sentCommand = new CommandStub { Value = "SomeValue" };
 
-            BasicDeliverEventArgs receivedEventArgs = null;
-            ManualResetEvent waitHandle = new ManualResetEvent(false);
-            EventHandler<BasicDeliverEventArgs> commandCallback = (sender, eventArgs) =>
-            {
-                receivedEventArgs = eventArgs;
-                waitHandle.Set();
-            };
+        //    BasicDeliverEventArgs receivedEventArgs = null;
+        //    ManualResetEvent waitHandle = new ManualResetEvent(false);
+        //    EventHandler<BasicDeliverEventArgs> commandCallback = (sender, eventArgs) =>
+        //    {
+        //        receivedEventArgs = eventArgs;
+        //        waitHandle.Set();
+        //    };
 
-            ConsumeRabbitEvent(queue, commandCallback);
+        //    ConsumeRabbitEvent(queue, commandCallback);
 
-            // Timeout exception is expected. We dont send a response to the calling party
-            var exception = Should.Throw<AggregateException>(() => _sut.SendCommand<string>(sentCommand, queue, Key).Wait());
-            exception.InnerException.ShouldBeOfType<TimeoutException>();
+        //    // Timeout exception is expected. We dont send a response to the calling party
+        //    var exception = Should.Throw<AggregateException>(() => _sut.SendCommand<string>(sentCommand, queue, Key).Wait());
+        //    exception.InnerException.ShouldBeOfType<TimeoutException>();
 
-            waitHandle.WaitOne(2000).ShouldBeTrue();
+        //    waitHandle.WaitOne(2000).ShouldBeTrue();
 
-            Thread.Sleep(5000);
+        //    Thread.Sleep(5000);
 
-            receivedEventArgs.BasicProperties.CorrelationId.ShouldNotBeNullOrEmpty();
-            receivedEventArgs.BasicProperties.ReplyTo.ShouldNotBeNullOrEmpty();
+        //    receivedEventArgs.BasicProperties.CorrelationId.ShouldNotBeNullOrEmpty();
+        //    receivedEventArgs.BasicProperties.ReplyTo.ShouldNotBeNullOrEmpty();
 
-            string commandJson = Encoding.UTF8.GetString(receivedEventArgs.Body);
-            CommandStub receivedCommand = JsonConvert.DeserializeObject<CommandStub>(commandJson);
-            receivedCommand.Value.ShouldBe(sentCommand.Value);
-        }
+        //    string commandJson = Encoding.UTF8.GetString(receivedEventArgs.Body);
+        //    CommandStub receivedCommand = JsonConvert.DeserializeObject<CommandStub>(commandJson);
+        //    receivedCommand.Value.ShouldBe(sentCommand.Value);
+        //}
 
         //[TestMethod]
         //public void CommandCanBeReceived()

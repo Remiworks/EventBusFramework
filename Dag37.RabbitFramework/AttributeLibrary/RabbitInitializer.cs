@@ -1,4 +1,6 @@
-﻿using AttributeLibrary.Attributes;
+﻿
+
+using AttributeLibrary.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -51,12 +53,12 @@ namespace AttributeLibrary
 
                     var methods = type.GetMethods();
 
-                    if (methods.Any(m => m.GetCustomAttributes<TopicAttribute>() != null))
+                    if (methods.Any(m => m.GetCustomAttributes<TopicAttribute>().Count() > 0))
                     {
                         SetUpTopicMethods(type, queueAttribute.QueueName);
                         _logger.LogInformation($"Initializing event {type}");
                     }
-                    else if (methods.Any(m => m.GetCustomAttributes<CommandAttribute>() != null))
+                    else if (methods.Any(m => m.GetCustomAttributes<CommandAttribute>().Count() > 0))
                     {
                         SetUpCommandMethods(type, queueAttribute.QueueName);
                         _logger.LogInformation($"Initializing commands {type}");
@@ -70,8 +72,8 @@ namespace AttributeLibrary
             var methods = type.GetMethods();
 
             return
-                methods.Any(m => m.GetCustomAttributes<TopicAttribute>() != null) &&
-                methods.Any(m => m.GetCustomAttributes<CommandAttribute>() != null);
+                methods.Any(m => m.GetCustomAttributes<TopicAttribute>().Count() > 0) &&
+                methods.Any(m => m.GetCustomAttributes<CommandAttribute>().Count() > 0);
         }
 
         private void SetUpCommandMethods(Type type, string queueName)
@@ -90,7 +92,7 @@ namespace AttributeLibrary
 
         public Dictionary<string, MethodInfo> GetCommandsWithMethods(Type type)
         {
-            return GetAttributeValuesWithMethod<CommandAttribute>(type, (a) => a.CommandType);
+            return GetAttributeValuesWithMethod<CommandAttribute>(type, (a) => a.Key);
         }
 
         public Dictionary<string, MethodInfo> GetTopicsWithMethods(Type type)
@@ -185,7 +187,7 @@ namespace AttributeLibrary
                 _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), name, method });
 
                 message.IsError = true;
-                message.exception = ex.InnerException;
+                message.Exception = ex.InnerException;
                 return message;
             }
         }

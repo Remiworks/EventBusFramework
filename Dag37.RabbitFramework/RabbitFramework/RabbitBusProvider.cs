@@ -137,7 +137,7 @@ namespace RabbitFramework
             _channel.BasicQos(0, 1, false);
 
             keys.ToList().ForEach(key =>
-                _channel.QueueBind(queueName, "", key));
+                _channel.QueueBind(queueName, BusOptions.ExchangeName, key));
 
             var consumer = new EventingBasicConsumer(_channel);
 
@@ -224,7 +224,7 @@ namespace RabbitFramework
             };
 
             var result = function(commandMessage);
-
+            result.JsonMessage = null;
             var response = JsonConvert.SerializeObject(result);
 
             var responseBytes = Encoding.UTF8.GetBytes(response);
