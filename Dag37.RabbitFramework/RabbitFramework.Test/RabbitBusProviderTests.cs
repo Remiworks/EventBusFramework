@@ -20,7 +20,7 @@ namespace RabbitFramework.Test
         private readonly string[] _topics = new string[] { "SomeTopic1", "SomeTopic2" };
 
         private readonly Mock<BusOptions> _busOptionsMock = new Mock<BusOptions>();
-        private readonly CommandReceivedCallback _commandReceivedCallback = (p) => { return new CommandMessage(); };
+        private readonly CommandReceivedCallback _commandReceivedCallback = (p) => { return "callback"; };
 
         private RabbitBusProvider _sut;
 
