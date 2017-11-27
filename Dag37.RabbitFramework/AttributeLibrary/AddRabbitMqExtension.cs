@@ -18,10 +18,9 @@ namespace AttributeLibrary
                 RabbitLogging.LoggerFactory = logger;
             }
 
-            return serviceCollection.AddSingleton<IBusProvider>((ctx) =>
-            {
-                return new RabbitBusProvider(options);
-            }).AddTransient<ICommandPublisher, CommandPublisher>();
+            return serviceCollection
+                .AddSingleton<IBusProvider>(ctx => new RabbitBusProvider(options))
+                .AddSingleton<ICommandPublisher, CommandPublisher>();
         }
 
         public static void UseRabbitMq(this IServiceProvider serviceProvider)
