@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace RabbitFramework.Publishers
 {
+    [Serializable]
     public class CommandPublisherException : Exception
     {
         public CommandPublisherException()

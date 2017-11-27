@@ -49,7 +49,8 @@ namespace RabbitFramework.Publishers
 
             if (isError)
             {
-                throw new CommandPublisherException(responseJson);
+                var exception = JsonConvert.DeserializeObject<CommandPublisherException>(responseJson);
+                throw exception;
             }
 
             return gotResponse

@@ -10,6 +10,7 @@ using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System.Reflection;
 using System.Collections.Generic;
+using RabbitFramework.Publishers;
 
 namespace RabbitFramework
 {
@@ -47,8 +48,8 @@ namespace RabbitFramework
 
         public void BasicConsume(string queueName, EventReceivedCallback callback)
         {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
-            else if (callback == null) throw new ArgumentException(nameof(callback));
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
+            else if (callback == null) throw new ArgumentNullException(nameof(callback));
 
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
@@ -70,7 +71,7 @@ namespace RabbitFramework
 
         public void BasicPublish(EventMessage eventMessage)
         {
-            if (eventMessage == null) throw new ArgumentException(nameof(eventMessage));
+            if (eventMessage == null) throw new ArgumentNullException(nameof(eventMessage));
 
             var properties = _channel.CreateBasicProperties();
 
@@ -102,8 +103,8 @@ namespace RabbitFramework
 
         public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function)
         {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException("The queue name should not be null");
-            else if (function == null) throw new ArgumentException("The callback should not be null");
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException($"The {nameof(queueName)} should not be null");
+            else if (function == null) throw new ArgumentNullException($"The {nameof(function)} should not be null");
 
             _channel.QueueDeclare(
                 queue: queueName,
@@ -208,7 +209,8 @@ namespace RabbitFramework
             }
             catch (TargetInvocationException ex)
             {
-                response = ex.InnerException.Message;
+                var exception = new CommandPublisherException(ex.InnerException.Message, ex.InnerException);
+                response = JsonConvert.SerializeObject(exception);
                 replyProps.Headers.Add("isError", true);
             }
 
