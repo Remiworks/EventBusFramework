@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RabbitFramework.Models
 {
@@ -10,5 +11,6 @@ namespace RabbitFramework.Models
         public string ReplyQueueName { get; set; }
         public string Type { get; set; }
         public string JsonMessage { get; set; }
+        public bool IsError { get; internal set; }
     }
 }

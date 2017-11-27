@@ -8,13 +8,14 @@ using RabbitFramework.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace RabbitFramework
 {
     public class RabbitBusProvider : IBusProvider
     {
         private const string ExchangeType = "topic";
-        private ILogger _logger { get; } = RabbitLogging.CreateLogger<RabbitBusProvider>();
 
         private IConnection _connection;
         private IModel _channel;
@@ -99,33 +100,10 @@ namespace RabbitFramework
                                  body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
         }
 
-        public void SetupRpcListener<TParam>(string queueName, CommandReceivedCallback<TParam> function)
-        {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
-            else if (function == null) throw new ArgumentException(nameof(function));
-
-            _channel.QueueDeclare(
-                queue: queueName,
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-
-            _channel.BasicQos(0, 1, false);
-            var consumer = new EventingBasicConsumer(_channel);
-
-            consumer.Received += (sender, args) => HandleReceivedCommand(function, args);
-
-            _channel.BasicConsume(
-                queue: queueName,
-                autoAck: false,
-                consumer: consumer);
-        }
-
         public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function)
         {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException(nameof(queueName));
-            else if (function == null) throw new ArgumentException(nameof(function));
+            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentException("The queue name should not be null");
+            else if (function == null) throw new ArgumentException("The callback should not be null");
 
             _channel.QueueDeclare(
                 queue: queueName,
@@ -161,6 +139,8 @@ namespace RabbitFramework
                 correlationId = parsedId;
             }
 
+            bool? isError = (bool?) args.BasicProperties.Headers?.FirstOrDefault(a => a.Key == "isError").Value;
+
             EventMessage eventMessage = new EventMessage()
             {
                 JsonMessage = message,
@@ -168,34 +148,12 @@ namespace RabbitFramework
                 CorrelationId = correlationId,
                 Timestamp = args.BasicProperties.Timestamp.UnixTime,
                 ReplyQueueName = args.BasicProperties.ReplyTo,
-                Type = args.BasicProperties.Type
+                Type = args.BasicProperties.Type,
+                IsError = isError != null ? (bool)isError : false
+
             };
 
             callback(eventMessage);
-        }
-
-        private void HandleReceivedCommand<TParam>(CommandReceivedCallback<TParam> function, BasicDeliverEventArgs args)
-        {
-            var replyProps = _channel.CreateBasicProperties();
-            replyProps.CorrelationId = args.BasicProperties.CorrelationId;
-
-            var bodyJson = Encoding.UTF8.GetString(args.Body);
-            TParam bodyObject = JsonConvert.DeserializeObject<TParam>(bodyJson);
-
-            object functionResult = function(bodyObject);
-            string response = JsonConvert.SerializeObject(functionResult);
-
-            var responseBytes = Encoding.UTF8.GetBytes(response);
-
-            _channel.BasicPublish(
-                exchange: BusOptions.ExchangeName,
-                routingKey: args.BasicProperties.ReplyTo,
-                basicProperties: replyProps,
-                body: responseBytes);
-
-            _channel.BasicAck(
-                deliveryTag: args.DeliveryTag,
-                multiple: false);
         }
 
         private void HandleReceivedCommand(CommandReceivedCallback function, BasicDeliverEventArgs args)
@@ -206,14 +164,14 @@ namespace RabbitFramework
             var message = Encoding.UTF8.GetString(args.Body);
 
             Guid? correlationId = null;
-
+            
             if (args.BasicProperties.CorrelationId != null &&
                Guid.TryParse(args.BasicProperties.CorrelationId, out Guid parsedId))
             {
                 correlationId = parsedId;
             }
 
-            CommandMessage commandMessage = new CommandMessage()
+            EventMessage eventMessage = new EventMessage()
             {
                 JsonMessage = message,
                 RoutingKey = args.RoutingKey,
@@ -223,9 +181,7 @@ namespace RabbitFramework
                 Type = args.BasicProperties.Type
             };
 
-            var result = function(commandMessage);
-            result.JsonMessage = null;
-            var response = JsonConvert.SerializeObject(result);
+            string response = InvokeCommandReceivedCallback(function, replyProps, eventMessage);
 
             var responseBytes = Encoding.UTF8.GetBytes(response);
 
@@ -238,6 +194,25 @@ namespace RabbitFramework
             _channel.BasicAck(
                 deliveryTag: args.DeliveryTag,
                 multiple: false);
+        }
+
+        private string InvokeCommandReceivedCallback(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
+        {
+            var response = "";
+            replyProps.Headers = new Dictionary<string, object>();
+
+            try
+            {
+                response = function(eventMessage);
+                replyProps.Headers.Add("isError", false);
+            }
+            catch (TargetInvocationException ex)
+            {
+                response = ex.InnerException.Message;
+                replyProps.Headers.Add("isError", true);
+            }
+
+            return response;
         }
 
         private void QueueDeclare(string queueName)

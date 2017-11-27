@@ -18,7 +18,6 @@ namespace RabbitFramework.Test.Publishers
         private const string MessageParamName = "message";
         private const string KeyParamName = "key";
 
-        private const string Message = "testMessage";
         private const string Key = "testKey";
         private const string QueueName = "testQueue";
         private const int Timeout = 0;
@@ -44,11 +43,14 @@ namespace RabbitFramework.Test.Publishers
         //public void SendCommandCallsBasicPublishWithCorrectParameters()
         //{
         //    _busProviderMock
+        //        .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
+
+        //    _busProviderMock
         //        .Setup(b => b.BasicPublish(It.Is(CorrectEventMessage)))
         //        .Callback(BasicPublishCallback)
         //        .Verifiable();
 
-        //    _sut.SendCommand<string>(Message, QueueName, Key).Wait();
+        //    _sut.SendCommandAsync(_message, QueueName, Key).Wait();
 
         //    _busProviderMock.VerifyAll();
         //}
@@ -61,9 +63,9 @@ namespace RabbitFramework.Test.Publishers
         //        .Callback(BasicPublishCallback)
         //        .Verifiable();
 
-        //    var result = _sut.SendCommand<string>(Message, QueueName, Key).Result;
+        //    var result = _sut.SendCommandAsync(_message, QueueName, Key).Result;
 
-        //    result.ShouldBe(Message.Reverse().ToString());
+        //    result.ShouldBe();
         //}
 
         //[TestMethod]
@@ -129,21 +131,18 @@ namespace RabbitFramework.Test.Publishers
         //    exception.Message.ShouldBe("Key may not contain wildcards");
         //}
 
-        private Expression<Func<EventMessage, bool>> CorrectEventMessage =>
-            eventMessage =>
-                eventMessage.RoutingKey == Key &&
-                eventMessage.JsonMessage == JsonConvert.SerializeObject(Message);
+        //private Expression<Func<EventMessage, bool>> CorrectEventMessage =>
+        //    eventMessage =>
+        //        eventMessage.RoutingKey == Key &&
+        //        //eventMessage.JsonMessage == JsonConvert.SerializeObject(_message);
 
         private Action<EventMessage> BasicPublishCallback =>
             receivedEvent =>
             {
-                string receivedMessage = JsonConvert.DeserializeObject<string>(receivedEvent.JsonMessage);
-                string invertedMessage = receivedMessage.Reverse().ToString();
-
                 _eventReceivedCallback(new EventMessage
                 {
                     CorrelationId = receivedEvent.CorrelationId,
-                    JsonMessage = JsonConvert.SerializeObject(invertedMessage),
+                    JsonMessage = receivedEvent.JsonMessage,
                     RoutingKey = receivedEvent.RoutingKey,
                     Type = receivedEvent.Type
                 });
