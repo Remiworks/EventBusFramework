@@ -1,4 +1,4 @@
-This framework abstracts the communication to an eventbus. Right now the only implemented eventbus is RabbitMQ. There are plans to support more eventbus implementations in the future.
+This framework is an abstraction layer for eventbusses. As of now the only implementation is for RabbitMq. There are plans to support more eventbusses in the future.
 
 # Core
 The core library contains multiple classes to communicate with an eventbus implementation
