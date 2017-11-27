@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace AttributeLibrary
+namespace AttributeLibrary.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class EventListenerAttribute : Attribute
+    public class QueueListenerAttribute : Attribute
     {
         public string QueueName { get; }
 
-        public EventListenerAttribute(string queueName)
+        public QueueListenerAttribute(string queueName)
         {
             QueueName = queueName;
         }

@@ -23,7 +23,7 @@ namespace RabbitFramework.Publishers
             _busProvider.BasicConsume(_callbackQueue, HandleCommandCallback);
         }
 
-        public async Task<TResult> SendCommand<TResult>(object message, string queueName, string key, int timeout = 5000)
+        public async Task<CommandMessage> SendCommandAsync(object message, string queueName, string key, int timeout = 5000)
         {
             if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
             else if (message == null) throw new ArgumentNullException(nameof(message));
@@ -46,7 +46,7 @@ namespace RabbitFramework.Publishers
             bool gotResponse = await Task.Run(() => waitHandle.WaitOne(timeout));
 
             return gotResponse
-                ? JsonConvert.DeserializeObject<TResult>(responseJson)
+                ? JsonConvert.DeserializeObject<CommandMessage>(responseJson)
                 : throw new TimeoutException($"Could not get response for the command '{correlationId}' in queue '{queueName}'");
         }
 
@@ -59,7 +59,7 @@ namespace RabbitFramework.Publishers
                 CorrelationId = correlationId,
                 RoutingKey = key,
                 JsonMessage = JsonConvert.SerializeObject(message),
-                ReplyQueueName = _callbackQueue,
+                ReplyQueueName = _callbackQueue               
             });
         }
 
@@ -69,6 +69,11 @@ namespace RabbitFramework.Publishers
             {
                 _commandCallbacks[message.CorrelationId.Value](message.JsonMessage);
             }
+        }
+
+        Task<TResult> ICommandPublisher.SendCommand<TResult>(object message, string queueName, string key, int timeout)
+        {
+            throw new NotImplementedException();
         }
     }
 }

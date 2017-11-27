@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AttributeLibrary
+namespace AttributeLibrary.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class TopicAttribute : Attribute

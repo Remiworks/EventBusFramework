@@ -1,9 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using AttributeLibrary.Attributes;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using System;
 using System.Linq;
 
-namespace AttributeLibrary.Test
+namespace AttributeLibrary.Test.Attributes
 {
     [TestClass]
     public class TopicAttributeTests

@@ -1,9 +1,10 @@
 ﻿using AttributeLibrary;
+using AttributeLibrary.Attributes;
 using System;
 
 namespace RabbitFramework.Test
 {
-    [EventListener("testQueue")]
+    [QueueListener("testQueue")]
     public class RabbitInitializerTestClass
     {
         [Topic("testTopic")]
@@ -18,6 +19,23 @@ namespace RabbitFramework.Test
             throw new ArgumentException();
         }
     }
+
+    [QueueListener("testQueue")]
+    public class RabbitInitializerCommandTestclass
+    {
+        [Command("testCommand")]
+        public void TestModelTestFunction(TestModel message)
+        {
+            // Do stuff
+        }
+
+        [Command("testTwoCommand")]
+        public void TestModelTestTwoFunctionThrowsArgumentException(TestModel message)
+        {
+            throw new ArgumentException();
+        }
+    }
+
 
     public class TestModel
     {

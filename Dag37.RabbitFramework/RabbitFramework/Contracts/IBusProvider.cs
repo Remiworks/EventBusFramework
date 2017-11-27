@@ -18,7 +18,10 @@ namespace RabbitFramework.Contracts
         void BasicConsume(string queueName, EventReceivedCallback callback);
         
         void SetupRpcListener<TParam>(string queueName, CommandReceivedCallback<TParam> function);
+        void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function);
     }
 
     public delegate void EventReceivedCallback(EventMessage message);
+
+    public delegate CommandMessage CommandReceivedCallback(CommandMessage message);
 }
