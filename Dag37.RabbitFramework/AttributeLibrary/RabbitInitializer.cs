@@ -202,7 +202,7 @@ namespace AttributeLibrary
             return topicMatches;
         }
 
-        private static object ConstructMethodParameters(string message, MethodInfo method)
+        private object ConstructMethodParameters(string message, MethodInfo method)
         {
             var parameters = method.GetParameters();
             var parameter = parameters.FirstOrDefault();
