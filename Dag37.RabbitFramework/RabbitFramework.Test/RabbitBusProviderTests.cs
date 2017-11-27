@@ -20,7 +20,7 @@ namespace RabbitFramework.Test
         private readonly string[] _topics = new string[] { "SomeTopic1", "SomeTopic2" };
 
         private readonly Mock<BusOptions> _busOptionsMock = new Mock<BusOptions>();
-        private readonly CommandReceivedCallback<string> _commandReceivedCallback = (p) => { return new object(); };
+        private readonly CommandReceivedCallback _commandReceivedCallback = (p) => { return "callback"; };
 
         private RabbitBusProvider _sut;
 
@@ -41,8 +41,8 @@ namespace RabbitFramework.Test
         {
             EventReceivedCallback callback = new EventReceivedCallback((message) => { });
 
-            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume(null, callback));
-            exception.Message.ShouldBe(QueueNameParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.BasicConsume(null, callback));
+            exception.ParamName.ShouldBe(QueueNameParamName);
         }
 
         [TestMethod]
@@ -50,8 +50,8 @@ namespace RabbitFramework.Test
         {
             EventReceivedCallback callback = new EventReceivedCallback((message) => { });
 
-            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("", callback));
-            exception.Message.ShouldBe(QueueNameParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.BasicConsume("", callback));
+            exception.ParamName.ShouldBe(QueueNameParamName);
         }
 
         [TestMethod]
@@ -59,15 +59,15 @@ namespace RabbitFramework.Test
         {
             EventReceivedCallback callback = new EventReceivedCallback((message) => { });
 
-            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume(" ", callback));
-            exception.Message.ShouldBe(QueueNameParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.BasicConsume(" ", callback));
+            exception.ParamName.ShouldBe(QueueNameParamName);
         }
 
         [TestMethod]
         public void BasicConsumeThrowsArgumentExceptionWhenCallbackIsNull()
         {
-            var exception = Should.Throw<ArgumentException>(() => _sut.BasicConsume("SomeQueue", null));
-            exception.Message.ShouldBe(CallbackParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.BasicConsume("SomeQueue", null));
+            exception.ParamName.ShouldBe(CallbackParamName);
         }
 
         [TestMethod]
@@ -115,36 +115,36 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void BasicPublishThrowsArgumentExceptionWhenMessageIsNull()
         {
-            var exception = Should.Throw<ArgumentException>(() => _sut.BasicPublish(null));
-            exception.Message.ShouldBe(EventMessageParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.BasicPublish(null));
+            exception.ParamName.ShouldBe(EventMessageParamName);
         }
 
         [TestMethod]
         public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsNull()
         {
-            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener(null, _commandReceivedCallback));
-            exception.Message.ShouldBe(QueueNameParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners(null, null, _commandReceivedCallback));
+            exception.ParamName.ShouldBe("The queueName should not be null");
         }
 
         [TestMethod]
         public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsEmpty()
         {
-            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener("", _commandReceivedCallback));
-            exception.Message.ShouldBe(QueueNameParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners("", null,_commandReceivedCallback));
+            exception.ParamName.ShouldBe("The queueName should not be null");
         }
 
         [TestMethod]
         public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsWhitespace()
         {
-            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener(" ", _commandReceivedCallback));
-            exception.Message.ShouldBe(QueueNameParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners(" ", null,_commandReceivedCallback));
+            exception.ParamName.ShouldBe("The queueName should not be null");
         }
 
         [TestMethod]
         public void SetupRpcListenerThrowsArgumentExceptionWhenFuntionIsNull()
         {
-            var exception = Should.Throw<ArgumentException>(() => _sut.SetupRpcListener<string>("SomeQueue", null));
-            exception.Message.ShouldBe(FunctionParamName);
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners("SomeQueue", null, null));
+            exception.ParamName.ShouldBe("The function should not be null");
         }
     }
 }

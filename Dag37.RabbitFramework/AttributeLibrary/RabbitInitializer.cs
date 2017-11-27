@@ -134,6 +134,43 @@ namespace AttributeLibrary
             };
         }
 
+        private string InvokeCommand(EventMessage message, string name, object instance, MethodInfo method)
+        {
+            try
+            {
+                _logger.LogInformation($"Command {name} has been invoked", message);
+                object arguments = ConstructMethodParameters(message.JsonMessage, method);
+
+                var result = method.Invoke(instance, new object[] { arguments });
+
+                return JsonConvert.SerializeObject(result);
+            }
+            catch (TargetInvocationException ex)
+            {
+                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), name, method });
+
+                throw;
+            }
+        }
+
+        private void InvokeTopic(EventMessage message, object instance, KeyValuePair<string, MethodInfo> topic)
+        {
+            try
+            {
+                _logger.LogInformation($"Topic {topic.Key} has been invoked", message);
+                var parameters = topic.Value.GetParameters();
+                var parameter = parameters.FirstOrDefault();
+                var paramType = parameter.ParameterType;
+                var arguments = ConstructMethodParameters(message.JsonMessage, topic.Value);
+
+                topic.Value.Invoke(instance, new object[] { arguments });
+            }
+            catch (TargetInvocationException ex)
+            {
+                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), topic.Key, topic.Value });
+            }
+        }
+
         private (string, MethodInfo) GetCommandMatch(string routingKey, Dictionary<string, MethodInfo> commands)
         {
             var command = commands.SingleOrDefault(c => c.Key == routingKey);
@@ -165,49 +202,14 @@ namespace AttributeLibrary
             return topicMatches;
         }
 
-        private CommandMessage InvokeCommand(CommandMessage message, string name, object instance, MethodInfo method)
+        private object ConstructMethodParameters(string message, MethodInfo method)
         {
-            try
-            {
-                _logger.LogInformation($"Command {name} has been invoked", message);
-                var parameters = method.GetParameters();
-                var parameter = parameters.FirstOrDefault();
+            var parameters = method.GetParameters();
+            var parameter = parameters.FirstOrDefault();
 
-                var paramType = parameter.ParameterType;
-                var arguments = JsonConvert.DeserializeObject(message.JsonMessage, paramType);
-
-                var result = method.Invoke(instance, new object[] { arguments });
-
-
-                message.Content = result;
-                return message;
-            }
-            catch (TargetInvocationException ex)
-            {
-                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), name, method });
-
-                message.IsError = true;
-                message.Exception = ex.InnerException;
-                return message;
-            }
-        }
-
-        private void InvokeTopic(EventMessage message, object instance, KeyValuePair<string, MethodInfo> topic)
-        {
-            try
-            {
-                _logger.LogInformation($"Topic {topic.Key} has been invoked", message);
-                var parameters = topic.Value.GetParameters();
-                var parameter = parameters.FirstOrDefault();
-                var paramType = parameter.ParameterType;
-                var arguments = JsonConvert.DeserializeObject(message.JsonMessage, paramType);
-
-                topic.Value.Invoke(instance, new object[] { arguments });
-            }
-            catch (TargetInvocationException ex)
-            {
-                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), topic.Key, topic.Value });
-            }
+            var paramType = parameter.ParameterType;
+            var arguments = JsonConvert.DeserializeObject(message, paramType);
+            return arguments;
         }
     }
 }

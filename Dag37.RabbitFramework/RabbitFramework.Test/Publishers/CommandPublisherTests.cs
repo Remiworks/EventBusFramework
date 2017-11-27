@@ -40,94 +40,100 @@ namespace RabbitFramework.Test.Publishers
             _sut = new CommandPublisher(_busProviderMock.Object);
         }
 
-        //[TestMethod]
-        //public void SendCommandCallsBasicPublishWithCorrectParameters()
-        //{
-        //    _busProviderMock
-        //        .Setup(b => b.BasicPublish(It.Is(CorrectEventMessage)))
-        //        .Callback(BasicPublishCallback)
-        //        .Verifiable();
+        [TestMethod]
+        public void SendCommandCallsBasicPublishWithCorrectParameters()
+        {
+            _busProviderMock
+                .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
 
-        //    _sut.SendCommand<string>(Message, QueueName, Key).Wait();
+            _busProviderMock
+                .Setup(b => b.BasicPublish(It.Is(CorrectEventMessage)))
+                .Callback(BasicPublishCallback)
+                .Verifiable();
 
-        //    _busProviderMock.VerifyAll();
-        //}
+            _sut.SendCommandAsync<string>(Message, QueueName, Key).Wait();
 
-        //[TestMethod]
-        //public void SendCommandReturnsCorrectResult()
-        //{
-        //    _busProviderMock
-        //        .Setup(b => b.BasicPublish(It.Is(CorrectEventMessage)))
-        //        .Callback(BasicPublishCallback)
-        //        .Verifiable();
+            _busProviderMock.VerifyAll();
+        }
 
-        //    var result = _sut.SendCommand<string>(Message, QueueName, Key).Result;
+        [TestMethod]
+        public void SendCommandReturnsCorrectResult()
+        {
+            _busProviderMock
+               .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
 
-        //    result.ShouldBe(Message.Reverse().ToString());
-        //}
+            _busProviderMock
+                .Setup(b => b.BasicPublish(It.Is(CorrectEventMessage)))
+                .Callback(BasicPublishCallback)
+                .Verifiable();
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentNullExceptionWhenQueueNameIsNull()
-        //{
-        //    var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommand<string>(new object(), null, Key, Timeout));
-        //    exception.ParamName.ShouldBe(QueueNameParamName);
-        //}
+            var result = _sut.SendCommandAsync<string>(Message, QueueName, Key).Result;
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentNullExceptionWhenQueueNameIsEmpty()
-        //{
-        //    var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommand<string>(new object(), "", Key, Timeout));
-        //    exception.ParamName.ShouldBe(QueueNameParamName);
-        //}
+            result.ShouldBe(Message.Reverse().ToString());
+        }
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentNullExceptionWhenQueueNameIsWhitespace()
-        //{
-        //    var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommand<string>(new object(), " ", Key, Timeout));
-        //    exception.ParamName.ShouldBe(QueueNameParamName);
-        //}
+        [TestMethod]
+        public void SendCommandThrowsArgumentNullExceptionWhenQueueNameIsNull()
+        {
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommandAsync<string>(new object(), null, Key, Timeout));
+            exception.ParamName.ShouldBe(QueueNameParamName);
+        }
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentNullExceptionWhenMessageIsNull()
-        //{
-        //    var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommand<string>(null, QueueName, Key, Timeout));
-        //    exception.ParamName.ShouldBe(MessageParamName);
-        //}
+        [TestMethod]
+        public void SendCommandThrowsArgumentNullExceptionWhenQueueNameIsEmpty()
+        {
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommandAsync<string>(new object(), "", Key, Timeout));
+            exception.ParamName.ShouldBe(QueueNameParamName);
+        }
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentNullExceptionWhenKeyIsNull()
-        //{
-        //    var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommand<string>(new object(), QueueName, null, Timeout));
-        //    exception.ParamName.ShouldBe(KeyParamName);
-        //}
+        [TestMethod]
+        public void SendCommandThrowsArgumentNullExceptionWhenQueueNameIsWhitespace()
+        {
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommandAsync<string>(new object(), " ", Key, Timeout));
+            exception.ParamName.ShouldBe(QueueNameParamName);
+        }
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentNullExceptionWhenKeyIsEmpty()
-        //{
-        //    var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommand<string>(new object(), QueueName, "", Timeout));
-        //    exception.ParamName.ShouldBe(KeyParamName);
-        //}
+        [TestMethod]
+        public void SendCommandThrowsArgumentNullExceptionWhenMessageIsNull()
+        {
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommandAsync<string>(null, QueueName, Key, Timeout));
+            exception.ParamName.ShouldBe(MessageParamName);
+        }
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentNullExceptionWhenKeyIsWhitespace()
-        //{
-        //    var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommand<string>(new object(), QueueName, " ", Timeout));
-        //    exception.ParamName.ShouldBe(KeyParamName);
-        //}
+        [TestMethod]
+        public void SendCommandThrowsArgumentNullExceptionWhenKeyIsNull()
+        {
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommandAsync<string>(new object(), QueueName, null, Timeout));
+            exception.ParamName.ShouldBe(KeyParamName);
+        }
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentExceptionWhenKeyContainsWildCardStar()
-        //{
-        //    var exception = Should.Throw<ArgumentException>(() => _sut.SendCommand<string>(new object(), QueueName, "test.*.event", Timeout));
-        //    exception.Message.ShouldBe("Key may not contain wildcards");
-        //}
+        [TestMethod]
+        public void SendCommandThrowsArgumentNullExceptionWhenKeyIsEmpty()
+        {
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommandAsync<string>(new object(), QueueName, "", Timeout));
+            exception.ParamName.ShouldBe(KeyParamName);
+        }
 
-        //[TestMethod]
-        //public void SendCommandThrowsArgumentExceptionWhenKeyContainsWildCardHashtag()
-        //{
-        //    var exception = Should.Throw<ArgumentException>(() => _sut.SendCommand<string>(new object(), QueueName, "test.#.event", Timeout));
-        //    exception.Message.ShouldBe("Key may not contain wildcards");
-        //}
+        [TestMethod]
+        public void SendCommandThrowsArgumentNullExceptionWhenKeyIsWhitespace()
+        {
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SendCommandAsync<string>(new object(), QueueName, " ", Timeout));
+            exception.ParamName.ShouldBe(KeyParamName);
+        }
+
+        [TestMethod]
+        public void SendCommandThrowsArgumentExceptionWhenKeyContainsWildCardStar()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SendCommandAsync<string>(new object(), QueueName, "test.*.event", Timeout));
+            exception.Message.ShouldBe("Key may not contain wildcards");
+        }
+
+        [TestMethod]
+        public void SendCommandThrowsArgumentExceptionWhenKeyContainsWildCardHashtag()
+        {
+            var exception = Should.Throw<ArgumentException>(() => _sut.SendCommandAsync<string>(new object(), QueueName, "test.#.event", Timeout));
+            exception.Message.ShouldBe("Key may not contain wildcards");
+        }
 
         private Expression<Func<EventMessage, bool>> CorrectEventMessage =>
             eventMessage =>
