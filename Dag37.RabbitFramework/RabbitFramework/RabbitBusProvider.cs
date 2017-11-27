@@ -188,7 +188,7 @@ namespace RabbitFramework
             var responseBytes = Encoding.UTF8.GetBytes(response);
 
             _channel.BasicPublish(
-                exchange: "",
+                exchange: BusOptions.ExchangeName,
                 routingKey: args.BasicProperties.ReplyTo,
                 basicProperties: replyProps,
                 body: responseBytes);

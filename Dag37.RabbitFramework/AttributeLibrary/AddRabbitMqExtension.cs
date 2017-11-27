@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using RabbitFramework;
 using RabbitFramework.Contracts;
 using RabbitFramework.Models;
+using RabbitFramework.Publishers;
 using System;
 using System.Reflection;
 
@@ -20,7 +21,7 @@ namespace AttributeLibrary
             return serviceCollection.AddSingleton<IBusProvider>((ctx) =>
             {
                 return new RabbitBusProvider(options);
-            }).AddTransient<ICommandPublisher>();
+            }).AddTransient<ICommandPublisher, CommandPublisher>();
         }
 
         public static void UseRabbitMq(this IServiceProvider serviceProvider)
