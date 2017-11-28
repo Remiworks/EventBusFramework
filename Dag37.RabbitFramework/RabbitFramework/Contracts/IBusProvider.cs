@@ -22,5 +22,5 @@ namespace RabbitFramework.Contracts
 
     public delegate void EventReceivedCallback(EventMessage message);
 
-    public delegate string CommandReceivedCallback(EventMessage message);
+    public delegate Task<string> CommandReceivedCallback(EventMessage message);
 }

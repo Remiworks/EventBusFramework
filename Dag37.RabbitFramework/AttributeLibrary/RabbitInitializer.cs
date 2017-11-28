@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace AttributeLibrary
 {
@@ -124,34 +125,47 @@ namespace AttributeLibrary
 
         public CommandReceivedCallback CreateCommandReceivedCallback(Type type, Dictionary<string, MethodInfo> commands)
         {
-            return (message) =>
+            return async (message) =>
             {
                 var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
 
                 (string name, MethodInfo method) = GetCommandMatch(message.RoutingKey, commands);
 
-                var result = InvokeCommand(message, name, instance, method);
+                var result = await InvokeCommand(message, name, instance, method);
 
                 return result;
             };
         }
 
-        private string InvokeCommand(EventMessage message, string name, object instance, MethodInfo method)
+        private async Task<string> InvokeCommand(EventMessage message, string name, object instance, MethodInfo method)
         {
             try
             {
                 _logger.LogInformation($"Command {name} has been invoked", message);
                 object[] parameters = ConstructMethodParameters(message.JsonMessage, method);
 
-                var result = method.Invoke(instance, parameters);
+                object result = null;
+
+                if (method.ReturnType.BaseType != typeof(Task))
+                {
+                    result = await Task.Run(() => method.Invoke(instance, parameters));
+                }
+                else
+                {
+                    result = await (dynamic)method.Invoke(instance, parameters);
+                }
 
                 return JsonConvert.SerializeObject(result);
             }
             catch (TargetInvocationException ex)
             {
-                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), name, method });
-
+                _logger.LogWarning(ex.InnerException, "Exception was thrown for a command", new object[] { instance.ToString(), name, method });
                 throw;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.InnerException, "Exception was thrown for a command", new object[] { instance.ToString(), name, method });
+                return null;
             }
         }
 
@@ -221,3 +235,4 @@ namespace AttributeLibrary
         }
     }
 }
+
