@@ -165,7 +165,7 @@ namespace AttributeLibrary
                 var paramType = parameter.ParameterType;
                 var arguments = ConstructMethodParameters(message.JsonMessage, topic.Value);
 
-                topic.Value.Invoke(instance, new object[] { arguments });
+                topic.Value.Invoke(instance, arguments);
             }
             catch (TargetInvocationException ex)
             {
