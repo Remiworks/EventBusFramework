@@ -11,6 +11,7 @@ using RabbitMQ.Client.Exceptions;
 using System.Reflection;
 using System.Collections.Generic;
 using RabbitFramework.Publishers;
+using System.Threading.Tasks;
 
 namespace RabbitFramework
 {
@@ -120,7 +121,7 @@ namespace RabbitFramework
 
             var consumer = new EventingBasicConsumer(_channel);
 
-            consumer.Received += (sender, args) => HandleReceivedCommand(function, args);
+            consumer.Received += (sender, args) => Task.Run(() => HandleReceivedCommand(function, args));
 
             _channel.BasicConsume(
                 queue: queueName,
@@ -140,7 +141,7 @@ namespace RabbitFramework
                 correlationId = parsedId;
             }
 
-            bool? isError = (bool?) args.BasicProperties.Headers?.FirstOrDefault(a => a.Key == "isError").Value;
+            bool? isError = (bool?)args.BasicProperties.Headers?.FirstOrDefault(a => a.Key == "isError").Value;
 
             EventMessage eventMessage = new EventMessage()
             {
@@ -157,15 +158,16 @@ namespace RabbitFramework
             callback(eventMessage);
         }
 
-        private void HandleReceivedCommand(CommandReceivedCallback function, BasicDeliverEventArgs args)
+        private async Task HandleReceivedCommand(CommandReceivedCallback function, BasicDeliverEventArgs args)
         {
+
             var replyProps = _channel.CreateBasicProperties();
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
 
             var message = Encoding.UTF8.GetString(args.Body);
 
             Guid? correlationId = null;
-            
+
             if (args.BasicProperties.CorrelationId != null &&
                Guid.TryParse(args.BasicProperties.CorrelationId, out Guid parsedId))
             {
@@ -182,7 +184,7 @@ namespace RabbitFramework
                 Type = args.BasicProperties.Type
             };
 
-            string response = InvokeCommandReceivedCallback(function, replyProps, eventMessage);
+            string response = await InvokeCommandReceivedCallback(function, replyProps, eventMessage);
 
             var responseBytes = Encoding.UTF8.GetBytes(response);
 
@@ -195,16 +197,17 @@ namespace RabbitFramework
             _channel.BasicAck(
                 deliveryTag: args.DeliveryTag,
                 multiple: false);
+
         }
 
-        private string InvokeCommandReceivedCallback(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
+        private async Task<string> InvokeCommandReceivedCallback(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
         {
             var response = "";
             replyProps.Headers = new Dictionary<string, object>();
 
             try
             {
-                response = function(eventMessage);
+                response = await function(eventMessage);
                 replyProps.Headers.Add("isError", false);
             }
             catch (TargetInvocationException ex)
