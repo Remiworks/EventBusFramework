@@ -7,9 +7,13 @@
     <Company>ReneMike&amp;Co</Company>
     <Product>RabbitFramework.Attributes</Product>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.2.4</Version>
+    <Version>1.2.5</Version>
     <Description>Extension for RabbitFramework.Core using attributes for handling events.</Description>
     <Title>RabbitFramework.Attributes</Title>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageTags>RabbitMq Wrapper Framework BusProvider Attribute Attributes Events Commands Rpc</PackageTags>
+    <RepositoryUrl>https://github.com/mikederksen/TeamRemi</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mikederksen/TeamRemi</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

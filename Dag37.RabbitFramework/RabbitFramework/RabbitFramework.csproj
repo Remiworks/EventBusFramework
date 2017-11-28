@@ -4,12 +4,15 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DebugType>Full</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.2.2</Version>
+    <Version>1.2.3</Version>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company>ReneMike&amp;Co</Company>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageId>RabbitFramework.Core</PackageId>
     <Product>RabbitFramework.Core</Product>
+    <PackageTags>RabbitMq Wrapper Framework BusProvider Events Commands Rpc</PackageTags>
+    <RepositoryUrl>https://github.com/mikederksen/TeamRemi</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mikederksen/TeamRemi</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
