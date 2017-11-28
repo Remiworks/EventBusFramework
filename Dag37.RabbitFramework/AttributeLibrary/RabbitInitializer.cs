@@ -130,7 +130,9 @@ namespace AttributeLibrary
 
                 (string name, MethodInfo method) = GetCommandMatch(message.RoutingKey, commands);
 
-                return InvokeCommand(message, name, instance, method);
+                var result = InvokeCommand(message, name, instance, method);
+
+                return result;
             };
         }
 
@@ -139,9 +141,9 @@ namespace AttributeLibrary
             try
             {
                 _logger.LogInformation($"Command {name} has been invoked", message);
-                object arguments = ConstructMethodParameters(message.JsonMessage, method);
+                object[] parameters = ConstructMethodParameters(message.JsonMessage, method);
 
-                var result = method.Invoke(instance, new object[] { arguments });
+                var result = method.Invoke(instance, parameters);
 
                 return JsonConvert.SerializeObject(result);
             }
@@ -202,14 +204,20 @@ namespace AttributeLibrary
             return topicMatches;
         }
 
-        private object ConstructMethodParameters(string message, MethodInfo method)
+        private object[] ConstructMethodParameters(string message, MethodInfo method)
         {
             var parameters = method.GetParameters();
             var parameter = parameters.FirstOrDefault();
 
-            var paramType = parameter.ParameterType;
-            var arguments = JsonConvert.DeserializeObject(message, paramType);
-            return arguments;
+            object arguments = null;
+
+            if (parameter != null)
+            {
+                var paramType = parameter.ParameterType;
+                arguments = JsonConvert.DeserializeObject(message, paramType);
+            }
+
+            return arguments == null ? null : new object[] { arguments };
         }
     }
 }
