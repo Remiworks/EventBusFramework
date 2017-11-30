@@ -4,6 +4,7 @@ using RabbitFramework.Contracts;
 using RabbitFramework.Models;
 using Shouldly;
 using System;
+using System.Threading.Tasks;
 
 namespace RabbitFramework.Test
 {
@@ -20,7 +21,7 @@ namespace RabbitFramework.Test
         private readonly string[] _topics = new string[] { "SomeTopic1", "SomeTopic2" };
 
         private readonly Mock<BusOptions> _busOptionsMock = new Mock<BusOptions>();
-        private readonly CommandReceivedCallback _commandReceivedCallback = (p) => { return "callback"; };
+        private readonly CommandReceivedCallback _commandReceivedCallback = (p) => { return Task.FromResult("callback"); };
 
         private RabbitBusProvider _sut;
 

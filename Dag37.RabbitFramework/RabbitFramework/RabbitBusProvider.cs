@@ -216,7 +216,12 @@ namespace RabbitFramework
                 response = JsonConvert.SerializeObject(exception);
                 replyProps.Headers.Add("isError", true);
             }
-
+            catch(Exception ex)
+            {
+                var exception = new CommandPublisherException(ex.Message, ex);
+                response = JsonConvert.SerializeObject(exception);
+                replyProps.Headers.Add("isError", true);
+            }
             return response;
         }
 

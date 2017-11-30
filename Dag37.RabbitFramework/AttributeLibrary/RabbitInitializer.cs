@@ -164,8 +164,8 @@ namespace AttributeLibrary
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex.InnerException, "Exception was thrown for a command", new object[] { instance.ToString(), name, method });
-                return null;
+                _logger.LogError(ex.InnerException, $"Exception was thrown for the command {name}", new object[] { instance.ToString(), name, method });
+                throw;
             }
         }
 

@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DebugType>Full</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.2.3</Version>
+    <Version>1.3.1</Version>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company>ReneMike&amp;Co</Company>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -13,6 +13,7 @@
     <PackageTags>RabbitMq Wrapper Framework BusProvider Events Commands Rpc</PackageTags>
     <RepositoryUrl>https://github.com/mikederksen/TeamRemi</RepositoryUrl>
     <PackageProjectUrl>https://github.com/mikederksen/TeamRemi</PackageProjectUrl>
+    <Description>Extension for RabbitFramework.Core using attributes for handling events.</Description>
   </PropertyGroup>
 
   <ItemGroup>
