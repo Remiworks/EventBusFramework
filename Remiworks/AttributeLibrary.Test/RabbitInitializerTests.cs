@@ -1,11 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using RabbitFramework.Contracts;
-using RabbitFramework.Test;
-using Shouldly;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using RabbitFramework.Test;
+using Remiworks.Attributes.Initialization;
+using Remiworks.Core;
+using Shouldly;
 
 namespace AttributeLibrary.Test
 {
@@ -14,12 +15,12 @@ namespace AttributeLibrary.Test
     {
         private readonly Mock<IBusProvider> _busProviderMock = new Mock<IBusProvider>(MockBehavior.Strict);
 
-        private RabbitInitializer _sut;
+        private Initializer _sut;
 
         [TestInitialize]
         public void Initialize()
         {
-            _sut = new RabbitInitializer(_busProviderMock.Object, null);
+            _sut = new Initializer(_busProviderMock.Object, null);
         }
 
         [TestMethod]
@@ -28,7 +29,7 @@ namespace AttributeLibrary.Test
             _busProviderMock.Setup(b => b.CreateConnection());
             _busProviderMock.Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
             _busProviderMock.Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<EventReceivedCallback>()));
-            RabbitInitializer target = new RabbitInitializer(_busProviderMock.Object, null);
+            Initializer target = new Initializer(_busProviderMock.Object, null);
 
             target.Initialize(Assembly.GetCallingAssembly());
 

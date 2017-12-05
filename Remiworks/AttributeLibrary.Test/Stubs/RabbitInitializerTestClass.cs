@@ -1,19 +1,18 @@
-﻿using AttributeLibrary;
-using AttributeLibrary.Attributes;
-using System;
+﻿using System;
+using Remiworks.Attributes;
 
 namespace RabbitFramework.Test
 {
     [QueueListener("testQueue")]
     public class RabbitInitializerTestClass
     {
-        [Topic("testTopic")]
+        [Event("testTopic")]
         public void TestModelTestFunction(TestModel message)
         {
             // Do stuff
         }
 
-        [Topic("testTwoTopic")]
+        [Event("testTwoTopic")]
         public void TestModelTestTwoFunctionThrowsArgumentException(TestModel message)
         {
             throw new ArgumentException();
@@ -35,7 +34,6 @@ namespace RabbitFramework.Test
             throw new ArgumentException();
         }
     }
-
 
     public class TestModel
     {

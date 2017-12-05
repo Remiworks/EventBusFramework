@@ -1,8 +1,8 @@
-﻿using AttributeLibrary.Attributes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Shouldly;
-using System;
+﻿using System;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Remiworks.Attributes;
+using Shouldly;
 
 namespace AttributeLibrary.Test.Attributes
 {
@@ -14,7 +14,7 @@ namespace AttributeLibrary.Test.Attributes
         {
             string topic = "topic";
 
-            TopicAttribute attribute = new TopicAttribute(topic);
+            EventAttribute attribute = new EventAttribute(topic);
 
             attribute.Topic.ShouldBe(topic);
         }
@@ -22,7 +22,7 @@ namespace AttributeLibrary.Test.Attributes
         [TestMethod]
         public void TopicAttributeHasAttributeUsageAnnotation()
         {
-            var type = typeof(TopicAttribute);
+            var type = typeof(EventAttribute);
 
             var attributes = type.GetCustomAttributes(false);
 
