@@ -17,5 +17,9 @@ namespace Remiworks.Core.Exceptions
         public CommandPublisherException(string message, Exception innerException) : base(message, innerException)
         {
         }
+
+        protected CommandPublisherException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
     }
 }
