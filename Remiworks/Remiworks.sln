@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AttributeLibrary", "Attribu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AttributeLibrary.Test", "AttributeLibrary.Test\AttributeLibrary.Test.csproj", "{4EFBE6E5-12F5-43BE-8DCD-96EBD85422E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitFramework.IntegrationTest", "RabbitFramework.IntegrationTest\RabbitFramework.IntegrationTest.csproj", "{E874EE7F-A8FC-4C4D-9AE3-6B191CF875EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitFramework.IntegrationTest", "RabbitFramework.IntegrationTest\RabbitFramework.IntegrationTest.csproj", "{E874EE7F-A8FC-4C4D-9AE3-6B191CF875EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

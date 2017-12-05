@@ -1,7 +1,6 @@
-﻿using RabbitFramework.Models;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
+using RabbitFramework.Models;
 
 namespace RabbitFramework.Contracts
 {
@@ -16,7 +15,7 @@ namespace RabbitFramework.Contracts
         void CreateTopicsForQueue(string queueName, params string[] topics);
 
         void BasicConsume(string queueName, EventReceivedCallback callback);
-        
+
         void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function);
     }
 
