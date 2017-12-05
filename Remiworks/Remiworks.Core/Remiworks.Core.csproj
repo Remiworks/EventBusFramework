@@ -6,12 +6,13 @@
     <Description>A framework for wrapping various event bus frameworks like RabbitMQ. Both events and commands can be sent and received using this framework, while the underlying event bus implementation can be swapped by just switching out a single package.</Description>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company />
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <PackageProjectUrl>https://github.com/mikederksen/TeamRemi</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mikederksen/TeamRemi</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RabbitMq Wrapper Framework BusProvider Events Commands Rpc Eventbus</PackageTags>
     <PackageReleaseNotes>Renamed Remilogging to RemiLogging</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>

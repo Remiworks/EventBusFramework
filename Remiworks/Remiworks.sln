@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Remiworks.Attributes", "Rem
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.Attributes.Test", "Remiworks.Attributes.Test\Remiworks.Attributes.Test.csproj", "{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Remiworks.RabbitMQ", "Remiworks.RabbitMQ\Remiworks.RabbitMQ.csproj", "{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

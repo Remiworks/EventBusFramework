@@ -10,6 +10,6 @@ namespace Remiworks.Core.Models
         public string ReplyQueueName { get; set; }
         public string Type { get; set; }
         public string JsonMessage { get; set; }
-        public bool IsError { get; internal set; }
+        public bool IsError { get; set; }
     }
 }
