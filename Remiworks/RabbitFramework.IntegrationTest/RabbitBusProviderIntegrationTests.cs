@@ -1,11 +1,10 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RabbitFramework.Contracts;
-using RabbitFramework.Models;
-using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Remiworks.Core;
+using Remiworks.Core.Models;
+using Remiworks.RabbitMQ;
 using Shouldly;
 
 namespace RabbitFramework.IntegrationTest

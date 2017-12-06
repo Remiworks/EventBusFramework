@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RabbitFramework.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Remiworks.Core.Models;
 
 namespace RabbitFramework.IntegrationTest
 {

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Text;
-using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using RabbitFramework.Contracts;
-using RabbitFramework.IntegrationTest.Stubs;
-using RabbitFramework.Publishers;
-using RabbitMQ.Client.Events;
-using Shouldly;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Remiworks.Core;
+using Remiworks.Core.Command;
+using Remiworks.RabbitMQ;
 
 namespace RabbitFramework.IntegrationTest.Publishers
 {
