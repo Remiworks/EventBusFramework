@@ -11,12 +11,12 @@
     <PackageReference Include="Moq" Version="4.7.145" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
     <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
-    <PackageReference Include="newtonsoft.json" Version="10.0.3" />
     <PackageReference Include="Shouldly" Version="2.8.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Remiworks.Core\Remiworks.Core.csproj" />
+    <ProjectReference Include="..\Remiworks.RabbitMQ\Remiworks.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

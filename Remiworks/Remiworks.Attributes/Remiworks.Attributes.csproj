@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
-    <PackageReference Include="Remiworks.Core" Version="2.0.0" />
+    <PackageReference Include="Remiworks.Core" Version="2.0.2" />
   </ItemGroup>
 
 </Project>

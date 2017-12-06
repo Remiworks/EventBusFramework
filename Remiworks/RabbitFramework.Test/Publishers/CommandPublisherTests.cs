@@ -4,9 +4,9 @@ using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
-using RabbitFramework.Contracts;
-using RabbitFramework.Models;
-using RabbitFramework.Publishers;
+using Remiworks.Core;
+using Remiworks.Core.Command;
+using Remiworks.Core.Models;
 using Shouldly;
 
 namespace RabbitFramework.Test.Publishers

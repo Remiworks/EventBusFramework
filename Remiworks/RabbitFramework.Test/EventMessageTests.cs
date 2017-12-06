@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RabbitFramework.Models;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Remiworks.Core.Models;
 using Shouldly;
-using System;
 
 namespace RabbitFramework.Test
 {

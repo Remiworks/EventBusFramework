@@ -149,7 +149,7 @@ namespace Remiworks.RabbitMQ
                 Timestamp = args.BasicProperties.Timestamp.UnixTime,
                 ReplyQueueName = args.BasicProperties.ReplyTo,
                 Type = args.BasicProperties.Type,
-                //IsError = isError != null ? isError : false
+                IsError = isError != null && isError.Value
             };
 
             callback(eventMessage);
@@ -157,7 +157,6 @@ namespace Remiworks.RabbitMQ
 
         private async Task HandleReceivedCommand(CommandReceivedCallback function, BasicDeliverEventArgs args)
         {
-
             var replyProps = _channel.CreateBasicProperties();
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
 
@@ -194,7 +193,6 @@ namespace Remiworks.RabbitMQ
             _channel.BasicAck(
                 deliveryTag: args.DeliveryTag,
                 multiple: false);
-
         }
 
         private async Task<string> InvokeCommandReceivedCallback(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)

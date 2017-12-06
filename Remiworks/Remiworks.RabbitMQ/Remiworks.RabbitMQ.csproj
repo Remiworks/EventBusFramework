@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="RabbitMQ.Client" Version="5.0.1" />
-    <PackageReference Include="Remiworks.Core" Version="2.0.1" />
+    <PackageReference Include="Remiworks.Core" Version="2.0.2" />
   </ItemGroup>
 
 </Project>

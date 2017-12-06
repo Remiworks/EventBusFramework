@@ -1,12 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using RabbitFramework.Contracts;
-using RabbitFramework.Models;
-using Shouldly;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Remiworks.Core;
+using Remiworks.Core.Models;
+using Shouldly;
 
-namespace RabbitFramework.Test
+namespace Remiworks.RabbitMQ.Test
 {
     [TestClass]
     public class RabbitBusProviderTests
@@ -15,8 +15,6 @@ namespace RabbitFramework.Test
         private const string CallbackParamName = "callback";
         private const string QueueNameParamName = "queueName";
         private const string EventMessageParamName = "eventMessage";
-        private const string FunctionParamName = "function";
-        private const string MessageParamName = "message";
 
         private readonly string[] _topics = new string[] { "SomeTopic1", "SomeTopic2" };
 
@@ -130,14 +128,14 @@ namespace RabbitFramework.Test
         [TestMethod]
         public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsEmpty()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners("", null,_commandReceivedCallback));
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners("", null, _commandReceivedCallback));
             exception.ParamName.ShouldBe("The queueName should not be null");
         }
 
         [TestMethod]
         public void SetupRpcListenerThrowsArgumentExceptionWhenQueueNameIsWhitespace()
         {
-            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners(" ", null,_commandReceivedCallback));
+            var exception = Should.Throw<ArgumentNullException>(() => _sut.SetupRpcListeners(" ", null, _commandReceivedCallback));
             exception.ParamName.ShouldBe("The queueName should not be null");
         }
 

@@ -15,7 +15,7 @@ namespace Remiworks.Attributes.Initialization
 {
     public class Initializer
     {
-        private ILogger _logger { get; } = Remilogging.CreateLogger<Initializer>();
+        private ILogger _logger { get; } = RemiLogging.CreateLogger<Initializer>();
         private readonly IBusProvider _busProvider;
         private readonly IServiceProvider _serviceProvider;
 

@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RabbitFramework.Models;
+using Remiworks.Core.Models;
 using Shouldly;
 
 namespace RabbitFramework.Test
