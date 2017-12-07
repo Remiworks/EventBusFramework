@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2005
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.Core", "Remiworks.Core\Remiworks.Core.csproj", "{5F22845B-CC46-4482-9AB4-5C3E44360FCF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.Attributes", "Remiworks.Attributes\Remiworks.Attributes.csproj", "{CD0B4BC9-E173-4FC7-9073-324F08CA02C9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.Attributes.Test", "Remiworks.Attributes.Test\Remiworks.Attributes.Test.csproj", "{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.RabbitMQ", "Remiworks.RabbitMQ\Remiworks.RabbitMQ.csproj", "{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.RabbitMQ.Test", "Remiworks.RabbitMQ.Test\Remiworks.RabbitMQ.Test.csproj", "{2687136E-2D47-4317-A148-9C100AFD2E86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Remiworks.IntegrationTest", "Remiworks.IntegrationTest\Remiworks.IntegrationTest.csproj", "{3FD67A62-01D3-4E31-84C3-3449641635CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Remiworks.Core.Test", "Remiworks.Core.Test\Remiworks.Core.Test.csproj", "{F2E3ADF4-170B-442B-B5AC-FCB83C048CDD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5F22845B-CC46-4482-9AB4-5C3E44360FCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F22845B-CC46-4482-9AB4-5C3E44360FCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F22845B-CC46-4482-9AB4-5C3E44360FCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F22845B-CC46-4482-9AB4-5C3E44360FCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD0B4BC9-E173-4FC7-9073-324F08CA02C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD0B4BC9-E173-4FC7-9073-324F08CA02C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD0B4BC9-E173-4FC7-9073-324F08CA02C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD0B4BC9-E173-4FC7-9073-324F08CA02C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DB6E07B-EA00-4ABD-A908-33A16DC4F7DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B959F18C-EDE4-439E-9340-1E4FC3CB1DB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2687136E-2D47-4317-A148-9C100AFD2E86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2687136E-2D47-4317-A148-9C100AFD2E86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2687136E-2D47-4317-A148-9C100AFD2E86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2687136E-2D47-4317-A148-9C100AFD2E86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FD67A62-01D3-4E31-84C3-3449641635CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FD67A62-01D3-4E31-84C3-3449641635CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FD67A62-01D3-4E31-84C3-3449641635CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FD67A62-01D3-4E31-84C3-3449641635CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2E3ADF4-170B-442B-B5AC-FCB83C048CDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2E3ADF4-170B-442B-B5AC-FCB83C048CDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2E3ADF4-170B-442B-B5AC-FCB83C048CDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2E3ADF4-170B-442B-B5AC-FCB83C048CDD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {04DC15D6-1CA5-4C23-8152-D1CA60907193}
+	EndGlobalSection
+EndGlobal
