@@ -1,7 +1,7 @@
 This framework is an abstraction layer for eventbusses. As of now the only implementation is for RabbitMq. There are plans to support more eventbusses in the future.
 
 # Core
-The core library contains multiple classes to communicate with an eventbus implementation
+The core library contains multiple classes to communicate with an eventbus implementation.
 
 ## Events
 To send and receive events there is the `IBusProvider` interface with a corresponding `RabbitBusProvider` class. This class can be used to send and listen to events. The `RabbitBusProvider` takes a `BusOptions` instance as parameter. This class contains connection data. The `Hostname`, `ExchangeName`, `VirtualHost`, `Port`, `UserName` and `Password` can be set here. By default the `BusOptions` uses `localhost` as `Hostname`. `BusOptions` also declases a random exchange name. If the other properties are not set, the default values of the underlying eventbus framework will be used.
