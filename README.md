@@ -154,4 +154,4 @@ public class SomeController
 ```
 
 ## Listening to commands
-This will be updated in the very very very near future
+This will be updated in the very very very near future.
