@@ -3,6 +3,7 @@ using Moq;
 using Newtonsoft.Json;
 using Remiworks.Core.Event;
 using Remiworks.Core.Models;
+using Remiworks.Core.Test.Stubs;
 
 namespace Remiworks.Core.Test.Event
 {
