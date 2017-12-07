@@ -1,3 +1,5 @@
+[<img src="https://mikederksen5.visualstudio.com/_apis/public/build/definitions/806ded94-c145-49ce-a757-6d5323d31e66/1/badge"/>](https://mikederksen5.visualstudio.com/EventBusFramework/_build/index?definitionId=1)
+
 This framework is an abstraction layer for eventbusses. As of now the only implementation is for RabbitMq. There are plans to support more eventbusses in the future.
 
 # Core
