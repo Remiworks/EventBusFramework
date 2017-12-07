@@ -2,7 +2,7 @@
 using Remiworks.Core.Models;
 using Shouldly;
 
-namespace RabbitFramework.Test
+namespace Remiworks.Core.Test
 {
     [TestClass]
     public class BusOptionsTests

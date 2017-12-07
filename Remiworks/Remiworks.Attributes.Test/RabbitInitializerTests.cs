@@ -3,12 +3,12 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using RabbitFramework.Test;
 using Remiworks.Attributes.Initialization;
+using Remiworks.Attributes.Test.Stubs;
 using Remiworks.Core;
 using Shouldly;
 
-namespace AttributeLibrary.Test
+namespace Remiworks.Attributes.Test
 {
     [TestClass]
     public class RabbitInitializerTests
