@@ -7,8 +7,8 @@
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company />
     <Version>2.0.2</Version>
-    <PackageProjectUrl>https://github.com/mikederksen/TeamRemi</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/mikederksen/TeamRemi</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Remiworks/EventBusFramework</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Remiworks/EventBusFramework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RabbitMq Wrapper Framework BusProvider Events Commands Rpc Eventbus</PackageTags>
     <PackageReleaseNotes>Renamed Remilogging to RemiLogging</PackageReleaseNotes>
