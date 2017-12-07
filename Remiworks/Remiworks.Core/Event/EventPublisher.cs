@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Remiworks.Core.Models;
 
 namespace Remiworks.Core.Event
 {
@@ -17,9 +19,16 @@ namespace Remiworks.Core.Event
                 _busProvider.CreateTopicsForQueue(queueName, topics));
         }
 
-        public Task SendEvent(object message, string routingKey)
+        public async Task SendEvent(object message, string topic)
         {
-            return null;
+            var eventMessage = new EventMessage
+            {
+                JsonMessage = JsonConvert.SerializeObject(message),
+                RoutingKey = topic
+            };
+
+            await Task.Run(() =>
+                _busProvider.BasicPublish(eventMessage));
         }
     }
 }
