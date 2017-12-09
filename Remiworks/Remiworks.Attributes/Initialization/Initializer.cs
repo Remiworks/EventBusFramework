@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +14,7 @@ namespace Remiworks.Attributes.Initialization
 {
     public class Initializer
     {
-        private ILogger _logger { get; } = RemiLogging.CreateLogger<Initializer>();
+        private ILogger Logger { get; } = RemiLogging.CreateLogger<Initializer>();
         private readonly IBusProvider _busProvider;
         private readonly IServiceProvider _serviceProvider;
 
@@ -27,17 +26,17 @@ namespace Remiworks.Attributes.Initialization
 
         public void Initialize(Assembly executingAssembly)
         {
-            _logger.LogInformation("Initializing event bus");
+            Logger.LogInformation("Initializing event bus");
             _busProvider.CreateConnection();
 
             var types = executingAssembly.GetTypes();
             InitializeQueueListeners(types);
-            _logger.LogInformation($"Initialization completed. Now listening...");
+            Logger.LogInformation($"Initialization completed. Now listening...");
         }
 
         private void InitializeQueueListeners(IEnumerable<Type> types)
         {
-            _logger.LogInformation("Initializing event listeners");
+            Logger.LogInformation("Initializing event listeners");
             foreach (var type in types)
             {
                 var queueAttribute = type.GetCustomAttribute<QueueListenerAttribute>();
@@ -54,12 +53,12 @@ namespace Remiworks.Attributes.Initialization
                     if (methods.Any(m => m.GetCustomAttributes<EventAttribute>().Any()))
                     {
                         SetUpTopicMethods(type, queueAttribute.QueueName);
-                        _logger.LogInformation($"Initializing event {type}");
+                        Logger.LogInformation($"Initializing event {type}");
                     }
                     else if (methods.Any(m => m.GetCustomAttributes<CommandAttribute>().Any()))
                     {
                         SetUpCommandMethods(type, queueAttribute.QueueName);
-                        _logger.LogInformation($"Initializing commands {type}");
+                        Logger.LogInformation($"Initializing commands {type}");
                     }
                 }
             }
@@ -138,7 +137,7 @@ namespace Remiworks.Attributes.Initialization
         {
             try
             {
-                _logger.LogInformation($"Command {name} has been invoked", message);
+                Logger.LogInformation($"Command {name} has been invoked", message);
                 object[] parameters = ConstructMethodParameters(message.JsonMessage, method);
 
                 object result = null;
@@ -156,13 +155,13 @@ namespace Remiworks.Attributes.Initialization
             }
             catch (TargetInvocationException ex)
             {
-                _logger.LogWarning(ex.InnerException, "Exception was thrown for a command", new object[] { instance.ToString(), name, method });
+                Logger.LogWarning(ex.InnerException, "Exception was thrown for a command", new object[] { instance.ToString(), name, method });
                 
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.InnerException, $"Exception was thrown for the command {name}", new object[] { instance.ToString(), name, method });
+                Logger.LogError(ex.InnerException, $"Exception was thrown for the command {name}", new object[] { instance.ToString(), name, method });
                 
                 throw;
             }
@@ -172,7 +171,7 @@ namespace Remiworks.Attributes.Initialization
         {
             try
             {
-                _logger.LogInformation($"Topic {topic.Key} has been invoked", message);
+                Logger.LogInformation($"Topic {topic.Key} has been invoked", message);
                 var parameters = topic.Value.GetParameters();
                 var parameter = parameters.FirstOrDefault();
                 var paramType = parameter.ParameterType;
@@ -182,7 +181,7 @@ namespace Remiworks.Attributes.Initialization
             }
             catch (TargetInvocationException ex)
             {
-                _logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), topic.Key, topic.Value });
+                Logger.LogError(ex.InnerException, "Exception was thrown for a topic", new object[] { instance.ToString(), topic.Key, topic.Value });
             }
         }
 
