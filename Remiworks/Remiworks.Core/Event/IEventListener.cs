@@ -6,7 +6,7 @@ namespace Remiworks.Core.Event
     {
         Task SetupQueueListener<TParam>(string queueName, EventReceived<TParam> callback);
 
-        Task SetupQueueListener<TParam>(string queueName, EventReceivedForTopic<TParam> callback);
+        Task SetupQueueListener<TParam>(string queueName, string topic, EventReceivedForTopic<TParam> callback);
     }
     
     public delegate void EventReceived<in TParam>(TParam input, string topic);

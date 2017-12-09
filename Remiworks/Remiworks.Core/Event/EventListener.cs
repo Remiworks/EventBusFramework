@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Remiworks.Core.Models;
 
 namespace Remiworks.Core.Event
 {
@@ -15,17 +17,21 @@ namespace Remiworks.Core.Event
         public async Task SetupQueueListener<TParam>(string queueName, EventReceived<TParam> callback)
         {
             await Task.Run(() =>
-                _busProvider.BasicConsume(queueName, eventMessage =>
-                {
+            {
+                void ReceivedCallback(EventMessage eventMessage)
+                {   
                     var messageObject = (TParam)JsonConvert.DeserializeObject(
                         eventMessage.JsonMessage, 
                         typeof(TParam));
     
                     callback(messageObject, eventMessage.RoutingKey);
-                }));
+                }
+                
+                _busProvider.BasicConsume(queueName, ReceivedCallback);
+            });
         }
 
-        public Task SetupQueueListener<TParam>(string queueName, EventReceivedForTopic<TParam> callback)
+        public Task SetupQueueListener<TParam>(string queueName, string topic, EventReceivedForTopic<TParam> callback)
         {
             throw new System.NotImplementedException();
         }
