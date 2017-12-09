@@ -35,7 +35,7 @@ namespace Remiworks.Attributes.Initialization
             _logger.LogInformation($"Initialization completed. Now listening...");
         }
 
-        private void InitializeQueueListeners(Type[] types)
+        private void InitializeQueueListeners(IEnumerable<Type> types)
         {
             _logger.LogInformation("Initializing event listeners");
             foreach (var type in types)
@@ -51,12 +51,12 @@ namespace Remiworks.Attributes.Initialization
 
                     var methods = type.GetMethods();
 
-                    if (methods.Any(m => m.GetCustomAttributes<EventAttribute>().Count() > 0))
+                    if (methods.Any(m => m.GetCustomAttributes<EventAttribute>().Any()))
                     {
                         SetUpTopicMethods(type, queueAttribute.QueueName);
                         _logger.LogInformation($"Initializing event {type}");
                     }
-                    else if (methods.Any(m => m.GetCustomAttributes<CommandAttribute>().Count() > 0))
+                    else if (methods.Any(m => m.GetCustomAttributes<CommandAttribute>().Any()))
                     {
                         SetUpCommandMethods(type, queueAttribute.QueueName);
                         _logger.LogInformation($"Initializing commands {type}");
@@ -70,8 +70,8 @@ namespace Remiworks.Attributes.Initialization
             var methods = type.GetMethods();
 
             return
-                methods.Any(m => m.GetCustomAttributes<EventAttribute>().Count() > 0) &&
-                methods.Any(m => m.GetCustomAttributes<CommandAttribute>().Count() > 0);
+                methods.Any(m => m.GetCustomAttributes<EventAttribute>().Any()) &&
+                methods.Any(m => m.GetCustomAttributes<CommandAttribute>().Any());
         }
 
         private void SetUpCommandMethods(Type type, string queueName)
@@ -157,11 +157,13 @@ namespace Remiworks.Attributes.Initialization
             catch (TargetInvocationException ex)
             {
                 _logger.LogWarning(ex.InnerException, "Exception was thrown for a command", new object[] { instance.ToString(), name, method });
+                
                 throw;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.InnerException, $"Exception was thrown for the command {name}", new object[] { instance.ToString(), name, method });
+                
                 throw;
             }
         }
@@ -184,14 +186,14 @@ namespace Remiworks.Attributes.Initialization
             }
         }
 
-        private (string, MethodInfo) GetCommandMatch(string routingKey, Dictionary<string, MethodInfo> commands)
+        private static (string, MethodInfo) GetCommandMatch(string routingKey, Dictionary<string, MethodInfo> commands)
         {
             var command = commands.SingleOrDefault(c => c.Key == routingKey);
 
             return (command.Key, command.Value);
         }
 
-        public Dictionary<string, MethodInfo> GetTopicMatches(string routingKey, Dictionary<string, MethodInfo> topics)
+        public static Dictionary<string, MethodInfo> GetTopicMatches(string routingKey, Dictionary<string, MethodInfo> topics)
         {
             var regexHashTag = @"\w+(\.\w+)*";
             var regexStar = @"[\w]+";
@@ -215,20 +217,20 @@ namespace Remiworks.Attributes.Initialization
             return topicMatches;
         }
 
-        private object[] ConstructMethodParameters(string message, MethodInfo method)
+        private static object[] ConstructMethodParameters(string message, MethodBase method)
         {
             var parameters = method.GetParameters();
             var parameter = parameters.FirstOrDefault();
 
-            object arguments = null;
-
             if (parameter != null)
             {
                 var paramType = parameter.ParameterType;
-                arguments = JsonConvert.DeserializeObject(message, paramType);
+                var arguments = JsonConvert.DeserializeObject(message, paramType);
+
+                return new object[] {arguments};
             }
 
-            return arguments == null ? null : new object[] { arguments };
+            return null;
         }
     }
 }

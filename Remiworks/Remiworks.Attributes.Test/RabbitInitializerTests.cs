@@ -75,7 +75,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "user.event.added";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == routingKey).ShouldBeTrue();
@@ -92,7 +92,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "user.event.deleted";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == "user.*.deleted").ShouldBeTrue();
@@ -109,7 +109,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "user.event.test.deleted";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == "user.#.deleted").ShouldBeTrue();
@@ -126,7 +126,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "user..";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
             result.Any(r => r.Key == "user.#").ShouldBeFalse();
@@ -143,7 +143,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "user..";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
             result.Any(r => r.Key == "user.*").ShouldBeFalse();
@@ -160,7 +160,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "user.event.test.iets.deleted";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(1);
             result.Any(r => r.Key == "user.#.deleted").ShouldBeTrue();
@@ -177,7 +177,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "blablabla.user.event.test.iets.deleted";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
         }
@@ -193,7 +193,7 @@ namespace Remiworks.Attributes.Test
 
             var routingKey = "user.event.test.iets.deleted.blablabla";
 
-            var result = _sut.GetTopicMatches(routingKey, topics);
+            var result = Initializer.GetTopicMatches(routingKey, topics);
 
             result.Count.ShouldBe(0);
         }
