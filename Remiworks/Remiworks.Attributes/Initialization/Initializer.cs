@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Remiworks.Core;
+using Remiworks.Core.Event;
 using Remiworks.Core.Models;
 
 namespace Remiworks.Attributes.Initialization
@@ -16,11 +17,13 @@ namespace Remiworks.Attributes.Initialization
     {
         private ILogger Logger { get; } = RemiLogging.CreateLogger<Initializer>();
         private readonly IBusProvider _busProvider;
+        private readonly IEventListener _eventListener;
         private readonly IServiceProvider _serviceProvider;
 
         public Initializer(IBusProvider busProvider, IServiceProvider serviceProvider)
         {
             _busProvider = busProvider;
+            _eventListener = _serviceProvider.GetService(typeof(IEventListener)) as IEventListener;
             _serviceProvider = serviceProvider;
         }
 
@@ -64,7 +67,7 @@ namespace Remiworks.Attributes.Initialization
             }
         }
 
-        private bool TypeContainsBothCommandsAndEvents(Type type)
+        private static bool TypeContainsBothCommandsAndEvents(Type type)
         {
             var methods = type.GetMethods();
 
@@ -190,30 +193,6 @@ namespace Remiworks.Attributes.Initialization
             var command = commands.SingleOrDefault(c => c.Key == routingKey);
 
             return (command.Key, command.Value);
-        }
-
-        public static Dictionary<string, MethodInfo> GetTopicMatches(string routingKey, Dictionary<string, MethodInfo> topics)
-        {
-            var regexHashTag = @"\w+(\.\w+)*";
-            var regexStar = @"[\w]+";
-            var topicMatches = new Dictionary<string, MethodInfo>();
-
-            foreach (var topic in topics)
-            {
-                var pattern = topic.Key
-                    .Replace(".", "\\.")
-                    .Replace("*", regexStar)
-                    .Replace("#", regexHashTag);
-
-                pattern = $"^{pattern}$";
-
-                if (Regex.IsMatch(routingKey, pattern))
-                {
-                    topicMatches.Add(topic.Key, topic.Value);
-                }
-            }
-
-            return topicMatches;
         }
 
         private static object[] ConstructMethodParameters(string message, MethodBase method)

@@ -8,10 +8,10 @@ using Remiworks.Attributes.Test.Stubs;
 using Remiworks.Core;
 using Shouldly;
 
-namespace Remiworks.Attributes.Test
+namespace Remiworks.Attributes.Test.Initialization
 {
     [TestClass]
-    public class RabbitInitializerTests
+    public class InitializerTests
     {
         private readonly Mock<IBusProvider> _busProviderMock = new Mock<IBusProvider>(MockBehavior.Strict);
 
