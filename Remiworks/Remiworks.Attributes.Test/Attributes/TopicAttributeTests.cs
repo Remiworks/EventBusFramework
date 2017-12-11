@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Remiworks.Attributes;
 using Shouldly;
 
-namespace AttributeLibrary.Test.Attributes
+namespace Remiworks.Attributes.Test.Attributes
 {
     [TestClass]
     public class TopicAttributeTests

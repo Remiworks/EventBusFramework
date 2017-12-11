@@ -103,7 +103,7 @@ namespace Remiworks.RabbitMQ
         public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function)
         {
             if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException($"The {nameof(queueName)} should not be null");
-            else if (function == null) throw new ArgumentNullException($"The {nameof(function)} should not be null");
+            if (function == null) throw new ArgumentNullException($"The {nameof(function)} should not be null");
 
             _channel.QueueDeclare(
                 queue: queueName,
@@ -127,7 +127,7 @@ namespace Remiworks.RabbitMQ
                 consumer: consumer);
         }
 
-        private void HandleReceivedEvent(BasicDeliverEventArgs args, EventReceivedCallback callback)
+        private static void HandleReceivedEvent(BasicDeliverEventArgs args, EventReceivedCallback callback)
         {
             var message = Encoding.UTF8.GetString(args.Body);
 
@@ -180,7 +180,7 @@ namespace Remiworks.RabbitMQ
                 Type = args.BasicProperties.Type
             };
 
-            string response = await InvokeCommandReceivedCallback(function, replyProps, eventMessage);
+            string response = await InvokeCommandReceivedCallbackAsync(function, replyProps, eventMessage);
 
             var responseBytes = Encoding.UTF8.GetBytes(response);
 
@@ -195,7 +195,7 @@ namespace Remiworks.RabbitMQ
                 multiple: false);
         }
 
-        private async Task<string> InvokeCommandReceivedCallback(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
+        private static async Task<string> InvokeCommandReceivedCallbackAsync(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
         {
             var response = "";
             replyProps.Headers = new Dictionary<string, object>();
@@ -228,20 +228,19 @@ namespace Remiworks.RabbitMQ
                 autoDelete: false);
         }
 
-        private bool isDisposed = false;
+        private bool _isDisposed = false;
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!isDisposed)
+            if (_isDisposed) return;
+            
+            if (disposing)
             {
-                if (disposing)
-                {
-                    _connection.Dispose();
-                    _channel.Dispose();
-                }
-
-                isDisposed = true;
+                _connection.Dispose();
+                _channel.Dispose();
             }
+
+            _isDisposed = true;
         }
 
         public void Dispose()

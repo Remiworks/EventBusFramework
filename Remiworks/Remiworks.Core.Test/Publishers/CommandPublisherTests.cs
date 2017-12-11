@@ -4,12 +4,11 @@ using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
-using Remiworks.Core;
 using Remiworks.Core.Command;
 using Remiworks.Core.Models;
 using Shouldly;
 
-namespace RabbitFramework.Test.Publishers
+namespace Remiworks.Core.Test.Publishers
 {
     [TestClass]
     public class CommandPublisherTests

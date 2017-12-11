@@ -1,7 +1,6 @@
 ﻿using System;
-using Remiworks.Attributes;
 
-namespace RabbitFramework.Test
+namespace Remiworks.Attributes.Test.Stubs
 {
     [QueueListener("testQueue")]
     public class RabbitInitializerTestClass
