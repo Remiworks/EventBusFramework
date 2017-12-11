@@ -180,7 +180,7 @@ namespace Remiworks.RabbitMQ
                 Type = args.BasicProperties.Type
             };
 
-            string response = await InvokeCommandReceivedCallback(function, replyProps, eventMessage);
+            string response = await InvokeCommandReceivedCallbackAsync(function, replyProps, eventMessage);
 
             var responseBytes = Encoding.UTF8.GetBytes(response);
 
@@ -195,7 +195,7 @@ namespace Remiworks.RabbitMQ
                 multiple: false);
         }
 
-        private static async Task<string> InvokeCommandReceivedCallback(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
+        private static async Task<string> InvokeCommandReceivedCallbackAsync(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
         {
             var response = "";
             replyProps.Headers = new Dictionary<string, object>();
