@@ -40,7 +40,7 @@ namespace Remiworks.Core.Test.Publishers
         }
 
         [TestMethod]
-        public void SendCommandCallsBasicPublishWithCorrectParameters()
+        public async void SendCommandCallsBasicPublishWithCorrectParameters()
         {
             _busProviderMock
                 .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
@@ -50,13 +50,13 @@ namespace Remiworks.Core.Test.Publishers
                 .Callback(BasicPublishCallback)
                 .Verifiable();
 
-            _sut.SendCommandAsync<string>(Message, QueueName, Key).Wait();
+            await _sut.SendCommandAsync<string>(Message, QueueName, Key);
 
             _busProviderMock.VerifyAll();
         }
 
         [TestMethod]
-        public void SendCommandReturnsCorrectResult()
+        public async void SendCommandReturnsCorrectResult()
         {
             _busProviderMock
                .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
@@ -66,7 +66,7 @@ namespace Remiworks.Core.Test.Publishers
                 .Callback(BasicPublishCallback)
                 .Verifiable();
 
-            var result = _sut.SendCommandAsync<string>(Message, QueueName, Key).Result;
+            var result = await _sut.SendCommandAsync<string>(Message, QueueName, Key);
 
             result.ShouldBe(Message.Reverse().ToString());
         }

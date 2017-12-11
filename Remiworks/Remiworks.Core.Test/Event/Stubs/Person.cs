@@ -1,4 +1,4 @@
-﻿namespace Remiworks.Core.Test.Stubs
+﻿namespace Remiworks.Core.Test.Event.Stubs
 {
     public class Person
     {
