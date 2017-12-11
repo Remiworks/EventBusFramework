@@ -31,23 +31,23 @@ namespace Remiworks.Core.Test.Event
         }
 
         [TestMethod]
-        public void BindTopicsToQueueCallsBusProvider_CreateTopicsForQueue()
+        public void BindTopicsToQueueAsyncCallsBusProvider_CreateTopicsForQueue()
         {
             const string queueName = "TestQueue";
             var topics = new[] { "SomeTopic1", "SomeTopic2" };
             
-            _sut.BindTopicsToQueue(queueName, topics).Wait();
+            _sut.BindTopicsToQueueAsync(queueName, topics).Wait();
             
             _busProviderMock
                 .Verify(b => b.CreateTopicsForQueue(queueName, topics));
         }
 
         [TestMethod]
-        public void SendEventCallsBusProvider_BasicPublish_WithJson()
+        public void SendEventAsyncCallsBusProvider_BasicPublish_WithJson()
         {
             var personJson = JsonConvert.SerializeObject(_person);
             
-            _sut.SendEvent(_person, Topic).Wait();
+            _sut.SendEventAsync(_person, Topic).Wait();
             
             _busProviderMock
                 .Verify(b => b.BasicPublish(
@@ -55,9 +55,9 @@ namespace Remiworks.Core.Test.Event
         }
 
         [TestMethod]
-        public void SendEventCallsBusProvider_BasicPublish_WithTopic()
+        public void SendEventAsyncCallsBusProvider_BasicPublish_WithTopic()
         {
-            _sut.SendEvent(_person, Topic).Wait();
+            _sut.SendEventAsync(_person, Topic).Wait();
             
             _busProviderMock
                 .Verify(b => b.BasicPublish(
@@ -65,9 +65,9 @@ namespace Remiworks.Core.Test.Event
         }
 
         [TestMethod]
-        public void SendEventCallsBusProvider_BasicPublish_WithoutUnnecessaryProperties()
+        public void SendEventAsyncCallsBusProvider_BasicPublish_WithoutUnnecessaryProperties()
         {
-            _sut.SendEvent(_person, Topic).Wait();
+            _sut.SendEventAsync(_person, Topic).Wait();
             
             _busProviderMock
                 .Verify(b => b.BasicPublish(
