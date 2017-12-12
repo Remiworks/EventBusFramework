@@ -21,17 +21,17 @@ namespace Remiworks.Core.Event
             _busProvider = busProvider;
         }
 
-        public async Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)
+        public Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)
         {
-            await SetupQueueListenerAsync(
+            return SetupQueueListenerAsync(
                 queueName, 
                 (input, topic) => callback((TParam) input, topic), 
                 typeof(TParam));
         }
 
-        public async Task SetupQueueListenerAsync(string queueName, EventReceived callback, Type type)
+        public Task SetupQueueListenerAsync(string queueName, EventReceived callback, Type type)
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 void ReceivedCallback(EventMessage eventMessage)
                 {
@@ -44,21 +44,21 @@ namespace Remiworks.Core.Event
             });
         }
 
-        public async Task SetupQueueListenerAsync<TParam>(
+        public Task SetupQueueListenerAsync<TParam>(
             string queueName,
             string topic,
             EventReceivedForTopic<TParam> callback)
         {
-            await SetupQueueListenerAsync(
+            return SetupQueueListenerAsync(
                 queueName,
                 topic,
                 input => callback((TParam) input),
                 typeof(TParam));
         }
 
-        public async Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type type)
+        public Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type type)
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 void CallbackInvoker(string jsonParameter)
                 {
