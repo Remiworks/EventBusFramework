@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -14,10 +13,15 @@
     <PackageReleaseNotes>Changed to netstandard</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
-
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
     <PackageReference Include="Remiworks.Core" Version="2.0.2" />
   </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\Remiworks.Core\Remiworks.Core.csproj">
+      <Project>{5F22845B-CC46-4482-9AB4-5C3E44360FCF}</Project>
+      <Name>Remiworks.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

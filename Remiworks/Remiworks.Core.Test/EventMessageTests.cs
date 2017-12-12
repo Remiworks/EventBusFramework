@@ -19,7 +19,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void RoutingKeyCanBeSetAndGet()
         {
-            string routingKey = "Some value";
+            const string routingKey = "Some value";
 
             _sut.RoutingKey = routingKey;
             _sut.RoutingKey.ShouldBe(routingKey);
@@ -37,7 +37,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void TimestampCanBeSetAndGet()
         {
-            long timestamp = 12345678L;
+            const long timestamp = 12345678L;
 
             _sut.Timestamp = timestamp;
             _sut.Timestamp.ShouldBe(timestamp);
@@ -46,7 +46,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void ReplyQueueNameCanBeSetAndGet()
         {
-            string replyQueueName = "Some value";
+            const string replyQueueName = "Some value";
 
             _sut.ReplyQueueName = replyQueueName;
             _sut.ReplyQueueName.ShouldBe(replyQueueName);
@@ -55,7 +55,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void TypeCanBeSetAndGet()
         {
-            string type = "Some value";
+            const string type = "Some value";
 
             _sut.Type = type;
             _sut.Type.ShouldBe(type);
@@ -64,7 +64,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void JsonMessageCanBeSetAndGet()
         {
-            string jsonMessage = "Some value";
+            const string jsonMessage = "Some value";
 
             _sut.JsonMessage = jsonMessage;
             _sut.JsonMessage.ShouldBe(jsonMessage);

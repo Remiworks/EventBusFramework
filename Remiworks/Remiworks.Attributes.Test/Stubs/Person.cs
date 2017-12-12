@@ -1,4 +1,4 @@
-﻿namespace Remiworks.Core.Test.Stubs
+﻿namespace Remiworks.Attributes.Test.Stubs
 {
     public class Person
     {

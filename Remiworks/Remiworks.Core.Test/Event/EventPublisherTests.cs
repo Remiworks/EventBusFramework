@@ -1,9 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Remiworks.Core.Event;
 using Remiworks.Core.Models;
-using Remiworks.Core.Test.Stubs;
+using Remiworks.Core.Test.Event.Stubs;
 
 namespace Remiworks.Core.Test.Event
 {
@@ -31,23 +32,11 @@ namespace Remiworks.Core.Test.Event
         }
 
         [TestMethod]
-        public void BindTopicsToQueueAsyncCallsBusProvider_CreateTopicsForQueue()
-        {
-            const string queueName = "TestQueue";
-            var topics = new[] { "SomeTopic1", "SomeTopic2" };
-            
-            _sut.BindTopicsToQueueAsync(queueName, topics).Wait();
-            
-            _busProviderMock
-                .Verify(b => b.CreateTopicsForQueue(queueName, topics));
-        }
-
-        [TestMethod]
-        public void SendEventAsyncCallsBusProvider_BasicPublish_WithJson()
+        public async Task SendEventAsyncCallsBusProvider_BasicPublish_WithJson()
         {
             var personJson = JsonConvert.SerializeObject(_person);
             
-            _sut.SendEventAsync(_person, Topic).Wait();
+            await _sut.SendEventAsync(_person, Topic);
             
             _busProviderMock
                 .Verify(b => b.BasicPublish(
@@ -55,9 +44,9 @@ namespace Remiworks.Core.Test.Event
         }
 
         [TestMethod]
-        public void SendEventAsyncCallsBusProvider_BasicPublish_WithTopic()
+        public async Task SendEventAsyncCallsBusProvider_BasicPublish_WithTopic()
         {
-            _sut.SendEventAsync(_person, Topic).Wait();
+            await _sut.SendEventAsync(_person, Topic);
             
             _busProviderMock
                 .Verify(b => b.BasicPublish(
@@ -65,9 +54,9 @@ namespace Remiworks.Core.Test.Event
         }
 
         [TestMethod]
-        public void SendEventAsyncCallsBusProvider_BasicPublish_WithoutUnnecessaryProperties()
+        public async Task SendEventAsyncCallsBusProvider_BasicPublish_WithoutUnnecessaryProperties()
         {
-            _sut.SendEventAsync(_person, Topic).Wait();
+            await _sut.SendEventAsync(_person, Topic);
             
             _busProviderMock
                 .Verify(b => b.BasicPublish(

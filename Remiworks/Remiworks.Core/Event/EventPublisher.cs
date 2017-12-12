@@ -13,22 +13,18 @@ namespace Remiworks.Core.Event
             _busProvider = busProvider;
         }
 
-        public async Task BindTopicsToQueueAsync(string queueName, params string[] topics)
+        public Task SendEventAsync(object message, string topic)
         {
-            await Task.Run(() => 
-                _busProvider.CreateTopicsForQueue(queueName, topics));
-        }
-
-        public async Task SendEventAsync(object message, string topic)
-        {
-            var eventMessage = new EventMessage
+            return Task.Run(() =>
             {
-                JsonMessage = JsonConvert.SerializeObject(message),
-                RoutingKey = topic
-            };
+                var eventMessage = new EventMessage
+                {
+                    JsonMessage = JsonConvert.SerializeObject(message),
+                    RoutingKey = topic
+                };
 
-            await Task.Run(() =>
-                _busProvider.BasicPublish(eventMessage));
+                _busProvider.BasicPublish(eventMessage);
+            });
         }
     }
 }

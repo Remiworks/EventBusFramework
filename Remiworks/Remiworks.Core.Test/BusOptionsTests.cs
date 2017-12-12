@@ -18,7 +18,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void HostnameCanBeSetAndGet()
         {
-            string hostname = "Some value";
+            const string hostname = "Some value";
 
             _sut.Hostname = hostname;
             _sut.Hostname.ShouldBe(hostname);
@@ -27,7 +27,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void ExchangeNameCanBeSetAndGet()
         {
-            string exchangeName = "Some value";
+            const string exchangeName = "Some value";
 
             _sut.ExchangeName = exchangeName;
             _sut.ExchangeName.ShouldBe(exchangeName);
@@ -36,7 +36,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void VirtualHostCanBeSetAndGet()
         {
-            string virtualHost = "Some value";
+            const string virtualHost = "Some value";
 
             _sut.VirtualHost = virtualHost;
             _sut.VirtualHost.ShouldBe(virtualHost);
@@ -45,7 +45,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void PortCanBeSetAndGet()
         {
-            int port = 23456;
+            const int port = 23456;
 
             _sut.Port = port;
             _sut.Port.ShouldBe(port);
@@ -54,7 +54,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void UserNameCanBeSetAndGet()
         {
-            string userName = "Some value";
+            const string userName = "Some value";
 
             _sut.UserName = userName;
             _sut.UserName.ShouldBe(userName);
@@ -63,7 +63,7 @@ namespace Remiworks.Core.Test
         [TestMethod]
         public void PasswordCanBeSetAndGet()
         {
-            string password = "Some value";
+            const string password = "Some value";
 
             _sut.Password = password;
             _sut.Password.ShouldBe(password);
