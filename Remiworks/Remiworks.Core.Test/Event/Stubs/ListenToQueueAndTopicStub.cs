@@ -13,11 +13,20 @@ namespace Remiworks.Core.Test.Event.Stubs
             WaitHandle = new ManualResetEvent(false);
         }
 
-        public EventReceivedForTopic<T> EventListenerCallback()
+        public EventReceivedForTopic<T> GenericTypeEventListenerCallback()
         {
             return (receivedObject) =>
             {
                 ReceivedObject = receivedObject;
+                WaitHandle.Set();
+            };
+        }
+
+        public EventReceivedForTopic EventListenerCallback()
+        {
+            return (receivedObject) =>
+            {
+                ReceivedObject = (T) receivedObject;
                 WaitHandle.Set();
             };
         }

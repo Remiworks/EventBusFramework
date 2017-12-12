@@ -21,18 +21,22 @@ namespace Remiworks.Core.Event
             _busProvider = busProvider;
         }
 
-        public async Task SetupQueueListener<TParam>(
-            string queueName, 
-            EventReceived<TParam> callback)
+        public async Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)
+        {
+            await SetupQueueListenerAsync(
+                queueName, 
+                (input, topic) => callback((TParam) input, topic), 
+                typeof(TParam));
+        }
+
+        public async Task SetupQueueListenerAsync(string queueName, EventReceived callback, Type type)
         {
             await Task.Run(() =>
             {
                 void ReceivedCallback(EventMessage eventMessage)
                 {
-                    var messageObject = (TParam) JsonConvert.DeserializeObject(
-                        eventMessage.JsonMessage,
-                        typeof(TParam));
-
+                    var messageObject = JsonConvert.DeserializeObject(eventMessage.JsonMessage, type);
+                    
                     callback(messageObject, eventMessage.RoutingKey);
                 }
 
@@ -40,16 +44,25 @@ namespace Remiworks.Core.Event
             });
         }
 
-        public async Task SetupQueueListener<TParam>(
+        public async Task SetupQueueListenerAsync<TParam>(
             string queueName,
             string topic,
             EventReceivedForTopic<TParam> callback)
+        {
+            await SetupQueueListenerAsync(
+                queueName,
+                topic,
+                input => callback((TParam) input),
+                typeof(TParam));
+        }
+
+        public async Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type type)
         {
             await Task.Run(() =>
             {
                 void CallbackInvoker(string jsonParameter)
                 {
-                    var deserializedParamter = JsonConvert.DeserializeObject<TParam>(jsonParameter);
+                    var deserializedParamter = JsonConvert.DeserializeObject(jsonParameter, type);
 
                     callback(deserializedParamter);
                 }
@@ -71,6 +84,8 @@ namespace Remiworks.Core.Event
 
             lock (_lockObject)
             {
+                _busProvider.CreateTopicsForQueue(queueName, topic);
+                
                 if (_queueCallbacks.ContainsKey(queueName))
                 {
                     _queueCallbacks[queueName].Add(callbackForTopic);
@@ -81,20 +96,20 @@ namespace Remiworks.Core.Event
                     _busProvider.BasicConsume(
                         queueName, 
                         eventMessage =>
-                            InvokeMatchingTopicCallbacks(eventMessage, _queueCallbacks[queueName]));
+                            InvokeMatchingTopicCallbacks(eventMessage, queueName));
                 }
             }
         }
 
-        private static void InvokeMatchingTopicCallbacks(
+        private void InvokeMatchingTopicCallbacks(
             EventMessage eventMessage, 
-            List<CallbackForTopic> callbacks)
+            string queueName)
         {
             var matchingTopics = TopicMatcher.Match(
                 eventMessage.RoutingKey, 
-                callbacks.Select(t => t.Topic).ToArray());
+                _queueCallbacks[queueName].Select(t => t.Topic).ToArray());
 
-            callbacks
+            _queueCallbacks[queueName]
                 .Where(t => matchingTopics.Contains(t.Topic))
                 .ToList()
                 .ForEach(t => t.Callback(eventMessage.JsonMessage));

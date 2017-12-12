@@ -16,7 +16,7 @@ namespace Remiworks.Attributes.Extensions
                 throw new NotImplementedException("You did not use the AddRabbitMq method on the service collection");
             }
 
-            var initializer = new Initializer((IBusProvider)busProvider, serviceProvider);
+            var initializer = new Initializer(serviceProvider);
 
             initializer.Initialize(Assembly.GetCallingAssembly());
         }
