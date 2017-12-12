@@ -95,8 +95,7 @@ namespace Remiworks.Core.Event
                     _queueCallbacks[queueName] = new List<CallbackForTopic> {callbackForTopic};
                     _busProvider.BasicConsume(
                         queueName, 
-                        eventMessage =>
-                            InvokeMatchingTopicCallbacks(eventMessage, queueName));
+                        eventMessage => InvokeMatchingTopicCallbacks(eventMessage, queueName));
                 }
             }
         }

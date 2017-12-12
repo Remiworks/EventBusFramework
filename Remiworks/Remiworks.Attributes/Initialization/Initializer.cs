@@ -89,6 +89,8 @@ namespace Remiworks.Attributes.Initialization
                         "No parameters could be found for method {0} in type {1}", 
                         topicWithMethod.Value.Name, 
                         type);
+
+                    throw exception;
                 }
 
                 _eventListener.SetupQueueListenerAsync(
