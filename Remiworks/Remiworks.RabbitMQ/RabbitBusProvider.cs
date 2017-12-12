@@ -141,7 +141,7 @@ namespace Remiworks.RabbitMQ
 
             bool? isError = (bool?)args.BasicProperties.Headers?.FirstOrDefault(a => a.Key == "isError").Value;
 
-            EventMessage eventMessage = new EventMessage()
+            var eventMessage = new EventMessage()
             {
                 JsonMessage = message,
                 RoutingKey = args.RoutingKey,
@@ -170,7 +170,7 @@ namespace Remiworks.RabbitMQ
                 correlationId = parsedId;
             }
 
-            EventMessage eventMessage = new EventMessage()
+            var eventMessage = new EventMessage()
             {
                 JsonMessage = message,
                 RoutingKey = args.RoutingKey,
