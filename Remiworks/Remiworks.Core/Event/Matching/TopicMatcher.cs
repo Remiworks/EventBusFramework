@@ -17,7 +17,7 @@ namespace Remiworks.Core.Event.Matching
             }
 
             return topicsToMatch
-                .Where(topicToMathch => IsMatch(topic, topicToMathch))
+                .Where(topicToMatch => IsMatch(topic, topicToMatch))
                 .ToList();
         }
 
