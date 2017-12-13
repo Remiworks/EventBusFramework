@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -48,89 +47,6 @@ namespace Remiworks.Core.Test.Event
             _listenToQueueAndTopicStub = new ListenToQueueAndTopicStub<Person>();
             _listenToQueueStub = new ListenToQueueStub<Person>();
         }
-
-        [TestMethod]
-        public void ListenToQueueGenericThrows_ArgumentNullException_WhenQueueNameIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(null, new Mock<EventReceived<Person>>().Object).Wait());
-            
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-        
-        [TestMethod]
-        public void ListenToQueueGenericThrows_ArgumentException_WhenQueueNameIsEmpty()
-        {
-            var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync("", new Mock<EventReceived<Person>>().Object).Wait());
-            
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-        
-        [TestMethod]
-        public void ListenToQueueGenericThrows_ArgumentException_WhenQueueNameIsWhitespace()
-        {
-            var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(" ", new Mock<EventReceived<Person>>().Object).Wait());
-            string test = exception.ParamName;
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-        
-        [TestMethod]
-        public async Task ListenToQueueGenericThrows_ArgumentNullException_WhenCallbackIsNull()
-        {
-            var exception = await Should.ThrowAsync<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync<Person>(QueueName, null));
-            
-            exception.ParamName.ShouldBe(CallbackParameter);
-        }
-        
-        [TestMethod]
-        public async Task ListenToQueueNonGenericThrows_ArgumentNullException_WhenQueueNameIsNull()
-        {
-            var exception = await Should.ThrowAsync<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(null, new Mock<EventReceived>().Object, new Mock<Type>().Object));
-            
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-        
-        [TestMethod]
-        public async Task ListenToQueueNonGenericThrows_ArgumentException_WhenQueueNameIsEmpty()
-        {
-            var exception = await Should.ThrowAsync<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync("", new Mock<EventReceived>().Object, new Mock<Type>().Object));
-            
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-        
-        [TestMethod]
-        public async Task ListenToQueueNonGenericThrows_ArgumentException_WhenQueueNameIsWhitespace()
-        {
-            var exception = await Should.ThrowAsync<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(" ", new Mock<EventReceived>().Object, new Mock<Type>().Object));
-            
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-        
-        [TestMethod]
-        public async Task ListenToQueueNonGenericThrows_ArgumentNullException_WhenCallbackIsNull()
-        {
-            var exception = await Should.ThrowAsync<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, null, new Mock<Type>().Object));
-            
-            exception.ParamName.ShouldBe(CallbackParameter);
-        }
-        
-        [TestMethod]
-        public async Task ListenToQueueNonGenericThrows_ArgumentNullException_WhenTypeIsNull()
-        {
-            var exception = await Should.ThrowAsync<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, new Mock<EventReceived>().Object, null));
-            
-            exception.ParamName.ShouldBe(TypeParameter);
-        }
-        
-        
 
         [TestMethod]
         public async Task ListenToQueueCallsBusProvider_BasicConsume()

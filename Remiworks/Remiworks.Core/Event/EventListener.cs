@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using EnsureThat;
 using Newtonsoft.Json;
@@ -26,12 +24,12 @@ namespace Remiworks.Core.Event
 
         public Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)
         {
-            EnsureArg.IsNotNullOrWhiteSpace(queueName);
-            EnsureArg.IsNotNull(callback);
-            
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            EnsureArg.IsNotNull(callback, nameof(callback));
+
             return SetupQueueListenerAsync(
-                queueName, 
-                (input, topic) => callback((TParam) input, topic), 
+                queueName,
+                (input, topic) => callback((TParam)input, topic),
                 typeof(TParam));
         }
 
@@ -40,13 +38,13 @@ namespace Remiworks.Core.Event
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(callback, nameof(callback));
             EnsureArg.IsNotNull(parameterType, nameof(parameterType));
-            
+
             return Task.Run(() =>
             {
                 void ReceivedCallback(EventMessage eventMessage)
                 {
                     var messageObject = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
-                    
+
                     callback(messageObject, eventMessage.RoutingKey);
                 }
 
@@ -61,22 +59,26 @@ namespace Remiworks.Core.Event
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
-            EnsureArg.IsNotNull(callback);
-            
+            EnsureArg.IsNotNull(callback, nameof(callback));
+
             return SetupQueueListenerAsync(
                 queueName,
                 topic,
-                input => callback((TParam) input),
+                input => callback((TParam)input),
                 typeof(TParam));
         }
 
-        public Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type parameterType)
+        public Task SetupQueueListenerAsync(
+            string queueName, 
+            string topic,
+            EventReceivedForTopic callback, 
+            Type parameterType)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
-            EnsureArg.IsNotNull(callback);
-            EnsureArg.IsNotNull(parameterType);
-            
+            EnsureArg.IsNotNull(callback, nameof(callback));
+            EnsureArg.IsNotNull(parameterType, nameof(parameterType));
+
             return Task.Run(() =>
             {
                 void CallbackInvoker(string jsonParameter)
@@ -91,40 +93,40 @@ namespace Remiworks.Core.Event
         }
 
         private void AddCallbackForQueue(
-            string queueName, 
-            string topic, 
+            string queueName,
+            string topic,
             Action<string> callbackInvoker)
         {
             var callbackForTopic = new CallbackForTopic
             {
-                Topic = topic, 
+                Topic = topic,
                 Callback = callbackInvoker
             };
 
             lock (_lockObject)
             {
                 _busProvider.CreateTopicsForQueue(queueName, topic);
-                
+
                 if (_queueCallbacks.ContainsKey(queueName))
                 {
                     _queueCallbacks[queueName].Add(callbackForTopic);
                 }
                 else
                 {
-                    _queueCallbacks[queueName] = new List<CallbackForTopic> {callbackForTopic};
+                    _queueCallbacks[queueName] = new List<CallbackForTopic> { callbackForTopic };
                     _busProvider.BasicConsume(
-                        queueName, 
+                        queueName,
                         eventMessage => InvokeMatchingTopicCallbacks(eventMessage, queueName));
                 }
             }
         }
 
         private void InvokeMatchingTopicCallbacks(
-            EventMessage eventMessage, 
+            EventMessage eventMessage,
             string queueName)
         {
             var matchingTopics = TopicMatcher.Match(
-                eventMessage.RoutingKey, 
+                eventMessage.RoutingKey,
                 _queueCallbacks[queueName].Select(t => t.Topic).ToArray());
 
             _queueCallbacks[queueName]

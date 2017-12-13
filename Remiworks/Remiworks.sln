@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.RabbitMQ.Test", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Remiworks.IntegrationTest", "Remiworks.IntegrationTest\Remiworks.IntegrationTest.csproj", "{3FD67A62-01D3-4E31-84C3-3449641635CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Remiworks.Core.Test", "Remiworks.Core.Test\Remiworks.Core.Test.csproj", "{F2E3ADF4-170B-442B-B5AC-FCB83C048CDD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Remiworks.Core.Test", "Remiworks.Core.Test\Remiworks.Core.Test.csproj", "{F2E3ADF4-170B-442B-B5AC-FCB83C048CDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
