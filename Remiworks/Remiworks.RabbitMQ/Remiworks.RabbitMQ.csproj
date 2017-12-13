@@ -16,8 +16,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ensure.That" Version="7.1.0" />
     <PackageReference Include="RabbitMQ.Client" Version="5.0.1" />
-    <PackageReference Include="Remiworks.Core" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Remiworks.Core\Remiworks.Core.csproj" />
   </ItemGroup>
 
 </Project>

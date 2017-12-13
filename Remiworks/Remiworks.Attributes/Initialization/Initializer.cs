@@ -25,6 +25,11 @@ namespace Remiworks.Attributes.Initialization
 
             _busProvider = _serviceProvider.GetService<IBusProvider>();
             _eventListener = _serviceProvider.GetService<IEventListener>();
+
+            if (_busProvider == null || _eventListener == null)
+            {
+                throw new InvalidOperationException("You did not use the AddRabbitMq method on the service collection");
+            }
         }
 
         public void Initialize(Assembly executingAssembly)

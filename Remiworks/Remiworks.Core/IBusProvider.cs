@@ -16,7 +16,7 @@ namespace Remiworks.Core
 
         void BasicConsume(string queueName, EventReceivedCallback callback);
 
-        void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function);
+        void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback callback);
     }
 
     public delegate void EventReceivedCallback(EventMessage message);

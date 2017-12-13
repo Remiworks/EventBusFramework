@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using EnsureThat;
 using Newtonsoft.Json;
 using Remiworks.Core.Exceptions;
 using Remiworks.Core.Models;
@@ -16,6 +17,8 @@ namespace Remiworks.Core.Command
 
         public CommandPublisher(IBusProvider busProvider)
         {
+            EnsureArg.IsNotNull(busProvider, nameof(busProvider));
+            
             _busProvider = busProvider;
             _commandCallbacks = new ConcurrentDictionary<Guid, Action<string, bool>>();
 
@@ -25,16 +28,17 @@ namespace Remiworks.Core.Command
 
         public async Task<T> SendCommandAsync<T>(object message, string queueName, string key, int timeout = 5000)
         {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
-            else if (message == null) throw new ArgumentNullException(nameof(message));
-            else if (string.IsNullOrWhiteSpace(key)) throw new ArgumentNullException(nameof(key));
-            else if (key.Contains("*") || key.Contains("#")) throw new ArgumentException("Key may not contain wildcards");
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            EnsureArg.IsNotNull(message, nameof(message));
+            EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
+            
+            if (key.Contains("*") || key.Contains("#")) throw new ArgumentException("Key shouldn't contain wildcards");
 
             var correlationId = Guid.NewGuid();
 
             var waitHandle = new ManualResetEvent(false);
             string responseJson = null;
-            bool isError = false;
+            var isError = false;
 
             _commandCallbacks[correlationId] = (response, responseIsError) =>
             {
@@ -45,11 +49,12 @@ namespace Remiworks.Core.Command
 
             PublishCommandMessage(message, queueName, key, correlationId);
 
-            bool gotResponse = await Task.Run(() => waitHandle.WaitOne(timeout));
+            var gotResponse = await Task.Run(() => waitHandle.WaitOne(timeout));
 
             if (isError)
             {
                 var exception = JsonConvert.DeserializeObject<CommandPublisherException>(responseJson);
+                
                 throw exception;
             }
 

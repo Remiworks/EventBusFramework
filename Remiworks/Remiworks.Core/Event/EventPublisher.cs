@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using EnsureThat;
 using Newtonsoft.Json;
 using Remiworks.Core.Models;
 
@@ -15,6 +16,9 @@ namespace Remiworks.Core.Event
 
         public Task SendEventAsync(object message, string topic)
         {
+            EnsureArg.IsNotNull(message, nameof(message));
+            EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
+
             return Task.Run(() =>
             {
                 var eventMessage = new EventMessage

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
+using EnsureThat;
 using Remiworks.Attributes.Initialization;
-using Remiworks.Core;
 
 namespace Remiworks.Attributes.Extensions
 {
@@ -9,15 +9,9 @@ namespace Remiworks.Attributes.Extensions
     {
         public static void UseAttributes(this IServiceProvider serviceProvider)
         {
-            var busProvider = serviceProvider.GetService(typeof(IBusProvider));
-
-            if (busProvider == null)
-            {
-                throw new NotImplementedException("You did not use the AddRabbitMq method on the service collection");
-            }
+            EnsureArg.IsNotNull(serviceProvider, nameof(serviceProvider));
 
             var initializer = new Initializer(serviceProvider);
-
             initializer.Initialize(Assembly.GetCallingAssembly());
         }
     }

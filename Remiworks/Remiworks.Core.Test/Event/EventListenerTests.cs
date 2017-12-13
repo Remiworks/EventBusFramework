@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -14,6 +13,10 @@ namespace Remiworks.Core.Test.Event
     [TestClass]
     public class EventListenerTests
     {
+        private const string QueueNameParameter = "queueName";
+        private const string CallbackParameter = "callback";
+        private const string TypeParameter = "parameterType";
+        
         private const string QueueName = "testQueue";
         private const string WildcardTopic = "foo.*.bar";
         private const string FullTopic = "foo.something.bar";
