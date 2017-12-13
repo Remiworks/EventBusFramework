@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using EnsureThat;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -24,6 +25,8 @@ namespace Remiworks.RabbitMQ
 
         public RabbitBusProvider(BusOptions busOptions)
         {
+            EnsureArg.IsNotNull(busOptions, nameof(busOptions));
+
             BusOptions = busOptions;
         }
 
@@ -47,8 +50,8 @@ namespace Remiworks.RabbitMQ
 
         public void BasicConsume(string queueName, EventReceivedCallback callback)
         {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
-            else if (callback == null) throw new ArgumentNullException(nameof(callback));
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            EnsureArg.IsNotNull(callback, nameof(callback));
 
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
@@ -59,18 +62,23 @@ namespace Remiworks.RabbitMQ
 
         public void CreateTopicsForQueue(string queueName, params string[] topics)
         {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException(nameof(queueName));
-            else if (topics == null || !topics.Any() || topics.Any(t => t == null)) throw new ArgumentNullException(nameof(topics));
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            if (topics == null || !topics.Any()) throw new ArgumentNullException(nameof(topics));
 
             QueueDeclare(queueName);
 
-            topics.ToList().ForEach(topic =>
-                _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
+            topics
+                .Where(t => t != null)
+                .ToList()
+                .ForEach(topic => _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
         }
 
         public void BasicPublish(EventMessage eventMessage)
         {
-            if (eventMessage == null) throw new ArgumentNullException(nameof(eventMessage));
+            EnsureArg.IsNotNull(eventMessage, nameof(eventMessage));
+            EnsureArg.IsNotNullOrWhiteSpace(
+                eventMessage.JsonMessage, 
+                $"{nameof(eventMessage)}.{nameof(eventMessage.JsonMessage)}");
 
             var properties = _channel.CreateBasicProperties();
 
@@ -100,10 +108,10 @@ namespace Remiworks.RabbitMQ
                                  body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
         }
 
-        public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback function)
+        public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback callback)
         {
-            if (string.IsNullOrWhiteSpace(queueName)) throw new ArgumentNullException($"The {nameof(queueName)} should not be null");
-            if (function == null) throw new ArgumentNullException($"The {nameof(function)} should not be null");
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            EnsureArg.IsNotNull(callback, nameof(callback));
 
             _channel.QueueDeclare(
                 queue: queueName,
@@ -119,7 +127,7 @@ namespace Remiworks.RabbitMQ
 
             var consumer = new EventingBasicConsumer(_channel);
 
-            consumer.Received += (sender, args) => Task.Run(() => HandleReceivedCommand(function, args));
+            consumer.Received += (sender, args) => Task.Run(() => HandleReceivedCommand(callback, args));
 
             _channel.BasicConsume(
                 queue: queueName,
@@ -233,7 +241,7 @@ namespace Remiworks.RabbitMQ
         protected virtual void Dispose(bool disposing)
         {
             if (_isDisposed) return;
-            
+
             if (disposing)
             {
                 _connection.Dispose();
