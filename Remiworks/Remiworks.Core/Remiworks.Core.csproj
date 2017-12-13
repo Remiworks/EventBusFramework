@@ -18,4 +18,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Ensure.That, Version=7.1.0.55, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\..\.nuget\packages\ensure.that\7.1.0\lib\netstandard2.0\Ensure.That.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

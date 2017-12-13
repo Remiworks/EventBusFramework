@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using EnsureThat;
 using Newtonsoft.Json;
 using Remiworks.Core.Event.Matching;
 using Remiworks.Core.Models;
@@ -23,19 +26,26 @@ namespace Remiworks.Core.Event
 
         public Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)
         {
+            EnsureArg.IsNotNullOrWhiteSpace(queueName);
+            EnsureArg.IsNotNull(callback);
+            
             return SetupQueueListenerAsync(
                 queueName, 
                 (input, topic) => callback((TParam) input, topic), 
                 typeof(TParam));
         }
 
-        public Task SetupQueueListenerAsync(string queueName, EventReceived callback, Type type)
+        public Task SetupQueueListenerAsync(string queueName, EventReceived callback, Type parameterType)
         {
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            EnsureArg.IsNotNull(callback, nameof(callback));
+            EnsureArg.IsNotNull(parameterType, nameof(parameterType));
+            
             return Task.Run(() =>
             {
                 void ReceivedCallback(EventMessage eventMessage)
                 {
-                    var messageObject = JsonConvert.DeserializeObject(eventMessage.JsonMessage, type);
+                    var messageObject = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
                     
                     callback(messageObject, eventMessage.RoutingKey);
                 }
@@ -49,6 +59,10 @@ namespace Remiworks.Core.Event
             string topic,
             EventReceivedForTopic<TParam> callback)
         {
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
+            EnsureArg.IsNotNull(callback);
+            
             return SetupQueueListenerAsync(
                 queueName,
                 topic,
@@ -56,13 +70,18 @@ namespace Remiworks.Core.Event
                 typeof(TParam));
         }
 
-        public Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type type)
+        public Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type parameterType)
         {
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
+            EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
+            EnsureArg.IsNotNull(callback);
+            EnsureArg.IsNotNull(parameterType);
+            
             return Task.Run(() =>
             {
                 void CallbackInvoker(string jsonParameter)
                 {
-                    var deserializedParamter = JsonConvert.DeserializeObject(jsonParameter, type);
+                    var deserializedParamter = JsonConvert.DeserializeObject(jsonParameter, parameterType);
 
                     callback(deserializedParamter);
                 }
