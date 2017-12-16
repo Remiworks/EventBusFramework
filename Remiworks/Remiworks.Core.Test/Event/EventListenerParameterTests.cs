@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Remiworks.Core.Event;
+using Remiworks.Core.Event.Listener.Callbacks;
 using Remiworks.Core.Test.Event.Stubs;
 using Remiworks.Core.Test.Stubs;
 using Shouldly;
@@ -24,7 +25,7 @@ namespace Remiworks.Core.Test.Event
         [TestInitialize]
         public void Initialize()
         {
-            _sut = new EventListener(new Mock<IBusProvider>().Object);
+            _sut = new EventListener(new Mock<IBusProvider>().Object, new Mock<IEventCallbackRegistry>().Object);
         }
 
         [TestMethod]

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Remiworks.Core.Event.Matching
+namespace Remiworks.Core.Callbacks.Matching
 {
     public static class TopicMatcher
     {

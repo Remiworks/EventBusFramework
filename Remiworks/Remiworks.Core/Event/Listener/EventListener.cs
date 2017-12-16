@@ -4,22 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using EnsureThat;
 using Newtonsoft.Json;
-using Remiworks.Core.Event.Matching;
+using Remiworks.Core.Event.Listener.Callbacks;
 using Remiworks.Core.Models;
 
 namespace Remiworks.Core.Event
 {
     public class EventListener : IEventListener
     {
-        private readonly object _lockObject = new object();
-
-        private readonly Dictionary<string, List<CallbackForTopic>> _queueCallbacks;
         private readonly IBusProvider _busProvider;
+        private readonly IEventCallbackRegistry _callbackRegistry;
 
-        public EventListener(IBusProvider busProvider)
+        public EventListener(IBusProvider busProvider, IEventCallbackRegistry callbackRegistry)
         {
-            _queueCallbacks = new Dictionary<string, List<CallbackForTopic>>();
             _busProvider = busProvider;
+            _callbackRegistry = callbackRegistry;
         }
 
         public Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)
@@ -88,51 +86,8 @@ namespace Remiworks.Core.Event
                     callback(deserializedParamter);
                 }
 
-                AddCallbackForQueue(queueName, topic, CallbackInvoker);
+                _callbackRegistry.AddCallbackForQueue(queueName, topic, CallbackInvoker);
             });
-        }
-
-        private void AddCallbackForQueue(
-            string queueName,
-            string topic,
-            Action<string> callbackInvoker)
-        {
-            var callbackForTopic = new CallbackForTopic
-            {
-                Topic = topic,
-                Callback = callbackInvoker
-            };
-
-            lock (_lockObject)
-            {
-                _busProvider.CreateTopicsForQueue(queueName, topic);
-
-                if (_queueCallbacks.ContainsKey(queueName))
-                {
-                    _queueCallbacks[queueName].Add(callbackForTopic);
-                }
-                else
-                {
-                    _queueCallbacks[queueName] = new List<CallbackForTopic> { callbackForTopic };
-                    _busProvider.BasicConsume(
-                        queueName,
-                        eventMessage => InvokeMatchingTopicCallbacks(eventMessage, queueName));
-                }
-            }
-        }
-
-        private void InvokeMatchingTopicCallbacks(
-            EventMessage eventMessage,
-            string queueName)
-        {
-            var matchingTopics = TopicMatcher.Match(
-                eventMessage.RoutingKey,
-                _queueCallbacks[queueName].Select(t => t.Topic).ToArray());
-
-            _queueCallbacks[queueName]
-                .Where(t => matchingTopics.Contains(t.Topic))
-                .ToList()
-                .ForEach(t => t.Callback(eventMessage.JsonMessage));
         }
     }
 }

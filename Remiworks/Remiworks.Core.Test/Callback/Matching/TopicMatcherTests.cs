@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Remiworks.Core.Event.Matching;
+using Remiworks.Core.Callbacks.Matching;
 using Shouldly;
 
-namespace Remiworks.Core.Test.Event.Matching
+namespace Remiworks.Core.Test.Callback.Matching
 {
     [TestClass]
     public class TopicMatcherTests

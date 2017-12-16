@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Remiworks.Core.Event;
+using Remiworks.Core.Event.Listener.Callbacks;
 using Remiworks.Core.Models;
 using Remiworks.Core.Test.Event.Stubs;
 using Remiworks.Core.Test.Stubs;
@@ -43,7 +44,7 @@ namespace Remiworks.Core.Test.Event
             _busProviderMock
                 .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string>()));
             
-            _sut = new EventListener(_busProviderMock.Object);
+            _sut = new EventListener(_busProviderMock.Object, new EventCallbackRegistry(_busProviderMock.Object));
             
             _listenToQueueAndTopicStub = new ListenToQueueAndTopicStub<Person>();
             _listenToQueueStub = new ListenToQueueStub<Person>();
