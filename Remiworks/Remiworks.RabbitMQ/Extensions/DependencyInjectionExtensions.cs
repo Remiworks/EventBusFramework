@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Remiworks.Core;
 using Remiworks.Core.Command;
+using Remiworks.Core.Command.Publisher;
 using Remiworks.Core.Models;
 
 namespace Remiworks.RabbitMQ.Extensions

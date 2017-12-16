@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Remiworks.Core.Command
+namespace Remiworks.Core.Command.Publisher
 {
     public interface ICommandPublisher
     {

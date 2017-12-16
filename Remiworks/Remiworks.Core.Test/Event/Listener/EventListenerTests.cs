@@ -4,13 +4,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Remiworks.Core.Event;
+using Remiworks.Core.Event.Listener;
 using Remiworks.Core.Event.Listener.Callbacks;
 using Remiworks.Core.Models;
 using Remiworks.Core.Test.Event.Stubs;
 using Remiworks.Core.Test.Stubs;
 using Shouldly;
 
-namespace Remiworks.Core.Test.Event
+namespace Remiworks.Core.Test.Event.Listener
 {
     [TestClass]
     public class EventListenerTests

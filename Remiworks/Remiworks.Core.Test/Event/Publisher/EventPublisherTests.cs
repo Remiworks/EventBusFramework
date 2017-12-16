@@ -2,12 +2,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
-using Remiworks.Core.Event;
+using Remiworks.Core.Event.Publisher;
 using Remiworks.Core.Models;
-using Remiworks.Core.Test.Event.Stubs;
 using Remiworks.Core.Test.Stubs;
 
-namespace Remiworks.Core.Test.Event
+namespace Remiworks.Core.Test.Event.Publisher
 {
     [TestClass]
     public class EventPublisherTests

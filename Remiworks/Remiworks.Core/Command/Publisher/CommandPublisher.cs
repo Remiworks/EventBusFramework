@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Remiworks.Core.Exceptions;
 using Remiworks.Core.Models;
 
-namespace Remiworks.Core.Command
+namespace Remiworks.Core.Command.Publisher
 {
     public class CommandPublisher : ICommandPublisher
     {

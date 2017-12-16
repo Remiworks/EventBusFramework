@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Remiworks.Core.Command
+namespace Remiworks.Core.Command.Listener
 {
     public interface ICommandListener
     {

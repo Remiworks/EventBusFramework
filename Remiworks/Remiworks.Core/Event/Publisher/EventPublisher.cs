@@ -3,7 +3,7 @@ using EnsureThat;
 using Newtonsoft.Json;
 using Remiworks.Core.Models;
 
-namespace Remiworks.Core.Event
+namespace Remiworks.Core.Event.Publisher
 {
     public class EventPublisher : IEventPublisher
     {

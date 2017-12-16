@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Remiworks.Core.Event
+namespace Remiworks.Core.Event.Publisher
 {
     public interface IEventPublisher
     {

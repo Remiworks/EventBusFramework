@@ -1,11 +1,12 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Remiworks.Core.Command;
+using Remiworks.Core.Command.Listener;
+using Remiworks.Core.Command.Listener.Callbacks;
 using Remiworks.Core.Test.Stubs;
 using Shouldly;
 
-namespace Remiworks.Core.Test.Command
+namespace Remiworks.Core.Test.Command.Listener
 {
     [TestClass]
     public class CommandListenerParameterTests
@@ -24,7 +25,7 @@ namespace Remiworks.Core.Test.Command
         [TestInitialize]
         public void Initialize()
         {
-            _sut = new CommandListener(new Mock<IBusProvider>().Object);
+            _sut = new CommandListener(new Mock<IBusProvider>().Object, new Mock<ICommandCallbackRegistry>().Object);
         }
 
         [TestMethod]

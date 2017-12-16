@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using EnsureThat;
+using Remiworks.Core.Command.Listener.Callbacks;
 
-namespace Remiworks.Core.Command
+namespace Remiworks.Core.Command.Listener
 {
     public class CommandListener : ICommandListener
     {
@@ -11,10 +12,12 @@ namespace Remiworks.Core.Command
         private const string HashtagWildcard = "#";
         
         private readonly IBusProvider _busProvider;
+        private readonly ICommandCallbackRegistry _commandCallbackRegistry;
         
-        public CommandListener(IBusProvider busProvider)
+        public CommandListener(IBusProvider busProvider, ICommandCallbackRegistry commandCallbackRegistry)
         {
             _busProvider = busProvider;
+            _commandCallbackRegistry = commandCallbackRegistry;
         }
         
         public Task SetupCommandListenerAsync<TParam>(string queueName, string key, CommandReceivedCallback<TParam> callback)

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Remiworks.Core.Models
+namespace Remiworks.Core.Callbacks
 {
     public class CallbackForTopic
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Remiworks.Core.Command;
+using Remiworks.Core.Command.Publisher;
 using Shouldly;
 
-namespace Remiworks.Core.Test.Command
+namespace Remiworks.Core.Test.Command.Publisher
 {
     [TestClass]
     public class CommandPublisherParameterTests

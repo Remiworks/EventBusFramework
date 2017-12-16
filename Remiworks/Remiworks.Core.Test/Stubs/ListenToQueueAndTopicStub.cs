@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using Remiworks.Core.Event;
+using Remiworks.Core.Event.Listener;
 
 namespace Remiworks.Core.Test.Event.Stubs
 {

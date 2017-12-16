@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using EnsureThat;
 using Newtonsoft.Json;
 using Remiworks.Core.Event.Listener.Callbacks;
 using Remiworks.Core.Models;
 
-namespace Remiworks.Core.Event
+namespace Remiworks.Core.Event.Listener
 {
     public class EventListener : IEventListener
     {

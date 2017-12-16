@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Remiworks.Core.Event
+namespace Remiworks.Core.Event.Listener
 {
     public interface IEventListener
     {
