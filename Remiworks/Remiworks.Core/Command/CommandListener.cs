@@ -6,6 +6,10 @@ namespace Remiworks.Core.Command
 {
     public class CommandListener : ICommandListener
     {
+        private const string KeyContainsWildcardMessage = "Key should not contain wildcards";
+        private const string StarWildcard = "*";
+        private const string HashtagWildcard = "#";
+        
         private readonly IBusProvider _busProvider;
         
         public CommandListener(IBusProvider busProvider)
@@ -19,6 +23,8 @@ namespace Remiworks.Core.Command
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
             EnsureArg.IsNotNull(callback, nameof(callback));
 
+            if(!IsValidKey(key)) throw new ArgumentException(KeyContainsWildcardMessage, nameof(key));
+            
             return SetupCommandListenerAsync(
                 queueName, 
                 key,
@@ -32,8 +38,17 @@ namespace Remiworks.Core.Command
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
             EnsureArg.IsNotNull(callback, nameof(callback));
             EnsureArg.IsNotNull(parameterType, nameof(parameterType));
+            
+            if(!IsValidKey(key)) throw new ArgumentException(KeyContainsWildcardMessage, nameof(key));
 
             return null;
+        }
+
+        private bool IsValidKey(string key)
+        {
+            return
+                !key.Contains(StarWildcard) &&
+                !key.Contains(HashtagWildcard);
         }
     }
 }

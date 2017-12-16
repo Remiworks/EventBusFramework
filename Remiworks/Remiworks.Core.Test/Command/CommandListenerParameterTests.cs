@@ -10,6 +10,7 @@ namespace Remiworks.Core.Test.Command
     [TestClass]
     public class CommandListenerParameterTests
     {
+        private const string KeyContainsWildcardMessage = "Key should not contain wildcards";
         private const string QueueNameParameter = "queueName";
         private const string KeyParameter = "key";
         private const string CallbackParameter = "callback";
@@ -87,6 +88,28 @@ namespace Remiworks.Core.Test.Command
         }
 
         [TestMethod]
+        public void SetupCommandListenerAsyncGenericThrows_ArgumentException_WhenKeyContainsStarWildcard()
+        {
+            var exception = Should.Throw<ArgumentException>(() =>
+                _sut.SetupCommandListenerAsync(QueueName, "some.*", new Mock<CommandReceivedCallback<Person>>().Object)
+                    .Wait());
+            
+            exception.ParamName.ShouldBe(KeyParameter);
+            exception.Message.ShouldStartWith(KeyContainsWildcardMessage);
+        }
+
+        [TestMethod]
+        public void SetupCommandListenerAsyncGenericThrows_ArgumentException_WhenKeyContainsHashtagWildcard()
+        {
+            var exception = Should.Throw<ArgumentException>(() =>
+                _sut.SetupCommandListenerAsync(QueueName, "some.#", new Mock<CommandReceivedCallback<Person>>().Object)
+                    .Wait());
+            
+            exception.ParamName.ShouldBe(KeyParameter);
+            exception.Message.ShouldStartWith(KeyContainsWildcardMessage);
+        }
+
+        [TestMethod]
         public void SetupCommandListenerAsyncGenericThrows_ArgumentNullException_WhenCallbackIsNull()
         {
             var exception = Should.Throw<ArgumentException>(() =>
@@ -154,6 +177,29 @@ namespace Remiworks.Core.Test.Command
                     .Wait());
             
             exception.ParamName.ShouldBe(KeyParameter);
+        }
+        
+
+        [TestMethod]
+        public void SetupCommandListenerAsyncThrows_ArgumentException_WhenKeyContainsStarWildcard()
+        {
+            var exception = Should.Throw<ArgumentException>(() =>
+                _sut.SetupCommandListenerAsync(QueueName, "some.*", new Mock<CommandReceivedCallback>().Object, new Mock<Type>().Object)
+                    .Wait());
+            
+            exception.ParamName.ShouldBe(KeyParameter);
+            exception.Message.ShouldStartWith(KeyContainsWildcardMessage);
+        }
+
+        [TestMethod]
+        public void SetupCommandListenerAsyncThrows_ArgumentException_WhenKeyContainsHashtagWildcard()
+        {
+            var exception = Should.Throw<ArgumentException>(() =>
+                _sut.SetupCommandListenerAsync(QueueName, "some.#", new Mock<CommandReceivedCallback>().Object, new Mock<Type>().Object)
+                    .Wait());
+            
+            exception.ParamName.ShouldBe(KeyParameter);
+            exception.Message.ShouldStartWith(KeyContainsWildcardMessage);
         }
 
         [TestMethod]
