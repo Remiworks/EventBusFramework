@@ -65,7 +65,7 @@ namespace Remiworks.Core.Command.Publisher
 
         private void PublishCommandMessage(object message, string queueName, string key, Guid correlationId)
         {
-            _busProvider.CreateTopicsForQueue(queueName, key);
+            _busProvider.BasicTopicBind(queueName, key);
 
             _busProvider.BasicPublish(new EventMessage
             {

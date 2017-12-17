@@ -7,6 +7,7 @@ using Remiworks.Attributes.Initialization;
 using Remiworks.Attributes.Test.Stubs;
 using Remiworks.Core;
 using Remiworks.Core.Event;
+using Remiworks.Core.Event.Listener;
 
 namespace Remiworks.Attributes.Test.Initialization
 {

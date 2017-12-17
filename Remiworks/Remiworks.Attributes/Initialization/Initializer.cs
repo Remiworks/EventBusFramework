@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Remiworks.Core;
 using Remiworks.Core.Event;
+using Remiworks.Core.Event.Listener;
 using Remiworks.Core.Models;
 
 namespace Remiworks.Attributes.Initialization
@@ -139,8 +140,8 @@ namespace Remiworks.Attributes.Initialization
         private void SetUpCommandMethods(Type type, string queueName)
         {
             Dictionary<string, MethodInfo> commandsWithMethods = GetCommandsWithMethods(type);
-            _busProvider.SetupRpcListeners(queueName, commandsWithMethods.Keys.ToArray(),
-                CreateCommandReceivedCallback(type, commandsWithMethods));
+//            _busProvider.SetupRpcListeners(queueName, commandsWithMethods.Keys.ToArray(),
+//                CreateCommandReceivedCallback(type, commandsWithMethods));
         }
 
         public Dictionary<string, MethodInfo> GetCommandsWithMethods(Type type)
@@ -148,7 +149,7 @@ namespace Remiworks.Attributes.Initialization
             return GetAttributeValuesWithMethod<CommandAttribute>(type, (a) => a.Key);
         }
 
-        public CommandReceivedCallback CreateCommandReceivedCallback(Type type, Dictionary<string, MethodInfo> commands)
+        public CommandReceivedCallbackS CreateCommandReceivedCallback(Type type, Dictionary<string, MethodInfo> commands)
         {
             return async (message) =>
             {

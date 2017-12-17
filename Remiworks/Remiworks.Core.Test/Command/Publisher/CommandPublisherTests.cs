@@ -28,7 +28,7 @@ namespace Remiworks.Core.Test.Command.Publisher
         public void TestInitialize()
         {
             _busProviderMock
-                .Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<EventReceivedCallback>()))
+                .Setup(b => b.BasicConsume(It.IsAny<string>(), It.IsAny<EventReceivedCallback>(), It.IsAny<bool>()))
                 .Callback<string, EventReceivedCallback>((_, callback) => _eventReceivedCallback = callback);
 
             _sut = new CommandPublisher(_busProviderMock.Object);
@@ -38,7 +38,7 @@ namespace Remiworks.Core.Test.Command.Publisher
         public async void SendCommandCallsBasicPublishWithCorrectParameters()
         {
             _busProviderMock
-                .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
+                .Setup(b => b.BasicTopicBind(It.IsAny<string>(), It.IsAny<string[]>()));
 
             _busProviderMock
                 .Setup(b => b.BasicPublish(It.Is(CorrectEventMessage)))
@@ -54,7 +54,7 @@ namespace Remiworks.Core.Test.Command.Publisher
         public async void SendCommandReturnsCorrectResult()
         {
             _busProviderMock
-               .Setup(b => b.CreateTopicsForQueue(It.IsAny<string>(), It.IsAny<string[]>()));
+               .Setup(b => b.BasicTopicBind(It.IsAny<string>(), It.IsAny<string[]>()));
 
             _busProviderMock
                 .Setup(b => b.BasicPublish(It.Is(CorrectEventMessage)))
@@ -66,7 +66,7 @@ namespace Remiworks.Core.Test.Command.Publisher
             result.ShouldBe(Message.Reverse().ToString());
         }
 
-        private Expression<Func<EventMessage, bool>> CorrectEventMessage =>
+        private static Expression<Func<EventMessage, bool>> CorrectEventMessage =>
             eventMessage =>
                 eventMessage.RoutingKey == Key &&
                 eventMessage.JsonMessage == JsonConvert.SerializeObject(Message);
@@ -74,8 +74,8 @@ namespace Remiworks.Core.Test.Command.Publisher
         private Action<EventMessage> BasicPublishCallback =>
             receivedEvent =>
             {
-                string receivedMessage = JsonConvert.DeserializeObject<string>(receivedEvent.JsonMessage);
-                string invertedMessage = receivedMessage.Reverse().ToString();
+                var receivedMessage = JsonConvert.DeserializeObject<string>(receivedEvent.JsonMessage);
+                var invertedMessage = receivedMessage.Reverse().ToString();
 
                 _eventReceivedCallback(new EventMessage
                 {
