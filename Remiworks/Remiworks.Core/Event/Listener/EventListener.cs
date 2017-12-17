@@ -77,9 +77,9 @@ namespace Remiworks.Core.Event.Listener
 
             return Task.Run(() =>
             {
-                void CallbackInvoker(string jsonParameter)
+                void CallbackInvoker(EventMessage eventMessage)
                 {
-                    var deserializedParamter = JsonConvert.DeserializeObject(jsonParameter, parameterType);
+                    var deserializedParamter = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
 
                     callback(deserializedParamter);
                 }

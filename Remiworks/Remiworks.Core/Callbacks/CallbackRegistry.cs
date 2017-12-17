@@ -21,7 +21,7 @@ namespace Remiworks.Core.Callbacks
         public void AddCallbackForQueue(
             string queueName,
             string topic,
-            Action<string> callback)
+            Action<EventMessage> callback)
         {
             var callbackForTopic = new CallbackForTopic
             {
@@ -31,7 +31,7 @@ namespace Remiworks.Core.Callbacks
 
             lock (_lockObject)
             {
-                _busProvider.CreateTopicsForQueue(queueName, topic);
+                _busProvider.BasicTopicBind(queueName, topic);
 
                 if (_queueCallbacks.ContainsKey(queueName))
                 {
@@ -42,8 +42,12 @@ namespace Remiworks.Core.Callbacks
                 }
                 else
                 {
-                    _queueCallbacks[queueName] = new List<CallbackForTopic> { callbackForTopic };
-                    _busProvider.BasicConsume(
+                    _queueCallbacks[queueName] = new List<CallbackForTopic>
+                    {
+                        callbackForTopic
+                    };
+                    
+                    RegisterCallbackListener(
                         queueName,
                         eventMessage => InvokeMatchingTopicCallbacks(eventMessage, queueName));
                 }
@@ -61,9 +65,11 @@ namespace Remiworks.Core.Callbacks
             _queueCallbacks[queueName]
                 .Where(t => matchingTopics.Contains(t.Topic))
                 .ToList()
-                .ForEach(t => t.Callback(eventMessage.JsonMessage));
+                .ForEach(t => t.Callback(eventMessage));
         }
 
-        protected abstract bool CanAddCallback(List<CallbackForTopic> registeredTopicsForQueue, string topicToAdd);
+        protected abstract void RegisterCallbackListener(string queueName, EventReceivedCallback callback);
+
+        protected abstract bool CanAddCallback(IEnumerable<CallbackForTopic> registeredTopicsForQueue, string topicToAdd);
     }
 }

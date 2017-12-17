@@ -7,11 +7,24 @@ namespace Remiworks.Core.Command.Listener.Callbacks
 {
     public class CommandCallbackRegistry : CallbackRegistry, ICommandCallbackRegistry
     {
+        private readonly IBusProvider _busProvider;
+        
         public CommandCallbackRegistry(IBusProvider busProvider) : base(busProvider)
         {
+            _busProvider = busProvider;
         }
 
-        protected override bool CanAddCallback(List<CallbackForTopic> registeredTopicsForQueue, string topicToAdd)
+        protected override void RegisterCallbackListener(string queueName, EventReceivedCallback callback)
+        {
+            _busProvider.BasicConsume(
+                queueName: queueName,
+                callback: callback,
+                autoAcknowledge: false);
+            
+            _busProvider.BasicQos(0, 1);
+        }
+
+        protected override bool CanAddCallback(IEnumerable<CallbackForTopic> registeredTopicsForQueue, string topicToAdd)
         {
             return !registeredTopicsForQueue.Any(t => t.Topic == topicToAdd);
         }
