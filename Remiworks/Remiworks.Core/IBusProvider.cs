@@ -12,11 +12,13 @@ namespace Remiworks.Core
 
         void BasicPublish(EventMessage eventMessage);
 
-        void CreateTopicsForQueue(string queueName, params string[] topics);
-
-        void BasicConsume(string queueName, EventReceivedCallback callback);
-
         void BasicAcknowledge(ulong deliveryTag, bool multiple);
+        
+        void BasicTopicBind(string queueName, params string[] topics);
+
+        void BasicConsume(string queueName, EventReceivedCallback callback, bool autoAcknowledge = true);
+
+        void BasicQos(uint prefetchSize, ushort prefetchCount);
     }
 
     public delegate void EventReceivedCallback(EventMessage message);

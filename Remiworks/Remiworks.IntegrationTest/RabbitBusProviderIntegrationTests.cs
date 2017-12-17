@@ -34,7 +34,7 @@ namespace Remiworks.IntegrationTest
                 };
 
                 sut.CreateConnection();
-                sut.CreateTopicsForQueue(queue, topic);
+                sut.BasicTopicBind(queue, topic);
                 sut.BasicConsume(queue, eventReceivedCallback);
 
                 SendRabbitEventToExchange(topic, jsonMessage);
@@ -70,7 +70,7 @@ namespace Remiworks.IntegrationTest
                 });
 
                 sut.CreateConnection();
-                sut.CreateTopicsForQueue(queue, topic);
+                sut.BasicTopicBind(queue, topic);
                 sut.BasicPublish(message);
 
                 waitHandle.WaitOne(2000).ShouldBeTrue();
@@ -104,7 +104,7 @@ namespace Remiworks.IntegrationTest
                 };
 
                 sut.CreateConnection();
-                sut.CreateTopicsForQueue(queue, topic);
+                sut.BasicTopicBind(queue, topic);
                 sut.BasicConsume(queue, eventReceivedCallback);
                 sut.BasicPublish(sentMessage);
 
