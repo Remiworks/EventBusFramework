@@ -60,6 +60,13 @@ namespace Remiworks.RabbitMQ
             _channel.BasicConsume(queueName, true, consumer);
         }
 
+        public void BasicAcknowledge(ulong deliveryTag, bool multiple)
+        {
+            _channel.BasicAck(
+                deliveryTag: deliveryTag, 
+                multiple: multiple);
+        }
+
         public void CreateTopicsForQueue(string queueName, params string[] topics)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));

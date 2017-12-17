@@ -16,10 +16,10 @@ namespace Remiworks.Core
 
         void BasicConsume(string queueName, EventReceivedCallback callback);
 
-        void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback callback);
+        void BasicAcknowledge(ulong deliveryTag, bool multiple);
     }
 
     public delegate void EventReceivedCallback(EventMessage message);
 
-    public delegate Task<string> CommandReceivedCallback(EventMessage message);
+    public delegate Task<string> CommandReceivedCallbackS(EventMessage message);
 }
