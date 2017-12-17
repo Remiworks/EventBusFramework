@@ -21,7 +21,7 @@ namespace Remiworks.RabbitMQ.Test
         private readonly string[] _topics = new string[] { "SomeTopic1", "SomeTopic2" };
 
         private readonly Mock<BusOptions> _busOptionsMock = new Mock<BusOptions>();
-        private readonly CommandReceivedCallback _commandReceivedCallback = (p) => { return Task.FromResult("callback"); };
+        private readonly CommandReceivedCallbackS _commandReceivedCallback = (p) => { return Task.FromResult("callback"); };
 
         private RabbitBusProvider _sut;
 

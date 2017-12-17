@@ -108,7 +108,7 @@ namespace Remiworks.RabbitMQ
                                  body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
         }
 
-        public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback callback)
+        public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallbackS callback)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(callback, nameof(callback));
@@ -157,13 +157,14 @@ namespace Remiworks.RabbitMQ
                 Timestamp = args.BasicProperties.Timestamp.UnixTime,
                 ReplyQueueName = args.BasicProperties.ReplyTo,
                 Type = args.BasicProperties.Type,
-                IsError = isError != null && isError.Value
+                IsError = isError != null && isError.Value,
+                DeliveryTag = args.DeliveryTag
             };
 
             callback(eventMessage);
         }
 
-        private async Task HandleReceivedCommand(CommandReceivedCallback function, BasicDeliverEventArgs args)
+        private async Task HandleReceivedCommand(CommandReceivedCallbackS function, BasicDeliverEventArgs args)
         {
             var replyProps = _channel.CreateBasicProperties();
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
@@ -203,7 +204,7 @@ namespace Remiworks.RabbitMQ
                 multiple: false);
         }
 
-        private static async Task<string> InvokeCommandReceivedCallbackAsync(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
+        private static async Task<string> InvokeCommandReceivedCallbackAsync(CommandReceivedCallbackS function, IBasicProperties replyProps, EventMessage eventMessage)
         {
             var response = "";
             replyProps.Headers = new Dictionary<string, object>();
@@ -236,6 +237,8 @@ namespace Remiworks.RabbitMQ
                 autoDelete: false);
         }
 
+        #region IDisposable
+        
         private bool _isDisposed = false;
 
         protected virtual void Dispose(bool disposing)
@@ -256,5 +259,7 @@ namespace Remiworks.RabbitMQ
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        
+        #endregion
     }
 }
