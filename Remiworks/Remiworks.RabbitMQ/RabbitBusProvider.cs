@@ -28,6 +28,8 @@ namespace Remiworks.RabbitMQ
             EnsureArg.IsNotNull(busOptions, nameof(busOptions));
 
             BusOptions = busOptions;
+
+            CreateConnection();
         }
 
         public void CreateConnection()

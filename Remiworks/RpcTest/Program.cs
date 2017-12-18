@@ -1,5 +1,8 @@
-﻿using RabbitFramework;
-using System;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using Remiworks.Core.Models;
+using Remiworks.RabbitMQ.Extensions;
+using RpcTest.Controllers;
 
 namespace RpcTest
 {
@@ -7,22 +10,21 @@ namespace RpcTest
     {
         private static void Main(string[] args)
         {
-            using (IBusProvider rpcClient = new RabbitBusProvider(new BusOptions()))
-            {
-                var command = new SomeCommand { Name = "Something", Value = 10 };
-                Console.WriteLine($" [x] Requesting fib({command.Value})");
+            // Register services and add RabbitMQ to the mix
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<SomeController>()
+                .AddRabbitMq(new BusOptions())
+                .BuildServiceProvider();
 
-                string response = rpcClient.Call<string>("rpc_queue", command).Result;
+            // Get a reference to SomeController and call SendExampleCommand(...)
+            var someController = serviceProvider.GetService<SomeController>();
+            int amount = 10;
 
-                Console.WriteLine(" [.] Got '{0}'", response);
-                Console.ReadLine();
-            }
+            Console.WriteLine($"Requesting fib({amount})");
+
+            var fib = someController.SendExampleCommand(amount).Result;
+
+            Console.WriteLine($"Got '{fib}'");
         }
-    }
-
-    public class SomeCommand
-    {
-        public string Name { get; set; }
-        public int Value { get; set; }
     }
 }

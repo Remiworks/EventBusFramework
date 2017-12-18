@@ -14,77 +14,60 @@ namespace Remiworks.Core.Command.Listener
         private const string KeyContainsWildcardMessage = "Key should not contain wildcards";
         private const string StarWildcard = "*";
         private const string HashtagWildcard = "#";
-        
+
         private readonly IBusProvider _busProvider;
         private readonly ICommandCallbackRegistry _callbackRegistry;
-        
+
         public CommandListener(IBusProvider busProvider, ICommandCallbackRegistry commandCallbackRegistry)
         {
             _busProvider = busProvider;
             _callbackRegistry = commandCallbackRegistry;
         }
-        
+
         public Task SetupCommandListenerAsync<TParam>(string queueName, string key, CommandReceivedCallback<TParam> callback)
         {
-            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));           
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
             EnsureArg.IsNotNull(callback, nameof(callback));
-            if(!IsValidKey(key)) throw new ArgumentException(KeyContainsWildcardMessage, nameof(key));
-            
+            if (!IsValidKey(key)) throw new ArgumentException(KeyContainsWildcardMessage, nameof(key));
+
             return SetupCommandListenerAsync(
-                queueName, 
+                queueName,
                 key,
-                parameter => callback((TParam) parameter),
+                parameter => callback((TParam)parameter),
                 typeof(TParam));
         }
 
         public Task SetupCommandListenerAsync(string queueName, string key, CommandReceivedCallback callback, Type parameterType)
         {
-            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));           
+            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
             EnsureArg.IsNotNull(callback, nameof(callback));
             EnsureArg.IsNotNull(parameterType, nameof(parameterType));
-            if(!IsValidKey(key)) throw new ArgumentException(KeyContainsWildcardMessage, nameof(key));
+            if (!IsValidKey(key)) throw new ArgumentException(KeyContainsWildcardMessage, nameof(key));
 
             return Task.Run(() =>
             {
                 _callbackRegistry.AddCallbackForQueue(
-                    queueName, 
-                    key, 
-                    message => Task.Run(() => HandleReceivedCommand(callback, message, parameterType)));
+                    queueName,
+                    key,
+                    message => HandleReceivedCommand(callback, message, parameterType));
             });
         }
 
-        private async Task HandleReceivedCommand(CommandReceivedCallback callback, EventMessage receivedEventMessage, Type parameterType)
+        private void HandleReceivedCommand(CommandReceivedCallback callback, EventMessage receivedEventMessage, Type parameterType)
         {
-            var deserializedParameter = JsonConvert.DeserializeObject(receivedEventMessage.JsonMessage, parameterType);
-            (object response, bool isError) = await InvokeCallbackAsync(callback, deserializedParameter);
-                    
+            object response = null;
+            bool isError = false;
+
             var replyKey = $"{receivedEventMessage.RoutingKey}.Reply";
             _busProvider.BasicTopicBind(receivedEventMessage.ReplyQueueName, replyKey);
-                    
-            _busProvider.BasicPublish(new EventMessage
-            {
-                CorrelationId = receivedEventMessage.CorrelationId,
-                IsError = isError,
-                JsonMessage = JsonConvert.SerializeObject(response),
-                RoutingKey = replyKey
-            });
-            
-            _busProvider.BasicAcknowledge(receivedEventMessage.DeliveryTag, false);
-        }
 
-        private static async Task<(object response, bool isError)> InvokeCallbackAsync(
-            CommandReceivedCallback callback, 
-            object parameter)
-        {
-            object response;
-            bool isError;
-            
             try
             {
-                response = await callback(parameter);
-                isError = false;
+                var deserializedParameter = JsonConvert.DeserializeObject(receivedEventMessage.JsonMessage, parameterType);
+                response = callback(deserializedParameter);
+
             }
             catch (TargetInvocationException ex)
             {
@@ -96,10 +79,19 @@ namespace Remiworks.Core.Command.Listener
                 response = new CommandPublisherException(ex.Message, ex);
                 isError = true;
             }
+            finally
+            {
+                _busProvider.BasicPublish(new EventMessage
+                {
+                    CorrelationId = receivedEventMessage.CorrelationId,
+                    IsError = isError,
+                    JsonMessage = JsonConvert.SerializeObject(response),
+                    RoutingKey = replyKey
+                });
 
-            return (response, isError);
+                _busProvider.BasicAcknowledge(receivedEventMessage.DeliveryTag, false);
+            }
         }
-        
 
         private static bool IsValidKey(string key)
         {
