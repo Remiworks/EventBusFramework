@@ -58,7 +58,7 @@ namespace Remiworks.Core.Command.Listener
         private void HandleReceivedCommand(CommandReceivedCallback callback, EventMessage receivedEventMessage, Type parameterType)
         {
             object response = null;
-            bool isError = false;
+            var isError = false;
 
             var replyKey = $"{receivedEventMessage.RoutingKey}.Reply";
             _busProvider.BasicTopicBind(receivedEventMessage.ReplyQueueName, replyKey);
