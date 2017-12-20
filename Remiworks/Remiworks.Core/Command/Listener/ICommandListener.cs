@@ -10,7 +10,7 @@ namespace Remiworks.Core.Command.Listener
         Task SetupCommandListenerAsync(string queueName, string key, CommandReceivedCallback callback, Type parameterType);
     }
     
-    public delegate object CommandReceivedCallback<in TParam>(TParam parameter);
+    public delegate Task<object> CommandReceivedCallback<in TParam>(TParam parameter);
 
-    public delegate object CommandReceivedCallback(object parameter);
+    public delegate Task<object> CommandReceivedCallback(object parameter);
 }

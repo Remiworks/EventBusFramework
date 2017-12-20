@@ -57,7 +57,7 @@ namespace Remiworks.Core.Command.Listener
 
         private void HandleReceivedCommand(CommandReceivedCallback callback, EventMessage receivedEventMessage, Type parameterType)
         {
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 object response = null;
                 var isError = false;
@@ -68,7 +68,7 @@ namespace Remiworks.Core.Command.Listener
                 try
                 {
                     var deserializedParameter = JsonConvert.DeserializeObject(receivedEventMessage.JsonMessage, parameterType);
-                    response = callback(deserializedParameter);
+                    response = await callback(deserializedParameter);
                 }
                 catch (TargetInvocationException ex)
                 {

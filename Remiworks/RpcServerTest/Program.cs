@@ -17,8 +17,7 @@ namespace RpcServerTest
                 .BuildServiceProvider();
 
             serviceProvider.UseAttributes();
-
-            Console.WriteLine(" Press [enter] to exit.");
+            
             Console.ReadLine();
         }
     }

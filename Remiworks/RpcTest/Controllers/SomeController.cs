@@ -6,11 +6,11 @@ using RpcTest.Commands;
 
 namespace RpcTest.Controllers
 {
-    [QueueListener("SomeQueue")]
     public class SomeController
     {
         private const string QueueName = "rcpTestQueue";
         private const string FibCommandKey = "calculate.fib";
+        private const string VoidCommandKey = "do.something";
 
         private readonly ICommandPublisher _commandPublisher;
 
@@ -19,23 +19,24 @@ namespace RpcTest.Controllers
             _commandPublisher = commandPublisher;
         }
 
-        public async Task<int> SendExampleCommand(int amount)
+        public async Task<int> SendExampleCommandWithResult(int amount)
         {
             var command = new SomeCommand { Value = amount };
-            
-            // 1
-            var result =  await _commandPublisher.SendCommandAsync<int>(command, QueueName, FibCommandKey, 50000);
-            
-            // 4
-            return result;
+
+            return await _commandPublisher.SendCommandAsync<int>(
+                command, 
+                QueueName, 
+                FibCommandKey);
         }
 
-        [Command("some.thing")]
-        public int DoSomethingElse(SomeCommand command)
+        public async Task SendExampleCommandWithoutResult(int amount)
         {
-            Console.WriteLine($"Got some other request {command.Value}");
+            var command = new SomeCommand { Value = amount };
 
-            return command.Value * 2;
+            await _commandPublisher.SendCommandAsync(
+                command,
+                QueueName,
+                VoidCommandKey);
         }
     }
 }

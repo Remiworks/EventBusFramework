@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Remiworks.Core.Models;
 using Remiworks.RabbitMQ.Extensions;
 using RpcTest.Controllers;
-using Remiworks.Attributes.Extensions;
 
 namespace RpcTest
 {
@@ -17,18 +16,21 @@ namespace RpcTest
                 .AddTransient<SomeController>()
                 .AddRabbitMq(new BusOptions())
                 .BuildServiceProvider();
-
-            serviceProvider.UseAttributes();
             
-            // Get a reference to SomeController and call SendExampleCommand(...)
             var someController = serviceProvider.GetService<SomeController>();
             int amount = 10;
 
+            // This illustrates a remote method which returns a result
             Console.WriteLine($"Requesting fib({amount})");
+            var fib = someController.SendExampleCommandWithResult(amount).Result;
+            Console.WriteLine($"Got '{fib}'\n");
 
-            var fib = someController.SendExampleCommand(amount).Result;
+            // This illustrates a remote method which returns nothing (void)
+            Console.WriteLine($"Sending command to listener with void return type");
+            someController.SendExampleCommandWithoutResult(amount).Wait();
+            Console.WriteLine($"Void finished executing");
 
-            Console.WriteLine($"Got '{fib}'");
+            Console.ReadKey();
         }
     }
 }

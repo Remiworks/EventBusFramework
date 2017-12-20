@@ -18,29 +18,29 @@ namespace RpcServerTest.Controllers
         [Command("calculate.fib")]
         public int HandleCalculateCommand(SomeCommand command)
         {
-            // 2
             Console.WriteLine($"Got fib-request for {command.Value}");
 
-            //var fibResult = CalculateFib(command.Value);
+            var fibResult = CalculateFib(command.Value);
 
-            // 3 Boem!
-            var fibResult = _commandPublisher
-                .SendCommandAsync<int>(command, "SomeQueue", "some.thing")
-                .Result;
-            
-            Console.WriteLine($"Calculated fib result: {fibResult}");
+            Console.WriteLine($"Calculated fib result: {fibResult}\n");
 
             return fibResult;
         }
 
-        //private static int CalculateFib(int n)
-        //{
-        //    if (n == 0 || n == 1)
-        //    {
-        //        return n;
-        //    }
+        [Command("do.something")]
+        public void HandleVoidCommand(SomeCommand command)
+        {
+            Console.WriteLine($"Got void-request for {command.Value}");
+        }
 
-        //    return CalculateFib(n - 1) + CalculateFib(n - 2);
-        //}
+        private static int CalculateFib(int n)
+        {
+            if (n == 0 || n == 1)
+            {
+                return n;
+            }
+
+            return CalculateFib(n - 1) + CalculateFib(n - 2);
+        }
     }
 }
