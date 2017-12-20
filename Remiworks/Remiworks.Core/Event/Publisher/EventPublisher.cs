@@ -14,17 +14,17 @@ namespace Remiworks.Core.Event.Publisher
             _busProvider = busProvider;
         }
 
-        public Task SendEventAsync(object message, string topic)
+        public Task SendEventAsync(object message, string routingKey)
         {
             EnsureArg.IsNotNull(message, nameof(message));
-            EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
+            EnsureArg.IsNotNullOrWhiteSpace(routingKey, nameof(routingKey));
 
             return Task.Run(() =>
             {
                 var eventMessage = new EventMessage
                 {
                     JsonMessage = JsonConvert.SerializeObject(message),
-                    RoutingKey = topic
+                    RoutingKey = routingKey
                 };
 
                 _busProvider.BasicPublish(eventMessage);

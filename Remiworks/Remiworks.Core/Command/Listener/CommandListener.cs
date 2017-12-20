@@ -57,40 +57,42 @@ namespace Remiworks.Core.Command.Listener
 
         private void HandleReceivedCommand(CommandReceivedCallback callback, EventMessage receivedEventMessage, Type parameterType)
         {
-            object response = null;
-            var isError = false;
+            Task.Run(() =>
+            {
+                object response = null;
+                var isError = false;
 
-            var replyKey = $"{receivedEventMessage.RoutingKey}.Reply";
-            _busProvider.BasicTopicBind(receivedEventMessage.ReplyQueueName, replyKey);
+                var replyKey = $"{receivedEventMessage.RoutingKey}.Reply";
+                _busProvider.BasicTopicBind(receivedEventMessage.ReplyQueueName, replyKey);
 
-            try
-            {
-                var deserializedParameter = JsonConvert.DeserializeObject(receivedEventMessage.JsonMessage, parameterType);
-                response = callback(deserializedParameter);
-
-            }
-            catch (TargetInvocationException ex)
-            {
-                response = new CommandPublisherException(ex.InnerException.Message, ex.InnerException);
-                isError = true;
-            }
-            catch (Exception ex)
-            {
-                response = new CommandPublisherException(ex.Message, ex);
-                isError = true;
-            }
-            finally
-            {
-                _busProvider.BasicPublish(new EventMessage
+                try
                 {
-                    CorrelationId = receivedEventMessage.CorrelationId,
-                    IsError = isError,
-                    JsonMessage = JsonConvert.SerializeObject(response),
-                    RoutingKey = replyKey
-                });
+                    var deserializedParameter = JsonConvert.DeserializeObject(receivedEventMessage.JsonMessage, parameterType);
+                    response = callback(deserializedParameter);
+                }
+                catch (TargetInvocationException ex)
+                {
+                    response = new CommandPublisherException(ex.InnerException.Message, ex.InnerException);
+                    isError = true;
+                }
+                catch (Exception ex)
+                {
+                    response = new CommandPublisherException(ex.Message, ex);
+                    isError = true;
+                }
+                finally
+                {
+                    _busProvider.BasicPublish(new EventMessage
+                    {
+                        CorrelationId = receivedEventMessage.CorrelationId,
+                        IsError = isError,
+                        JsonMessage = JsonConvert.SerializeObject(response),
+                        RoutingKey = replyKey
+                    });
 
-                _busProvider.BasicAcknowledge(receivedEventMessage.DeliveryTag, false);
-            }
+                    _busProvider.BasicAcknowledge(receivedEventMessage.DeliveryTag, false);
+                }
+            });
         }
 
         private static bool IsValidKey(string key)

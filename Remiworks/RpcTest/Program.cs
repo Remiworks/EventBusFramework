@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Remiworks.Core.Models;
 using Remiworks.RabbitMQ.Extensions;
 using RpcTest.Controllers;
+using Remiworks.Attributes.Extensions;
 
 namespace RpcTest
 {
@@ -17,6 +18,8 @@ namespace RpcTest
                 .AddRabbitMq(new BusOptions())
                 .BuildServiceProvider();
 
+            serviceProvider.UseAttributes();
+            
             // Get a reference to SomeController and call SendExampleCommand(...)
             var someController = serviceProvider.GetService<SomeController>();
             int amount = 10;
