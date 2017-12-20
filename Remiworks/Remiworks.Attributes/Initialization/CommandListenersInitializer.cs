@@ -46,7 +46,7 @@ namespace Remiworks.Attributes.Initialization
             return InitializationUtility.GetAttributeValuesWithMethod<CommandAttribute>(type, (a) => a.Key);
         }
 
-        private async Task<object> InvokeCommand(string topic, MethodInfo topicMethod, object methodParameter)
+        private object InvokeCommand(string topic, MethodInfo topicMethod, object methodParameter)
         {
             Logger.LogInformation("Invoking command '{0}'", topic);
 
@@ -54,9 +54,7 @@ namespace Remiworks.Attributes.Initialization
 
             try
             {
-                var result = topicMethod.ReturnType.BaseType == typeof(Task)
-                    ? await (dynamic)topicMethod.Invoke(instance, new object[] { methodParameter })
-                    : await Task.Run(() => topicMethod.Invoke(instance, new object[] { methodParameter }));
+                var result = topicMethod.Invoke(instance, new object[] { methodParameter });
 
                 return result;
             }
