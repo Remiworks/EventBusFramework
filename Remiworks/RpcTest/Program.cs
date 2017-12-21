@@ -11,7 +11,6 @@ namespace RpcTest
         private static void Main(string[] args)
         {
             // Register services and add RabbitMQ to the mix
-
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SomeController>()
                 .AddRabbitMq(new BusOptions())
