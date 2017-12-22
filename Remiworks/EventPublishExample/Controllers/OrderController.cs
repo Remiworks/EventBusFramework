@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using EventListenExample.Events;
+using EventPublishExample.Events;
 using Remiworks.Core.Event.Publisher;
 
-namespace EventListenExample.Controllers
+namespace EventPublishExample.Controllers
 {
     public class OrderController
     {

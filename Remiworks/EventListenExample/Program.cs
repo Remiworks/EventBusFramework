@@ -11,7 +11,7 @@ namespace EventListenExample
         private static void Main(string[] args)
         {
             var serviceProvider = new ServiceCollection()
-                .AddTransient<OrderController>()
+                .AddTransient<OrderPickingController>()
                 .AddRabbitMq(new BusOptions())
                 .BuildServiceProvider();
 

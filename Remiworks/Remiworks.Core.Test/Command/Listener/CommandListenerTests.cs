@@ -108,12 +108,12 @@ namespace Remiworks.Core.Test.Command.Listener
             var waitHandle = new ManualResetEvent(false);
             object receivedParameter = null;
             
-            object Callback(object parameter)
+            Task<object> Callback(object parameter)
             {
                 waitHandle.Set();
                 receivedParameter = parameter;
                 
-                return null;
+                return Task.FromResult<object>(null);
             }
 
             await _sut.SetupCommandListenerAsync(QueueName, Key, Callback, typeof(Person));

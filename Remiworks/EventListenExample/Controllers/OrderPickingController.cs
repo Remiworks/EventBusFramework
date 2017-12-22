@@ -1,8 +1,8 @@
 ﻿using System;
-using EventPublishExample.Events;
+using EventListenExample.Events;
 using Remiworks.Attributes;
 
-namespace EventPublishExample.Controllers
+namespace EventListenExample.Controllers
 {
     [QueueListener("OrderQueue")]
     public class OrderPickingController
