@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using EventPublishExample.Events;
 using Remiworks.Core.Event.Publisher;
@@ -24,8 +25,12 @@ namespace EventPublishExample.Controllers
                 TotalPrice = totalPrice,
                 Products = products
             };
+            
+            Console.WriteLine("Publishing order.placed event");
 
             await _eventPublisher.SendEventAsync(orderPlacedEvent, "order.placed");
+            
+            Console.WriteLine("Done publishing order.placed event");
         }
     }
 }

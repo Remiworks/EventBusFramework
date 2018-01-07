@@ -15,7 +15,7 @@ namespace Remiworks.Core.Models
         {
             Hostname = "localhost";
             VirtualHost = "/";
-            ExchangeName = Guid.NewGuid().ToString();
+            ExchangeName = "DefaultExchange";
         }
     }
 }

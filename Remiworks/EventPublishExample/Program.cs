@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using EventPublishExample.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Remiworks.Core.Models;
@@ -10,14 +11,18 @@ namespace EventPublishExample
     {
         private static void Main(string[] args)
         {
+            Console.WriteLine("Instantiating dependency injection boilerplate");
+            
             // This can also be done with an MVC application.
             // Just hook into the Startup.cs there
             var serviceProvider = new ServiceCollection()
                 .AddTransient<OrderController>()
                 .AddRabbitMq(new BusOptions())
                 .BuildServiceProvider();
-
+            
             var controller = serviceProvider.GetService<OrderController>();
+
+            Console.WriteLine("Calling controller to place order");
 
             // Place order and await the call
             controller
