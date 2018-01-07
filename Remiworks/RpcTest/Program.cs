@@ -17,7 +17,7 @@ namespace RpcTest
                 .BuildServiceProvider();
             
             var someController = serviceProvider.GetService<SomeController>();
-            int amount = 10;
+            const int amount = 10;
 
             // This illustrates a remote method which returns a result
             Console.WriteLine($"Requesting fib({amount})");
