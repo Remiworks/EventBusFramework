@@ -11,7 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RabbitFramework\RabbitFramework.csproj" />
+    <ProjectReference Include="..\Remiworks.Attributes\Remiworks.Attributes.csproj" />
+    <ProjectReference Include="..\Remiworks.Core\Remiworks.Core.csproj" />
+    <ProjectReference Include="..\Remiworks.RabbitMQ\Remiworks.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

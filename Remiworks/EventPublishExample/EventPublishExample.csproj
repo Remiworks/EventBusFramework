@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Remiworks.Attributes\Remiworks.Attributes.csproj" />
+    <ProjectReference Include="..\Remiworks.RabbitMQ\Remiworks.RabbitMQ.csproj" />
+  </ItemGroup>
+</Project>

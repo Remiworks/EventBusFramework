@@ -8,18 +8,18 @@ namespace Remiworks.Core
     {
         BusOptions BusOptions { get; }
 
-        void CreateConnection();
-
         void BasicPublish(EventMessage eventMessage);
 
-        void CreateTopicsForQueue(string queueName, params string[] topics);
+        void BasicAcknowledge(ulong deliveryTag, bool multiple);
+        
+        void BasicTopicBind(string queueName, params string[] topics);
 
-        void BasicConsume(string queueName, EventReceivedCallback callback);
+        void BasicConsume(string queueName, EventReceivedCallback callback, bool autoAcknowledge = true);
 
-        void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback callback);
+        void BasicQos(uint prefetchSize, ushort prefetchCount);
     }
 
     public delegate void EventReceivedCallback(EventMessage message);
 
-    public delegate Task<string> CommandReceivedCallback(EventMessage message);
+    public delegate Task<string> CommandReceivedCallbackS(EventMessage message);
 }

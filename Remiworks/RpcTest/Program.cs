@@ -1,5 +1,8 @@
-﻿using RabbitFramework;
-using System;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using Remiworks.Core.Models;
+using Remiworks.RabbitMQ.Extensions;
+using RpcTest.Controllers;
 
 namespace RpcTest
 {
@@ -7,22 +10,26 @@ namespace RpcTest
     {
         private static void Main(string[] args)
         {
-            using (IBusProvider rpcClient = new RabbitBusProvider(new BusOptions()))
-            {
-                var command = new SomeCommand { Name = "Something", Value = 10 };
-                Console.WriteLine($" [x] Requesting fib({command.Value})");
+            // Register services and add RabbitMQ to the mix
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<SomeController>()
+                .AddRabbitMq(new BusOptions())
+                .BuildServiceProvider();
+            
+            var someController = serviceProvider.GetService<SomeController>();
+            const int amount = 10;
 
-                string response = rpcClient.Call<string>("rpc_queue", command).Result;
+            // This illustrates a remote method which returns a result
+            Console.WriteLine($"Requesting fib({amount})");
+            var fib = someController.SendExampleCommandWithResult(amount).Result;
+            Console.WriteLine($"Got '{fib}'\n");
 
-                Console.WriteLine(" [.] Got '{0}'", response);
-                Console.ReadLine();
-            }
+            // This illustrates a remote method which returns nothing (void)
+            Console.WriteLine($"Sending command to listener with void return type");
+            someController.SendExampleCommandWithoutResult(amount).Wait();
+            Console.WriteLine($"Void finished executing");
+
+            Console.ReadKey();
         }
-    }
-
-    public class SomeCommand
-    {
-        public string Name { get; set; }
-        public int Value { get; set; }
     }
 }

@@ -11,5 +11,6 @@ namespace Remiworks.Core.Models
         public string Type { get; set; }
         public string JsonMessage { get; set; }
         public bool IsError { get; set; }
+        public ulong DeliveryTag { get; set; }
     }
 }

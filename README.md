@@ -1,159 +1,224 @@
 [<img src="https://mikederksen5.visualstudio.com/_apis/public/build/definitions/806ded94-c145-49ce-a757-6d5323d31e66/1/badge"/>](https://mikederksen5.visualstudio.com/EventBusFramework/_build/index?definitionId=1)
 
+- [Introduction](#introduction)
+- [Usage](#usage)
+    - [Adding Remiworks to your project](#adding-remiworks-to-your-project)
+    - [Events](#events)
+        - [Sending events](#sending-events)
+        - [Receiving events with the IEventListener](#receiving-events-with-the-ieventlistener)
+        - [Receiving events with Remiworks.Attributes](#receiving-events-with-remiworksattributes)
+    - [Commands](#commands)
+        - [Sending commands](#sending-commands)
+        - [Receiving events with the IEventListener](#receiving-events-with-the-ieventlistener)
+        - [Receiving events with Remiworks.Attributes](#receiving-events-with-remiworksattributes)
+- [Example projects](#example-projects)
+
+# Introduction
 This framework is an abstraction layer for eventbusses. As of now the only implementation is for RabbitMq. There are plans to support more eventbusses in the future.
 
-# Core
-The core library contains multiple classes to communicate with an eventbus implementation.
+# Usage
+The core library contains multiple classes to communicate with an eventbus implementation of choice.
 
-## Events
-To send and receive events there is the `IBusProvider` interface with a corresponding `RabbitBusProvider` class. This class can be used to send and listen to events. The `RabbitBusProvider` takes a `BusOptions` instance as parameter. This class contains connection data. The `Hostname`, `ExchangeName`, `VirtualHost`, `Port`, `UserName` and `Password` can be set here. By default the `BusOptions` uses `localhost` as `Hostname`. `BusOptions` also declases a random exchange name. If the other properties are not set, the default values of the underlying eventbus framework will be used.
-
-```csharp
-BusOptions options = new BusOptions();
-IBusProvider busProvider = new RabbitBusProvider(options);
-```
-
-### Sending events
-For sending evens we can use `void BasicPublish(EventMessage eventMessage)`. This is a low level function which takes, as we can see, an `EventMessage` object as parameter. The `EventMessage` object contains data such as `RoutingKey`, `CorrelationId`, `Timestamp`, `ReplyQueueName`, `Type` and a `JsonMessage`. For sending plain events only the `RoutingKey` and the `JsonMessage` should be set.
-
-Event routing is handled by an exchange. The exchange will determine, based on the routing key, to which queue the event will go. To register this route we can use `void CreateTopicsForQueue(string queueName, params string[] topics)`. This method is idempotent. THis means that calling this function multiple times results in the exact same behaviour. Topics can contain the wildcards `*` and `#`.
-- `*` means that this position can contain any word
-- `#` means that this positoin can contain multiple words separated by dots
-
-**Note:** In a next version of this framework (which will come soon) we use a higher level class for sending and listening to events. This will be done by using a `EventProvider` class and a `EventListener` class. This way we won't have to deal with low-level `EventMessage` objects.
+## Adding Remiworks to your project
+Before Remiworks can be used, it needs to be added to your project. This is done via a dependency injection mechanism.
 
 ```csharp
-public class PersonCreatedEvent
-{
-    public string Name { get; set; }
-}
-```
-
-```csharp
-// Matches on "foo.something.bar"
-// Doesn't match on "foo.something.else.bar"
-busProvider.CreateTopicsForQueue("SomeRandomQueue", "foo.*.bar");
-
-// Matches on "test.something.toost"
-// Matches on "test.something.else.toost"
-busProvider.CreateTopicsForQueue("AnotherRandomQueue", "test.#.toost");
-
-PersonCreatedEvent personEvent = new PersonCreatedEvent
-{
-    Name = "Jan"
-};
-
-// Newtonsoft.JSON functionality
-string personEventJson = JsonConvert.SerializeObject(personEvent);
-
-EventMessage message = new EventMessage
-{
-    // Matches on the first topic declaration, meaning this event will be published to the queue `SomeRandomQueue`
-    RoutingKey = "foo.bla.bar",
-    JsonMessage = personEventJson
-};
-
-busProvider.BasicPublish(message);
-```
-
-Wrapper for RabbitMQ. This includes an attribute library for handling incoming events and commands.
-
-### Receiving events
-Events can be received by using the `void BasicConsume(string queueName, EventReceivedCallback callback);` function. The `EventReceivedCallback` is an delagate:
-
-```csharp
-public delegate void EventReceivedCallback(EventMessage message);
-```
-
-As we can see, the `EventMessage` object which we used for sending events is received in the callback. There will also be a higher level function available for handling event callbacks in a later version of the framework.
-
-First we declare a method which satisfies the callback delegate
-```csharp
-public void CallbackReceived(EventMessage message)
-{
-    // Do Something with the received event
-}
-
-```
-
-Then we use it with the `BasicConsume` function
-
-```csharp
-busProvider.BasicConsume("SomeRandomQueue", CallbackReceived);
-```
-
-The event which we sent in the first example uses a routing key which leads to the queue 'SomeRandomQueue'. This means that this event will be catched by this event listening function.
-
-## Commands
-Sending commands can be done by using the `CommandPublisher` class. The constructor takes a `IBusProvider` as parameter.
-
-```csharp
-ICommandPublisher commandPublisher = new CommandPublisher(busProvider);
-```
-
-**Note:** Right now, receiving commands is done via the `IBusProvider` class. This will be moved to the `CommandListener` class in the very near future.
-
-### Sending commands
-Sending commands can be done by using `Task<TResult> SendCommand<TResult>(object message, string queueName, string key, int timeout = 5000)`. The queue where the command is sent to should only be used for commands. Using the same queue for both commands and events is considered a very bad practice. The key should be unique for this type of command. **The key can't contain wildcards.**
-
-The `SendCommand` method is async.
-
-For this exapmle we would like to calculate the full name of a person. As parameter we use the following `Person` class.
-```csharp
-public class Person
-{
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-}
-```
-
-We can then send this `Person` instance as a parameter to a listening party.
-
-```csharp
-Person person = new Person
-{
-    FirstName = "Sjaak",
-    LastName = "de Boer"
-};
-
-// We don't set the timeout, meaning it will have the default 5000ms as value
-string fullName = await SendCommand<string>(person, "PersonCommandQueue", "PersonFullNameCommand");
-```
-
-### Listening to command messages
-Right now we are refactoring this part a bit. This will be updated tomorrow.
-
-# Attributes
-Besides using the core functionality of the framework there also is an attribute implementation for listening to commands and events.
-
-## Setting up the attributes
-Using attributes requires to calls to dependency injection extension methods. This is very similar to using MVC.
-
-```csharp
-var options = new BusOptions();
-
 var serviceProvider = new ServiceCollection()
-    .AddRabbitMq(options)
+    .AddTransient<SomeRandomClass>() // Add your dependency stuff here
+    .AddRabbitMq(new BusOptions()) // Use an RabbitMq implementation (Remiworks.RabbitMQ)
     .BuildServiceProvider();
 
-serviceProvider.UseRabbitMq();
+// Retrieve an instance of some random class.
+// This class will have the required dependencies injection together with required Remiworks classes
+var randomClass = serviceProvider.GetService<SomeRandomClass>();
+randomClass.DoSomething();
 ```
 
-## Listening to events
-To listen to a event in a specific queue we use the `QueueListenerAttribute` and the `TopicAttribute` attributes.
+## Events
+Events are the core mechanism of web scale architecture. Remiworks provides methods for both sending and receiving events.
 
+### Sending events
+First, add `Remiworks.Core.Event.Publisher.IEventPublisher` to the constructor of the desired class. Secondly, define a method which sends an event. This event is just a simple POCO.
 ```csharp
-[QueueListener ("SomeRandomQueue")]
-public class SomeController
+public class SomeRandomClass
 {
-    // the '*' and '#' wildcards can be used to listen to events
-    [Topic ("foo.*.bar")]
-    public void HandleFooBarEvent(PersonCreatedEvent personEvent)
+    private readonly IEventPublisher _eventPublisher;
+
+    public SomeRandomClass(IEventPublisher eventPublisher) 
     {
-        // Do something with the event
+        _eventPublisher = eventPublisher;
+    }
+
+    public async Task SendSomeEventMessage(SomeEvent someEvent) 
+    {
+        await _eventPublisher.SendEventAsync(
+            message: someEvent, 
+            routingKey: "some.event.sent");
     }
 }
 ```
 
-## Listening to commands
-This will be updated in the very very very near future.
+### Receiving events with the IEventListener
+Receiving events is very similar to sending them. Again, create a constructor. Add `Remiworks.Core.Event.Listener.IEventListener` to the constructor this time. Also define a method which will be called when the `some.event.sent` message comes in.
+```csharp
+public class SomeRandomClass
+{
+    public SomeRandomClass(IEventListener eventListener) 
+    {
+        eventListener
+            .SetupQueueListenerAsync<SomeEvent>(
+                queueName: "someEventQueue", 
+                topic: "some.event.sent", 
+                callback: SomeEventReceived)
+            .Wait();
+    }
+
+    private void SomeEventReceived(SomeEvent receivedEvent) 
+    {
+        // Do something to handle the event
+    }
+}
+```
+
+### Receiving events with Remiworks.Attributes
+Events can also be received by using the `Remiworks.Attributes` library. This allowes you to use attributes for event receiving. This can be done as follows:
+
+First, add the attributes library to the dependency injection mechanism
+```csharp
+var serviceProvider = new ServiceCollection()
+    .AddTransient<SomeRandomClass>() // Add your dependency stuff here
+    .AddRabbitMq(new BusOptions()) // Use an RabbitMq implementation (Remiworks.RabbitMQ)
+    .BuildServiceProvider();
+
+serviceProvider.UseAttributes();
+```
+
+Secondly, add the correct attributes to the desired class
+```csharp
+[QueueListener("someEventQueue")]
+public class SomeRandomClass
+{
+    [Event("some.event.sent")]
+    private void SomeEventReceived(SomeEvent receivedEvent) 
+    {
+        // Do something to handle the event
+    }
+}
+```
+
+## Commands
+Sometimes, events are not enough. There are situations where a callback is desired. Commands are a good solution to this problem.
+
+### Sending commands
+Sending commands is very similar to sending events.
+
+First, let `Remiworks.Core.Command.Publisher.ICommandPublisher` be injected in the constructor of the desired class.
+```csharp
+public class SomeRandomClass
+{
+    private readonly ICommandPublisher _commandPublisher;
+
+    public SomeRandomClass(ICommandPublisher commandPublisher) 
+    {
+        _commandPublisher = commandPublisher;
+    }
+}
+```
+
+Secondly, define a method which publishes a command. This command waits for a response from the server
+```csharp
+public async Task SendSomeCommand(SomeCommand command)
+{
+    return _commandPublisher.SendCommandAsync(
+        message: command,
+        queueName: "someCommandQueue",
+        key: "some.command.sent");
+}
+```
+
+Alternatively, a command can expect a result from the server.
+```csharp
+public async Task<int> CalculateSomethingOnServer(SomeCommand command) 
+{
+    return await _commandPublisher.SendCommand<int>(
+        message: command,
+        queueName: "someCommandQueue",
+        key: "some.calculation.sent");
+}
+``` 
+
+### Receiving events with the IEventListener
+First, add a constructor to the desired class which injects `Remiworks.Core.Command.Listener.ICommandListener`
+
+Secondly, add callbacks for the command without and with a return value. Please note: Right now, using `Task` or `void` as the return type is not supported. Returning null results in the command to be handled correctly on the sending end when used as void. This will be fixed in an future patch.
+
+```csharp
+public class SomeRandomClass
+{
+    public SomeRandomClass(ICommandListener commandListener) 
+    {
+        commandListener.SetupCommandListenerAsync<SomeCommand>(
+            queueName: "someCommandQueue",
+            key: "some.command.sent",
+            callback: HandleVoidCommand);
+
+        commandListener.SetupCommandListenerAsync<SomeCommand>(
+            queueName: "someCommandQueue",
+            key: "some.calculation.sent",
+            callback: HandleCalculateCommand);
+    }
+
+    private Task<object> HandleVoidCommand(SomeCommand command)
+    {
+        // Do something with the command
+
+        return null;
+    }
+
+    private Task<object> HandleCalculateCommand(SomeCommand command)
+    {
+        // Imagine command has a Value property
+        return Task.FromResult<object>(command.Value * 10); 
+    }
+}
+```
+
+### Receiving events with Remiworks.Attributes
+Commands can also be received by using the `Remiworks.Attributes` library. This allowes you to use attributes for command receiving. This can be done as follows:
+
+First, add the attributes library to the dependency injection mechanism
+```csharp
+var serviceProvider = new ServiceCollection()
+    .AddTransient<SomeRandomClass>() // Add your dependency stuff here
+    .AddRabbitMq(new BusOptions()) // Use an RabbitMq implementation (Remiworks.RabbitMQ)
+    .BuildServiceProvider();
+
+serviceProvider.UseAttributes();
+```
+
+Secondly, add attributes to the desired class
+```csharp
+[QueueListener("someCommandQueue")]
+public class SomeRandomClass
+{
+    [Command("some.command.sent")]
+    private void SomeEventReceived(SomeEvent receivedEvent) 
+    {
+        // Do something to handle the command
+    }
+
+    [Command("some.calculation.sent")]
+    public int HandleCalculateCommand(SomeCommand command)
+    {
+        // Imagine that SomeCommand has a Value property
+        return 10 * command.Value
+    }
+}
+```
+
+# Example projects
+There are some example projects set up. These can be found in the `Examples` folder in this repository. Here are example projects defined for:
+- Sending events: `EventPublishExample`
+- Listening to events: `EventListenExample`
+- Sending commands: `RpcTest`
+- Listening to commands: `RpcServerTest`
