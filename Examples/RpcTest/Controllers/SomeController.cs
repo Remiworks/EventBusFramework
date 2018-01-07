@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Remiworks.Attributes;
+﻿using System.Threading.Tasks;
 using Remiworks.Core.Command.Publisher;
 using RpcTest.Commands;
 
@@ -24,8 +22,8 @@ namespace RpcTest.Controllers
             var command = new SomeCommand { Value = amount };
 
             return await _commandPublisher.SendCommandAsync<int>(
-                command, 
-                QueueName, 
+                command,
+                QueueName,
                 FibCommandKey);
         }
 
