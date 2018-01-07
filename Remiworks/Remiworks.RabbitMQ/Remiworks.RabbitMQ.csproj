@@ -6,12 +6,12 @@
     <Description>Provides a RabbitMQ implementation for the Remiworks event bus framework.</Description>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company />
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
     <PackageProjectUrl>https://github.com/Remiworks/EventBusFramework</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Remiworks/EventBusFramework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RabbitMq Wrapper Framework BusProvider Events Commands Rpc Eventbus</PackageTags>
-    <PackageReleaseNotes>Added RabbitMQ package</PackageReleaseNotes>
+    <PackageReleaseNotes>Added new functionality for command listeners</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
