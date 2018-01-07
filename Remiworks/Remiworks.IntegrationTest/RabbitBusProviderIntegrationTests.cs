@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Schema;
 using RabbitMQ.Client.Events;
 using Remiworks.Core;
 using Remiworks.Core.Models;
@@ -21,19 +22,18 @@ namespace Remiworks.IntegrationTest
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
-                string queue = GetUniqueQueue();
-                string topic = GetUniqueTopic();
-                string jsonMessage = "Something";
+                var queue = GetUniqueQueue();
+                var topic = GetUniqueTopic();
+                const string jsonMessage = "Something";
 
                 EventMessage passedMessage = null;
-                ManualResetEvent waitHandle = new ManualResetEvent(false);
+                var waitHandle = new ManualResetEvent(false);
                 EventReceivedCallback eventReceivedCallback = (message) =>
                 {
                     passedMessage = message;
                     waitHandle.Set();
                 };
 
-                sut.CreateConnection();
                 sut.BasicTopicBind(queue, topic);
                 sut.BasicConsume(queue, eventReceivedCallback);
 
@@ -50,13 +50,13 @@ namespace Remiworks.IntegrationTest
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
-                string queue = GetUniqueQueue();
-                string topic = GetUniqueTopic();
+                var queue = GetUniqueQueue();
+                var topic = GetUniqueTopic();
 
-                ManualResetEvent waitHandle = new ManualResetEvent(false);
+                var waitHandle = new ManualResetEvent(false);
                 BasicDeliverEventArgs passedArgs = null;
 
-                EventMessage message = new EventMessage
+                var message = new EventMessage
                 {
                     JsonMessage = "Something",
                     RoutingKey = topic,
@@ -69,12 +69,11 @@ namespace Remiworks.IntegrationTest
                     passedArgs = args;
                 });
 
-                sut.CreateConnection();
                 sut.BasicTopicBind(queue, topic);
                 sut.BasicPublish(message);
 
                 waitHandle.WaitOne(2000).ShouldBeTrue();
-                string receivedMessage = Encoding.UTF8.GetString(passedArgs.Body);
+                var receivedMessage = Encoding.UTF8.GetString(passedArgs.Body);
                 receivedMessage.ShouldBe(message.JsonMessage);
                 passedArgs.RoutingKey.ShouldBe(message.RoutingKey);
             }
@@ -85,25 +84,24 @@ namespace Remiworks.IntegrationTest
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
-                string queue = GetUniqueQueue();
-                string topic = GetUniqueTopic();
+                var queue = GetUniqueQueue();
+                var topic = GetUniqueTopic();
 
                 EventMessage receivedMessage = null;
-                ManualResetEvent waitHandle = new ManualResetEvent(false);
+                var waitHandle = new ManualResetEvent(false);
                 EventReceivedCallback eventReceivedCallback = (message) =>
                 {
                     receivedMessage = message;
                     waitHandle.Set();
                 };
 
-                EventMessage sentMessage = new EventMessage
+                var sentMessage = new EventMessage
                 {
                     JsonMessage = "Something",
                     RoutingKey = topic,
                     Type = TopicType
                 };
 
-                sut.CreateConnection();
                 sut.BasicTopicBind(queue, topic);
                 sut.BasicConsume(queue, eventReceivedCallback);
                 sut.BasicPublish(sentMessage);

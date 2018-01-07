@@ -16,6 +16,7 @@ namespace Remiworks.Core.Test.Command.Listener
     [TestClass]
     public class CommandListenerTests
     {
+        private const int Timeout = 2000;
         private const string QueueName = "someQueue";
         private const string ReplyQueueName = "someReplyQueue";
         private const string Key = "some.key";
@@ -32,11 +33,14 @@ namespace Remiworks.Core.Test.Command.Listener
             RoutingKey = Key,
             DeliveryTag = DeliveryTag
         };
-        
+
         private readonly Mock<IBusProvider> _busProviderMock = new Mock<IBusProvider>(MockBehavior.Strict);
         private readonly Mock<ICommandCallbackRegistry> _callbackRegistryMock = new Mock<ICommandCallbackRegistry>(MockBehavior.Strict);
         
         private CommandListener _sut;
+        
+        private ManualResetEvent _callbackWaitHandle;
+        private object _receivedParameter;
 
         [TestInitialize]
         public void Initialize()
@@ -51,6 +55,9 @@ namespace Remiworks.Core.Test.Command.Listener
                 .Setup(b => b.BasicAcknowledge(DeliveryTag, false));
             
             _sut = new CommandListener(_busProviderMock.Object, _callbackRegistryMock.Object);
+            
+            _callbackWaitHandle = new ManualResetEvent(false);
+            _receivedParameter = null;
         }
 
         [TestMethod]
@@ -58,7 +65,7 @@ namespace Remiworks.Core.Test.Command.Listener
         {
             SetupRegistryAddCallbackForQueue();
             
-            await _sut.SetupCommandListenerAsync(QueueName, Key, new Mock<CommandReceivedCallback>().Object, new Mock<Type>().Object);
+            await _sut.SetupCommandListenerAsync(QueueName, Key, MockCallback, new Mock<Type>().Object);
             
             _callbackRegistryMock.VerifyAll();
         }
@@ -69,9 +76,10 @@ namespace Remiworks.Core.Test.Command.Listener
             Action<EventMessage> registeredAction = null;
             SetupRegistryAddCallbackForQueue((que, key, action) => registeredAction = action);
             
-            await _sut.SetupCommandListenerAsync(QueueName, Key, new Mock<CommandReceivedCallback>().Object, typeof(Person));
+            await _sut.SetupCommandListenerAsync(QueueName, Key, MockCallback, typeof(Person));
             registeredAction(IncomingEventMessage);
             
+            _callbackWaitHandle.WaitOne(Timeout).ShouldBeTrue();
             _busProviderMock.Verify(b => b.BasicTopicBind(ReplyQueueName, It.Is(MatchingKey)));
         }
 
@@ -81,7 +89,7 @@ namespace Remiworks.Core.Test.Command.Listener
             Action<EventMessage> registeredAction = null;
             SetupRegistryAddCallbackForQueue((que, key, action) => registeredAction = action);
             
-            await _sut.SetupCommandListenerAsync(QueueName, Key, new Mock<CommandReceivedCallback>().Object, typeof(Person));
+            await _sut.SetupCommandListenerAsync(QueueName, Key, MockCallback, typeof(Person));
             registeredAction(IncomingEventMessage);
             
             _busProviderMock.Verify(b => b.BasicPublish(It.Is(MatchingReplyEventMessage)));
@@ -93,9 +101,11 @@ namespace Remiworks.Core.Test.Command.Listener
             Action<EventMessage> registeredAction = null;
             SetupRegistryAddCallbackForQueue((que, key, action) => registeredAction = action);
             
-            await _sut.SetupCommandListenerAsync(QueueName, Key, new Mock<CommandReceivedCallback>().Object, typeof(Person));
+            await _sut.SetupCommandListenerAsync(QueueName, Key, MockCallback, typeof(Person));
             registeredAction(IncomingEventMessage);
             
+            _callbackWaitHandle.WaitOne(Timeout).ShouldBeTrue();
+            Thread.Sleep(1000); // For CommandListener.HandleReceivedCommand to finish
             _busProviderMock.Verify(b => b.BasicAcknowledge(DeliveryTag, false));
         }
 
@@ -104,24 +114,13 @@ namespace Remiworks.Core.Test.Command.Listener
         {
             Action<EventMessage> registeredAction = null;
             SetupRegistryAddCallbackForQueue((que, key, action) => registeredAction = action);
-            
-            var waitHandle = new ManualResetEvent(false);
-            object receivedParameter = null;
-            
-            Task<object> Callback(object parameter)
-            {
-                waitHandle.Set();
-                receivedParameter = parameter;
-                
-                return Task.FromResult<object>(null);
-            }
 
-            await _sut.SetupCommandListenerAsync(QueueName, Key, Callback, typeof(Person));
+            await _sut.SetupCommandListenerAsync(QueueName, Key, MockCallback, typeof(Person));
             registeredAction(IncomingEventMessage);
 
-            waitHandle.WaitOne(2000).ShouldBeTrue();
-            receivedParameter.ShouldBeOfType<Person>();
-            ((Person)receivedParameter).Name.ShouldBe(Person.Name);
+            _callbackWaitHandle.WaitOne(2000).ShouldBeTrue();
+            _receivedParameter.ShouldBeOfType<Person>();
+            ((Person)_receivedParameter).Name.ShouldBe(Person.Name);
         }
 
         [TestMethod]
@@ -134,6 +133,14 @@ namespace Remiworks.Core.Test.Command.Listener
         public void SetupCommandListenerWraps_AllOtherExceptions_InCommandPublisherException()
         {
             
+        }
+
+        private Task<object> MockCallback(object parameter)
+        {
+            _callbackWaitHandle.Set();
+            _receivedParameter = parameter;
+
+            return Task.FromResult<object>(null);
         }
 
         private void SetupRegistryAddCallbackForQueue(Action<string, string, Action<EventMessage>> mockCallback = null)

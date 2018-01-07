@@ -11,7 +11,7 @@ namespace Remiworks.Core.Test.Event.Publisher
     public class EventPublisherParameterTests
     {
         private const string MessageParameter = "message";
-        private const string TopicParameter = "topic";
+        private const string RoutingKeyParameter = "routingKey";
 
         private const string Topic = "test.topic";
 
@@ -36,33 +36,33 @@ namespace Remiworks.Core.Test.Event.Publisher
         }
 
         [TestMethod]
-        public void SendEventAsyncThrows_ArgumentNullException_WhenTopicIsNull()
+        public void SendEventAsyncThrows_ArgumentNullException_WhenRoutingKeyIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
                 _sut.SendEventAsync(Message, null)
                     .Wait());
 
-            exception.ParamName.ShouldBe(TopicParameter);
+            exception.ParamName.ShouldBe(RoutingKeyParameter);
         }
 
         [TestMethod]
-        public void SendEventAsyncThrows_ArgumentException_WhenTopicIsEmpty()
+        public void SendEventAsyncThrows_ArgumentException_WhenRoutingKeyIsEmpty()
         {
             var exception = Should.Throw<ArgumentException>(() =>
                 _sut.SendEventAsync(Message, "")
                     .Wait());
 
-            exception.ParamName.ShouldBe(TopicParameter);
+            exception.ParamName.ShouldBe(RoutingKeyParameter);
         }
 
         [TestMethod]
-        public void SendEventAsyncThrows_ArgumentException_WhenTopicIsWhiteSpace()
+        public void SendEventAsyncThrows_ArgumentException_WhenRoutingKeyIsWhiteSpace()
         {
             var exception = Should.Throw<ArgumentException>(() =>
                 _sut.SendEventAsync(Message, " ")
                     .Wait());
 
-            exception.ParamName.ShouldBe(TopicParameter);
+            exception.ParamName.ShouldBe(RoutingKeyParameter);
         }
     }
 }
