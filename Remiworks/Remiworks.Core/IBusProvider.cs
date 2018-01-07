@@ -8,8 +8,6 @@ namespace Remiworks.Core
     {
         BusOptions BusOptions { get; }
 
-        void CreateConnection();
-
         void BasicPublish(EventMessage eventMessage);
 
         void BasicAcknowledge(ulong deliveryTag, bool multiple);

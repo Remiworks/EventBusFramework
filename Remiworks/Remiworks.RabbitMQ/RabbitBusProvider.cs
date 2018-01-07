@@ -32,7 +32,7 @@ namespace Remiworks.RabbitMQ
             CreateConnection();
         }
 
-        public void CreateConnection()
+        private void CreateConnection()
         {
             var factory = new ConnectionFactory()
             {
