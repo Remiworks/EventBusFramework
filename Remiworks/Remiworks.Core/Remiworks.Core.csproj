@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Remiworks.Core</Title>
     <Description>A framework for wrapping various event bus frameworks like RabbitMQ. Both events and commands can be sent and received using this framework, while the underlying event bus implementation can be swapped by just switching out a single package.</Description>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company />
@@ -18,10 +19,5 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Ensure.That, Version=7.1.0.55, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\..\.nuget\packages\ensure.that\7.1.0\lib\netstandard2.0\Ensure.That.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Remiworks.Attributes</Title>
     <Description>Provides attributes for the Remiworks event bus framework.</Description>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company />
