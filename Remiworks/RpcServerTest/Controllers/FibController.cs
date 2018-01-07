@@ -15,6 +15,12 @@ namespace RpcServerTest.Controllers
             _commandPublisher = commandPublisher;
         }
 
+        [Command("do.something")]
+        public void HandleVoidCommand(SomeCommand command)
+        {
+            Console.WriteLine($"Got void-request for {command.Value}");
+        }
+
         [Command("calculate.fib")]
         public int HandleCalculateCommand(SomeCommand command)
         {
@@ -25,12 +31,6 @@ namespace RpcServerTest.Controllers
             Console.WriteLine($"Calculated fib result: {fibResult}\n");
 
             return fibResult;
-        }
-
-        [Command("do.something")]
-        public void HandleVoidCommand(SomeCommand command)
-        {
-            Console.WriteLine($"Got void-request for {command.Value}");
         }
 
         private static int CalculateFib(int n)
