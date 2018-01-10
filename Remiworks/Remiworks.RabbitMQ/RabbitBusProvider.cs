@@ -28,12 +28,14 @@ namespace Remiworks.RabbitMQ
             EnsureArg.IsNotNull(busOptions, nameof(busOptions));
 
             BusOptions = busOptions;
-
-            CreateConnection();
         }
 
-        private void CreateConnection()
+        public void EnsureConnection()
         {
+            //TODO unit tests
+            if (_connection != null && _connection.IsOpen)
+                return;
+
             var factory = new ConnectionFactory()
             {
                 HostName = BusOptions.Hostname,
@@ -46,8 +48,6 @@ namespace Remiworks.RabbitMQ
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-
-            _channel.ExchangeDeclare(BusOptions.ExchangeName, ExchangeType);
         }
 
         public void BasicConsume(string queueName, EventReceivedCallback callback, bool autoAck = true)
@@ -81,24 +81,32 @@ namespace Remiworks.RabbitMQ
                 multiple: multiple);
         }
 
-        public void BasicTopicBind(string queueName, params string[] topics)
+        public void BasicTopicBind(string queueName, string topic)
+        {
+            BasicTopicBind(queueName, topic, BusOptions.ExchangeName);
+        }
+
+        public void BasicTopicBind(string queueName, string topic, string exchangeName)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
-            if (topics == null || !topics.Any()) throw new ArgumentNullException(nameof(topics));
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
+
+            _channel.ExchangeDeclare(exchangeName, BusOptions.ExchangeType);
 
             QueueDeclare(queueName);
-
-            topics
-                .Where(t => t != null)
-                .ToList()
-                .ForEach(topic => _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
+            _channel.QueueBind(queueName, exchangeName, topic);
         }
 
         public void BasicPublish(EventMessage eventMessage)
         {
+            BasicPublish(eventMessage, BusOptions.ExchangeName);
+        }
+
+        public void BasicPublish(EventMessage eventMessage, string exchangeName)
+        {
             EnsureArg.IsNotNull(eventMessage, nameof(eventMessage));
             EnsureArg.IsNotNullOrWhiteSpace(
-                eventMessage.JsonMessage, 
+                eventMessage.JsonMessage,
                 $"{nameof(eventMessage)}.{nameof(eventMessage.JsonMessage)}");
 
             var properties = _channel.CreateBasicProperties();
@@ -123,7 +131,7 @@ namespace Remiworks.RabbitMQ
                 properties.Timestamp = new AmqpTimestamp(eventMessage.Timestamp.Value);
             }
 
-            _channel.BasicPublish(exchange: BusOptions.ExchangeName,
+            _channel.BasicPublish(exchange: exchangeName,
                                  routingKey: eventMessage.RoutingKey,
                                  basicProperties: properties,
                                  body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
@@ -188,7 +196,6 @@ namespace Remiworks.RabbitMQ
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        
         #endregion
     }
 }

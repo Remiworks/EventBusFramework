@@ -22,9 +22,11 @@ namespace Remiworks.Core.Command.Listener
         {
             _busProvider = busProvider;
             _callbackRegistry = commandCallbackRegistry;
+
+            _busProvider.EnsureConnection();
         }
 
-        public Task SetupCommandListenerAsync<TParam>(string queueName, string key, CommandReceivedCallback<TParam> callback)
+        public Task SetupCommandListenerAsync<TParam>(string queueName, string key, CommandReceivedCallback<TParam> callback, string exchangeName = null)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
@@ -35,10 +37,11 @@ namespace Remiworks.Core.Command.Listener
                 queueName,
                 key,
                 parameter => callback((TParam)parameter),
-                typeof(TParam));
+                typeof(TParam),
+                exchangeName);
         }
 
-        public Task SetupCommandListenerAsync(string queueName, string key, CommandReceivedCallback callback, Type parameterType)
+        public Task SetupCommandListenerAsync(string queueName, string key, CommandReceivedCallback callback, Type parameterType, string exchangeName = null)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
@@ -51,11 +54,11 @@ namespace Remiworks.Core.Command.Listener
                 _callbackRegistry.AddCallbackForQueue(
                     queueName,
                     key,
-                    message => HandleReceivedCommand(callback, message, parameterType));
+                    message => HandleReceivedCommand(callback, message, parameterType, exchangeName));
             });
         }
 
-        private void HandleReceivedCommand(CommandReceivedCallback callback, EventMessage receivedEventMessage, Type parameterType)
+        private void HandleReceivedCommand(CommandReceivedCallback callback, EventMessage receivedEventMessage, Type parameterType, string exchangeName)
         {
             Task.Run(async () =>
             {
@@ -82,13 +85,27 @@ namespace Remiworks.Core.Command.Listener
                 }
                 finally
                 {
-                    _busProvider.BasicPublish(new EventMessage
+                    if (exchangeName == null)
                     {
-                        CorrelationId = receivedEventMessage.CorrelationId,
-                        IsError = isError,
-                        JsonMessage = JsonConvert.SerializeObject(response),
-                        RoutingKey = replyKey
-                    });
+                        _busProvider.BasicPublish(new EventMessage
+                        {
+                            CorrelationId = receivedEventMessage.CorrelationId,
+                            IsError = isError,
+                            JsonMessage = JsonConvert.SerializeObject(response),
+                            RoutingKey = replyKey
+                        });
+                    }
+                    else
+                    {
+                        _busProvider.BasicPublish(new EventMessage
+                        {
+                            CorrelationId = receivedEventMessage.CorrelationId,
+                            IsError = isError,
+                            JsonMessage = JsonConvert.SerializeObject(response),
+                            RoutingKey = replyKey
+                        },
+                        exchangeName);
+                    }
 
                     _busProvider.BasicAcknowledge(receivedEventMessage.DeliveryTag, false);
                 }

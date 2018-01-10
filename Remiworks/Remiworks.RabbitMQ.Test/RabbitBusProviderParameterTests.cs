@@ -11,14 +11,14 @@ namespace Remiworks.RabbitMQ.Test
     [TestClass]
     public class RabbitBusProviderParameterTests
     {
-        private const string TopicsParamName = "topics";
+        private const string TopicsParamName = "topic";
         private const string CallbackParamName = "callback";
         private const string QueueNameParamName = "queueName";
         private const string EventMessageParamName = "eventMessage";
         private const string JsonMessageParamName = "eventMessage.JsonMessage";
         private const string BusOptionsParamName = "busOptions";
 
-        private readonly string[] _topics = new string[] { "SomeTopic1", "SomeTopic2" };
+        private const string Topic = "SomeTopic1";
 
         private readonly Mock<BusOptions> _busOptionsMock = new Mock<BusOptions>();
         private readonly CommandReceivedCallbackS _commandReceivedCallback = (p) => { return Task.FromResult("callback"); };
@@ -84,7 +84,7 @@ namespace Remiworks.RabbitMQ.Test
         public void CreateQueueWithTopicsThrows_ArgumentNullException_WhenQueueNameIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() => 
-                _sut.BasicTopicBind(null, _topics));
+                _sut.BasicTopicBind(null, Topic));
 
             exception.ParamName.ShouldBe(QueueNameParamName);
         }
@@ -93,7 +93,7 @@ namespace Remiworks.RabbitMQ.Test
         public void CreateQueueWithTopicsThrows_ArgumentException_WhenQueueNameIsEmpty()
         {
             var exception = Should.Throw<ArgumentException>(() => 
-                _sut.BasicTopicBind("", _topics));
+                _sut.BasicTopicBind("", Topic));
 
             exception.ParamName.ShouldBe(QueueNameParamName);
         }
@@ -102,7 +102,7 @@ namespace Remiworks.RabbitMQ.Test
         public void CreateQueueWithTopicsThrows_ArgumentException_WhenQueueNameIsWhiteSpace()
         {
             var exception = Should.Throw<ArgumentException>(() => 
-                _sut.BasicTopicBind(" ", _topics));
+                _sut.BasicTopicBind(" ", Topic));
 
             exception.ParamName.ShouldBe(QueueNameParamName);
         }
@@ -112,15 +112,6 @@ namespace Remiworks.RabbitMQ.Test
         {
             var exception = Should.Throw<ArgumentNullException>(() => 
                 _sut.BasicTopicBind("SomeQueue", null));
-
-            exception.ParamName.ShouldBe(TopicsParamName);
-        }
-
-        [TestMethod]
-        public void CreateQueueWithTopicsThrows_ArgumentNullException_WhenTopicsIsEmpty()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() => 
-                _sut.BasicTopicBind("SomeQueue", new string[] { }));
 
             exception.ParamName.ShouldBe(TopicsParamName);
         }

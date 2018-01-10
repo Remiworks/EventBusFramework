@@ -23,11 +23,14 @@ namespace Remiworks.Core.Test.Event.Publisher
         public void Initialize()
         {
             _busProviderMock
-                .Setup(b => b.BasicTopicBind(It.IsAny<string>(), It.IsAny<string[]>()));
+                .Setup(b => b.BasicTopicBind(It.IsAny<string>(), It.IsAny<string>()));
             
             _busProviderMock
                 .Setup(b => b.BasicPublish(It.IsAny<EventMessage>()));
-            
+
+            _busProviderMock
+                .Setup(b => b.EnsureConnection());
+
             _sut = new EventPublisher(_busProviderMock.Object);
         }
 
