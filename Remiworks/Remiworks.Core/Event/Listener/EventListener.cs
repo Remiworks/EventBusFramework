@@ -16,6 +16,8 @@ namespace Remiworks.Core.Event.Listener
         {
             _busProvider = busProvider;
             _callbackRegistry = callbackRegistry;
+
+            _busProvider.EnsureConnection();
         }
 
         public Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)

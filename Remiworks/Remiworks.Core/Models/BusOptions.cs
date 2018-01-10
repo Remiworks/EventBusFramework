@@ -10,12 +10,14 @@ namespace Remiworks.Core.Models
         public int? Port { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
+        public string ExchangeType { get; set; }
 
         public BusOptions()
         {
             Hostname = "localhost";
             VirtualHost = "/";
             ExchangeName = "DefaultExchange";
+            ExchangeType = "topic";
         }
     }
 }

@@ -8,11 +8,15 @@ namespace Remiworks.Core
     {
         BusOptions BusOptions { get; }
 
+        void EnsureConnection();
         void BasicPublish(EventMessage eventMessage);
+        void BasicPublish(EventMessage eventMessage, string exchangeName);
 
         void BasicAcknowledge(ulong deliveryTag, bool multiple);
         
-        void BasicTopicBind(string queueName, params string[] topics);
+        void BasicTopicBind(string queueName, string topic);
+
+        void BasicTopicBind(string queueName, string topic, string exchangeName);
 
         void BasicConsume(string queueName, EventReceivedCallback callback, bool autoAcknowledge = true);
 

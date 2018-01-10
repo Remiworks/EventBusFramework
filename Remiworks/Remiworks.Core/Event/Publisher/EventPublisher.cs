@@ -12,6 +12,8 @@ namespace Remiworks.Core.Event.Publisher
         public EventPublisher(IBusProvider busProvider)
         {
             _busProvider = busProvider;
+
+            _busProvider.EnsureConnection();
         }
 
         public Task SendEventAsync(object message, string routingKey)

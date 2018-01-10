@@ -22,6 +22,7 @@ namespace Remiworks.IntegrationTest
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
+                sut.EnsureConnection();
                 var queue = GetUniqueQueue();
                 var topic = GetUniqueTopic();
                 const string jsonMessage = "Something";
@@ -50,6 +51,7 @@ namespace Remiworks.IntegrationTest
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
+                sut.EnsureConnection();
                 var queue = GetUniqueQueue();
                 var topic = GetUniqueTopic();
 
@@ -84,6 +86,7 @@ namespace Remiworks.IntegrationTest
         {
             using (var sut = new RabbitBusProvider(BusOptions))
             {
+                sut.EnsureConnection();
                 var queue = GetUniqueQueue();
                 var topic = GetUniqueTopic();
 

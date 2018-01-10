@@ -44,7 +44,9 @@ namespace Remiworks.Core.Test.Event.Listener
         {
             _busProviderMock
                 .Setup(b => b.BasicTopicBind(It.IsAny<string>(), It.IsAny<string>()));
-            
+            _busProviderMock
+                .Setup(b => b.EnsureConnection());
+
             _sut = new EventListener(_busProviderMock.Object, new EventCallbackRegistry(_busProviderMock.Object));
             
             _listenToQueueAndTopicStub = new ListenToQueueAndTopicStub<Person>();

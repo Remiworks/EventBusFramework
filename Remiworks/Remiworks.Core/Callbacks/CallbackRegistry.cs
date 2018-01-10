@@ -21,7 +21,8 @@ namespace Remiworks.Core.Callbacks
         public void AddCallbackForQueue(
             string queueName,
             string topic,
-            Action<EventMessage> callback)
+            Action<EventMessage> callback,
+            string exchangeName = null)
         {
             var callbackForTopic = new CallbackForTopic
             {
@@ -31,7 +32,10 @@ namespace Remiworks.Core.Callbacks
 
             lock (_lockObject)
             {
-                _busProvider.BasicTopicBind(queueName, topic);
+                if(exchangeName == null)
+                    _busProvider.BasicTopicBind(queueName, topic);
+                else
+                    _busProvider.BasicTopicBind(queueName, topic, exchangeName);
 
                 if (_queueCallbacks.ContainsKey(queueName))
                 {
