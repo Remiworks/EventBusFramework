@@ -60,7 +60,8 @@ namespace Remiworks.Attributes.Test.Initialization
                     queueName, 
                     topic, 
                     It.IsAny<EventReceivedForTopic>(), 
-                    parameterType))
+                    parameterType,
+                    It.IsAny<string>()))
                 .Verifiable();
         }
     }

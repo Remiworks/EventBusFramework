@@ -20,7 +20,9 @@ namespace Remiworks.Core.Event.Listener
             _busProvider.EnsureConnection();
         }
 
-        public Task SetupQueueListenerAsync<TParam>(string queueName, EventReceived<TParam> callback)
+        public Task SetupQueueListenerAsync<TParam>(
+            string queueName, 
+            EventReceived<TParam> callback)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(callback, nameof(callback));
@@ -31,7 +33,10 @@ namespace Remiworks.Core.Event.Listener
                 typeof(TParam));
         }
 
-        public Task SetupQueueListenerAsync(string queueName, EventReceived callback, Type parameterType)
+        public Task SetupQueueListenerAsync(
+            string queueName, 
+            EventReceived callback, 
+            Type parameterType)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(callback, nameof(callback));
@@ -53,7 +58,8 @@ namespace Remiworks.Core.Event.Listener
         public Task SetupQueueListenerAsync<TParam>(
             string queueName,
             string topic,
-            EventReceivedForTopic<TParam> callback)
+            EventReceivedForTopic<TParam> callback,
+            string exchangeName = null)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
@@ -63,14 +69,16 @@ namespace Remiworks.Core.Event.Listener
                 queueName,
                 topic,
                 input => callback((TParam)input),
-                typeof(TParam));
+                typeof(TParam),
+                exchangeName);
         }
 
         public Task SetupQueueListenerAsync(
             string queueName, 
             string topic,
             EventReceivedForTopic callback, 
-            Type parameterType)
+            Type parameterType,
+            string exchangeName = null)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNullOrWhiteSpace(topic, nameof(topic));
@@ -86,7 +94,7 @@ namespace Remiworks.Core.Event.Listener
                     callback(deserializedParamter);
                 }
 
-                _callbackRegistry.AddCallbackForQueue(queueName, topic, CallbackInvoker);
+                _callbackRegistry.AddCallbackForQueue(queueName, topic, CallbackInvoker, exchangeName);
             });
         }
     }

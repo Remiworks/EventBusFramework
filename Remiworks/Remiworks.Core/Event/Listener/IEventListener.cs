@@ -9,9 +9,9 @@ namespace Remiworks.Core.Event.Listener
 
         Task SetupQueueListenerAsync(string queueName, EventReceived callback, Type parameterType);
         
-        Task SetupQueueListenerAsync<TParam>(string queueName, string topic, EventReceivedForTopic<TParam> callback);
+        Task SetupQueueListenerAsync<TParam>(string queueName, string topic, EventReceivedForTopic<TParam> callback, string exchangeName = null);
 
-        Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type parameterType);
+        Task SetupQueueListenerAsync(string queueName, string topic, EventReceivedForTopic callback, Type parameterType, string exchangeName = null);
     }
     
     public delegate void EventReceived<in TParam>(TParam input, string topic);
