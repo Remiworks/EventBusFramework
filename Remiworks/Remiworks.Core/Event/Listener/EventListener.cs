@@ -42,9 +42,9 @@ namespace Remiworks.Core.Event.Listener
         }
 
         public Task SetupQueueListenerAsync(
-            string queueName, 
+            string queueName,
             string topic,
-            EventReceived callback, 
+            EventReceived callback,
             Type parameterType,
             string exchangeName = null)
         {
@@ -59,12 +59,36 @@ namespace Remiworks.Core.Event.Listener
             {
                 void CallbackInvoker(EventMessage eventMessage)
                 {
-                    var deserializedParamter = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
+                    LogReceivedCallback(queueName, topic, eventMessage.RoutingKey, eventMessage.JsonMessage);
 
-                    callback(deserializedParamter, eventMessage.RoutingKey);
+                    object deserializedParameter;
+
+                    try
+                    {
+                        deserializedParameter = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
+                    }
+                    catch (Exception exception)
+                    {
+                        LogFailedJsonConvert(queueName, topic, parameterType, eventMessage.JsonMessage, exception);
+                        throw;
+                    }
+
+                    try
+                    {
+                        LogCallingCallback(queueName, topic);
+                        callback(deserializedParameter, eventMessage.RoutingKey);
+                        LogDoneCallingCallback(queueName, topic);
+                    }
+                    catch (Exception exeption)
+                    {
+                        LogFailedCallingCallback(queueName, topic, exeption);
+                        throw;
+                    }
                 }
 
                 _callbackRegistry.AddCallbackForQueue(queueName, topic, CallbackInvoker, exchangeName);
+
+                LogSetupQueueListenerDone(queueName, topic, parameterType, exchangeName);
             });
         }
 
@@ -73,7 +97,7 @@ namespace Remiworks.Core.Event.Listener
             if (exchangeName == null)
             {
                 Logger.LogInformation(
-                    "Initializing queue listener for queue {0}, topic {1} and parameter type {2}",
+                    "Setting up queue listener for queue {0}, topic {1} and parameter type {2}",
                     queueName,
                     topic,
                     parameterType.FullName);
@@ -81,12 +105,79 @@ namespace Remiworks.Core.Event.Listener
             else
             {
                 Logger.LogInformation(
-                    "Initializing queue listener for queue {0}, topic {1}, parameter type {2} and exchange {3}",
+                    "Setting up queue listener for queue {0}, topic {1}, parameter type {2} and exchange {3}",
                     queueName,
                     topic,
                     parameterType.FullName,
                     exchangeName);
             }
+        }
+
+        private void LogSetupQueueListenerDone(string queueName, string topic, Type parameterType, string exchangeName)
+        {
+            if (exchangeName == null)
+            {
+                Logger.LogInformation(
+                    "Done setting up queue listener for queue {0}, topic {1} and parameter type {2}",
+                    queueName,
+                    topic,
+                    parameterType.FullName);
+            }
+            else
+            {
+                Logger.LogInformation(
+                    "Done setting up queue listener for queue {0}, topic {1}, parameter type {2} and exchange {3}",
+                    queueName,
+                    topic,
+                    parameterType.FullName,
+                    exchangeName);
+            }
+        }
+
+        private void LogReceivedCallback(string queueName, string partialTopic, string fullTopic, string jsonMessage)
+        {
+            Logger.LogInformation(
+                "Received callback for queue queue {0} and topic {1}. Full received topic: {2}. Json: {3}",
+                queueName,
+                partialTopic,
+                fullTopic,
+                jsonMessage);
+        }
+
+        private void LogFailedJsonConvert(string queueName, string topic, Type parameterType, string json, Exception exception)
+        {
+            Logger.LogError(
+                exception,
+                "Failed converting to type {0} for queue {1} and topic {2}. Json: {3}",
+                parameterType.FullName,
+                queueName,
+                topic,
+                json);
+        }
+
+        private void LogCallingCallback(string queueName, string topic)
+        {
+            Logger.LogInformation(
+                "Calling callback for queue queue {0} and topic {1}",
+                queueName,
+                topic);
+        }
+
+        private void LogDoneCallingCallback(string queueName, string topic)
+        {
+            Logger.LogInformation(
+                "Done calling callback for queue queue {0} and topic {1}",
+                queueName,
+                topic);
+        }
+
+        private void LogFailedCallingCallback(string queueName, string topic, Exception exception)
+        {
+            Logger.LogError(
+                exception,
+                "Failed calling callback for queue queue {0} and topic {1}",
+                queueName,
+                topic);
         }
     }
 }
