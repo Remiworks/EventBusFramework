@@ -6,7 +6,7 @@
     <Description>A framework for wrapping various event bus frameworks like RabbitMQ. Both events and commands can be sent and received using this framework, while the underlying event bus implementation can be swapped by just switching out a single package.</Description>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company />
-    <Version>3.1.1</Version>
+    <Version>3.2.0</Version>
     <PackageProjectUrl>https://github.com/Remiworks/EventBusFramework</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Remiworks/EventBusFramework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
