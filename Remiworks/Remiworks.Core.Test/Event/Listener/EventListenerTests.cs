@@ -54,21 +54,11 @@ namespace Remiworks.Core.Test.Event.Listener
         }
 
         [TestMethod]
-        public async Task ListenToQueueCallsBusProvider_BasicConsume()
-        {
-            SetupBusProviderMockBasicConsume(QueueName);
-            
-            await _sut.SetupQueueListenerAsync(QueueName, new Mock<EventReceived<Person>>().Object);
-            
-            _busProviderMock.Verify(b => b.BasicConsume(QueueName, It.IsAny<EventReceivedCallback>(), It.IsAny<bool>()));
-        }
-
-        [TestMethod]
         public async Task ListenToQueueOverloadCallsBusProvider_BasicConsume()
         {
             SetupBusProviderMockBasicConsume(QueueName);
             
-            await _sut.SetupQueueListenerAsync(QueueName, WildcardTopic, new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object);
+            await _sut.SetupQueueListenerAsync(QueueName, WildcardTopic, new Mock<EventReceived>().Object, new Mock<Type>().Object);
             
             _busProviderMock.Verify(b => b.BasicConsume(QueueName, It.IsAny<EventReceivedCallback>(), It.IsAny<bool>()));
         }
@@ -78,25 +68,9 @@ namespace Remiworks.Core.Test.Event.Listener
         {
             SetupBusProviderMockBasicConsume(QueueName);
 
-            await _sut.SetupQueueListenerAsync(QueueName, WildcardTopic, new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object);
+            await _sut.SetupQueueListenerAsync(QueueName, WildcardTopic, new Mock<EventReceived>().Object, new Mock<Type>().Object);
             
             _busProviderMock.Verify(b => b.BasicTopicBind(QueueName, WildcardTopic));
-        }
-
-        [TestMethod]
-        public async Task ListenToQueueCalls_EventReceived_WhenEventIsReceived()
-        {
-            EventReceivedCallback callbackFromBus = null;
-            SetupBusProviderMockBasicConsume(
-                QueueName,
-                (queue, callback, ack) => callbackFromBus = callback);
-
-            await _sut.SetupQueueListenerAsync(QueueName, _listenToQueueStub.GenericTypeEventListenerCallback());
-            callbackFromBus.Invoke(EventMessage);
-
-            _listenToQueueStub.WaitHandle.WaitOne(Timeout).ShouldBeTrue();
-            _listenToQueueStub.ReceivedObject.Name.ShouldBe(Person.Name);
-            _listenToQueueStub.ReceivedTopic.ShouldBe(EventMessage.RoutingKey);
         }
 
         [TestMethod]
@@ -163,22 +137,6 @@ namespace Remiworks.Core.Test.Event.Listener
             
             _listenToQueueAndTopicStub.ReceivedObject.Name.ShouldBe(Person.Name);
             listenToQueueAndTopicStub2.ReceivedObject.Name.ShouldBe(Person.Name);
-        }
-
-        [TestMethod]
-        public async Task ListenToQueue_WithoutGenericTypeCalls_EventReceived_WhenEventIsReceived()
-        {
-            EventReceivedCallback callbackFromBus = null;
-            SetupBusProviderMockBasicConsume(
-                QueueName,
-                (queue, callback, ack) => callbackFromBus = callback);
-
-            await _sut.SetupQueueListenerAsync(QueueName, _listenToQueueStub.EventListenerCallback(), typeof(Person));
-            callbackFromBus.Invoke(EventMessage);
-
-            _listenToQueueStub.WaitHandle.WaitOne(Timeout).ShouldBeTrue();
-            _listenToQueueStub.ReceivedObject.Name.ShouldBe(Person.Name);
-            _listenToQueueStub.ReceivedTopic.ShouldBe(EventMessage.RoutingKey);
         }
 
         [TestMethod]

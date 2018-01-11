@@ -35,7 +35,7 @@ namespace Remiworks.Attributes.Initialization
                 _eventListener.SetupQueueListenerAsync(
                     queueName,
                     topicWithMethod.Key,
-                    parameterObject => InvokeTopic(type, topicWithMethod.Key, topicWithMethod.Value, parameterObject),
+                    (parameterObject, _) => InvokeTopic(type, topicWithMethod.Key, topicWithMethod.Value, parameterObject),
                     parameterType);
             }
         }

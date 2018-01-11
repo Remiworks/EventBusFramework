@@ -27,99 +27,12 @@ namespace Remiworks.Core.Test.Event.Listener
         {
             _sut = new EventListener(new Mock<IBusProvider>().Object, new Mock<IEventCallbackRegistry>().Object);
         }
-
-        [TestMethod]
-        public void ListenToQueueGenericThrows_ArgumentNullException_WhenQueueNameIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(null, new Mock<EventReceived<Person>>().Object).Wait());
-
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueGenericThrows_ArgumentException_WhenQueueNameIsEmpty()
-        {
-            var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync("", new Mock<EventReceived<Person>>().Object)
-                    .Wait());
-
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueGenericThrows_ArgumentException_WhenQueueNameIsWhitespace()
-        {
-            var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(" ", new Mock<EventReceived<Person>>().Object).Wait());
-
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueGenericThrows_ArgumentNullException_WhenCallbackIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync<Person>(QueueName, null).Wait());
-
-            exception.ParamName.ShouldBe(CallbackParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueNonGenericThrows_ArgumentNullException_WhenQueueNameIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(null, new Mock<EventReceived>().Object, new Mock<Type>().Object)
-                    .Wait());
-
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueNonGenericThrows_ArgumentException_WhenQueueNameIsEmpty()
-        {
-            var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync("", new Mock<EventReceived>().Object, new Mock<Type>().Object)
-                    .Wait());
-
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueNonGenericThrows_ArgumentException_WhenQueueNameIsWhitespace()
-        {
-            var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(" ", new Mock<EventReceived>().Object, new Mock<Type>().Object)
-                    .Wait());
-
-            exception.ParamName.ShouldBe(QueueNameParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueNonGenericThrows_ArgumentNullException_WhenCallbackIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, null, new Mock<Type>().Object)
-                    .Wait());
-
-            exception.ParamName.ShouldBe(CallbackParameter);
-        }
-
-        [TestMethod]
-        public void ListenToQueueNonGenericThrows_ArgumentNullException_WhenTypeIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, new Mock<EventReceived>().Object, null)
-                    .Wait());
-
-            exception.ParamName.ShouldBe(TypeParameter);
-        }
         
         [TestMethod]
         public void ListenToQueueGenericOverloadThrows_ArgumentNullException_WhenQueueNameIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(null, Topic, new Mock<EventReceivedForTopic<Person>>().Object).Wait());
+                _sut.SetupQueueListenerAsync(null, Topic, new Mock<EventReceived<Person>>().Object).Wait());
 
             exception.ParamName.ShouldBe(QueueNameParameter);
         }
@@ -128,7 +41,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueGenericOverloadThrows_ArgumentException_WhenQueueNameIsEmpty()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync("", Topic, new Mock<EventReceivedForTopic<Person>>().Object)
+                _sut.SetupQueueListenerAsync("", Topic, new Mock<EventReceived<Person>>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(QueueNameParameter);
@@ -138,7 +51,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueGenericOverloadThrows_ArgumentException_WhenQueueNameIsWhitespace()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(" ", Topic, new Mock<EventReceivedForTopic<Person>>().Object).Wait());
+                _sut.SetupQueueListenerAsync(" ", Topic, new Mock<EventReceived<Person>>().Object).Wait());
 
             exception.ParamName.ShouldBe(QueueNameParameter);
         }
@@ -147,7 +60,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueGenericOverloadThrows_ArgumentNullException_WhenTopicIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, null, new Mock<EventReceivedForTopic<Person>>().Object)
+                _sut.SetupQueueListenerAsync(QueueName, null, new Mock<EventReceived<Person>>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(TopicParameter);
@@ -157,7 +70,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueGenericOverloadThrows_ArgumentException_WhenTopicIsEmpty()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, "", new Mock<EventReceivedForTopic<Person>>().Object)
+                _sut.SetupQueueListenerAsync(QueueName, "", new Mock<EventReceived<Person>>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(TopicParameter);
@@ -167,7 +80,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueGenericOverloadThrows_ArgumentException_WhenTopicIsWhitespace()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, " ", new Mock<EventReceivedForTopic<Person>>().Object)
+                _sut.SetupQueueListenerAsync(QueueName, " ", new Mock<EventReceived<Person>>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(TopicParameter);
@@ -186,7 +99,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueNonGenericOverloadThrows_ArgumentNullException_WhenQueueNameIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(null, Topic, new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object)
+                _sut.SetupQueueListenerAsync(null, Topic, new Mock<EventReceived>().Object, new Mock<Type>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(QueueNameParameter);
@@ -196,7 +109,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueNonGenericOverloadThrows_ArgumentException_WhenQueueNameIsEmpty()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync("", Topic, new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object)
+                _sut.SetupQueueListenerAsync("", Topic, new Mock<EventReceived>().Object, new Mock<Type>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(QueueNameParameter);
@@ -206,7 +119,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueNonGenericOverloadThrows_ArgumentException_WhenQueueNameIsWhitespace()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(" ", Topic, new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object)
+                _sut.SetupQueueListenerAsync(" ", Topic, new Mock<EventReceived>().Object, new Mock<Type>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(QueueNameParameter);
@@ -216,7 +129,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueNonGenericOverloadThrows_ArgumentNullException_WhenTopicIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, null, new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object)
+                _sut.SetupQueueListenerAsync(QueueName, null, new Mock<EventReceived>().Object, new Mock<Type>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(TopicParameter);
@@ -226,7 +139,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueNonGenericOverloadThrows_ArgumentException_WhenTopicIsEmpty()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, "", new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object)
+                _sut.SetupQueueListenerAsync(QueueName, "", new Mock<EventReceived>().Object, new Mock<Type>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(TopicParameter);
@@ -236,7 +149,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueNonGenericOverloadThrows_ArgumentException_WhenTopicIsWhitespace()
         {
             var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, " ", new Mock<EventReceivedForTopic>().Object, new Mock<Type>().Object)
+                _sut.SetupQueueListenerAsync(QueueName, " ", new Mock<EventReceived>().Object, new Mock<Type>().Object)
                     .Wait());
 
             exception.ParamName.ShouldBe(TopicParameter);
@@ -256,7 +169,7 @@ namespace Remiworks.Core.Test.Event.Listener
         public void ListenToQueueNonGenericOverloadThrows_ArgumentNullException_WhenTypeIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() =>
-                _sut.SetupQueueListenerAsync(QueueName, Topic, new Mock<EventReceivedForTopic>().Object, null)
+                _sut.SetupQueueListenerAsync(QueueName, Topic, new Mock<EventReceived>().Object, null)
                     .Wait());
 
             exception.ParamName.ShouldBe(TypeParameter);

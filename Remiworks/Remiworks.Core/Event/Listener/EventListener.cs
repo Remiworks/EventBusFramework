@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using EnsureThat;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Remiworks.Core.Event.Listener.Callbacks;
 using Remiworks.Core.Models;
@@ -9,6 +10,8 @@ namespace Remiworks.Core.Event.Listener
 {
     public class EventListener : IEventListener
     {
+        private ILogger Logger { get; } = RemiLogging.CreateLogger<EventListener>();
+
         private readonly IBusProvider _busProvider;
         private readonly IEventCallbackRegistry _callbackRegistry;
 
@@ -21,44 +24,9 @@ namespace Remiworks.Core.Event.Listener
         }
 
         public Task SetupQueueListenerAsync<TParam>(
-            string queueName, 
-            EventReceived<TParam> callback)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
-            EnsureArg.IsNotNull(callback, nameof(callback));
-
-            return SetupQueueListenerAsync(
-                queueName,
-                (input, topic) => callback((TParam)input, topic),
-                typeof(TParam));
-        }
-
-        public Task SetupQueueListenerAsync(
-            string queueName, 
-            EventReceived callback, 
-            Type parameterType)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
-            EnsureArg.IsNotNull(callback, nameof(callback));
-            EnsureArg.IsNotNull(parameterType, nameof(parameterType));
-
-            return Task.Run(() =>
-            {
-                void ReceivedCallback(EventMessage eventMessage)
-                {
-                    var messageObject = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
-
-                    callback(messageObject, eventMessage.RoutingKey);
-                }
-
-                _busProvider.BasicConsume(queueName, ReceivedCallback);
-            });
-        }
-
-        public Task SetupQueueListenerAsync<TParam>(
             string queueName,
             string topic,
-            EventReceivedForTopic<TParam> callback,
+            EventReceived<TParam> callback,
             string exchangeName = null)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
@@ -68,7 +36,7 @@ namespace Remiworks.Core.Event.Listener
             return SetupQueueListenerAsync(
                 queueName,
                 topic,
-                input => callback((TParam)input),
+                (input, receivedTopic) => callback((TParam)input, receivedTopic),
                 typeof(TParam),
                 exchangeName);
         }
@@ -76,7 +44,7 @@ namespace Remiworks.Core.Event.Listener
         public Task SetupQueueListenerAsync(
             string queueName, 
             string topic,
-            EventReceivedForTopic callback, 
+            EventReceived callback, 
             Type parameterType,
             string exchangeName = null)
         {
@@ -85,17 +53,40 @@ namespace Remiworks.Core.Event.Listener
             EnsureArg.IsNotNull(callback, nameof(callback));
             EnsureArg.IsNotNull(parameterType, nameof(parameterType));
 
+            LogSetupQueueListenerCalled(queueName, topic, parameterType, exchangeName);
+
             return Task.Run(() =>
             {
                 void CallbackInvoker(EventMessage eventMessage)
                 {
                     var deserializedParamter = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
 
-                    callback(deserializedParamter);
+                    callback(deserializedParamter, eventMessage.RoutingKey);
                 }
 
                 _callbackRegistry.AddCallbackForQueue(queueName, topic, CallbackInvoker, exchangeName);
             });
+        }
+
+        private void LogSetupQueueListenerCalled(string queueName, string topic, Type parameterType, string exchangeName)
+        {
+            if (exchangeName == null)
+            {
+                Logger.LogInformation(
+                    "Initializing queue listener for queue {0}, topic {1} and parameter type {2}",
+                    queueName,
+                    topic,
+                    parameterType.FullName);
+            }
+            else
+            {
+                Logger.LogInformation(
+                    "Initializing queue listener for queue {0}, topic {1}, parameter type {2} and exchange {3}",
+                    queueName,
+                    topic,
+                    parameterType.FullName,
+                    exchangeName);
+            }
         }
     }
 }
