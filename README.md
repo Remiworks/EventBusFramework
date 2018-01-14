@@ -3,6 +3,10 @@
 - [Introduction](#introduction)
 - [Usage](#usage)
     - [Adding Remiworks to your project](#adding-remiworks-to-your-project)
+        - [Project types](#project-types)
+            - [Console project](#console-project)
+            - [MVC project](#mvc-project)
+        - [Logging](#logging)
     - [Events](#events)
         - [Sending events](#sending-events)
         - [Receiving events with the IEventListener](#receiving-events-with-the-ieventlistener)
@@ -20,7 +24,13 @@ This framework is an abstraction layer for eventbusses. As of now the only imple
 The core library contains multiple classes to communicate with an eventbus implementation of choice.
 
 ## Adding Remiworks to your project
-Before Remiworks can be used, it needs to be added to your project. This is done via a dependency injection mechanism.
+Before Remiworks can be used, it needs to be added to your project. This is done via a dependency injection mechanism. This can be both a simple console project or a more sophisticated MVC project (which also is a console application).
+
+### Project types
+#### Console project
+Add a reference to `Microsoft.Extensions.DependencyInjection`. 
+
+**Important:** In case of a controller which only listens to commands or events, it is important to still call `serviceProvider.GetService<...>();`. By doing this, you let the dependency injection mechanism create an instance of the desired class. This in turn, instantiates any listeners which enables the class to listen to incoming events/commands.
 
 ```csharp
 var serviceProvider = new ServiceCollection()
@@ -28,10 +38,78 @@ var serviceProvider = new ServiceCollection()
     .AddRabbitMq(new BusOptions()) // Use an RabbitMq implementation (Remiworks.RabbitMQ)
     .BuildServiceProvider();
 
-// Retrieve an instance of some random class.
-// This class will have the required dependencies injection together with required Remiworks classes
+// Option 1:
 var randomClass = serviceProvider.GetService<SomeRandomClass>();
-randomClass.DoSomething();
+randomClass.DoSomething(); 
+// This class will have the required dependencies injection together with required Remiworks classes
+
+// Option 2:
+serviceProvider.UseAttributes(); // Remiworks.Attributes
+```
+
+#### MVC project
+Adding Remiworks to an MVC project is similar to adding it to a console project.
+
+```csharp
+public class Startup
+{
+    public Startup(IConfiguration configuration)
+    {
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddMvc();
+        services.AddTransient<SomeRandomClass>()
+        services.AddRabbitMq(new BusOptions());
+    }
+
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseBrowserLink();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Home/Error");
+        }
+
+        app.UseStaticFiles();
+
+        // Option 1:
+        serviceProvider.GetService<SomeRandomClass>(); // Let the class be instantiated
+
+        // Option 2:
+        app.ApplicationServices.UseAttributes();
+
+        app.UseMvc(routes =>
+        {
+            routes.MapRoute(
+                name: "default",
+                template: "{controller=RDW}/{action=Index}");
+        });
+    }
+}
+```
+
+### Logging
+Remiworks also allows for a logger to be added. This is done as an extra parameter in the `AddRabbitMQ` method. The following example illustrates how `Serilog` can be added to the mix:
+
+```csharp
+var logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateLogger();
+
+var loggerFactory = new LoggerFactory()
+    .AddSerilog(logger);
+
+services.AddRabbitMq(new BusOptions(), loggerFactory);
 ```
 
 ## Events
