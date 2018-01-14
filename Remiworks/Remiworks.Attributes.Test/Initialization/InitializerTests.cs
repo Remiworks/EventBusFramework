@@ -59,7 +59,7 @@ namespace Remiworks.Attributes.Test.Initialization
                 .Setup(e => e.SetupQueueListenerAsync(
                     queueName, 
                     topic, 
-                    It.IsAny<EventReceivedForTopic>(), 
+                    It.IsAny<EventReceived>(), 
                     parameterType,
                     It.IsAny<string>()))
                 .Verifiable();
