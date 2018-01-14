@@ -6,7 +6,8 @@ using Moq;
 using Remiworks.Attributes.Initialization;
 using Remiworks.Attributes.Test.Stubs;
 using Remiworks.Core;
-using Remiworks.Core.Event;
+using Remiworks.Core.Command.Listener;
+using Remiworks.Core.Event.Listener;
 
 namespace Remiworks.Attributes.Test.Initialization
 {
@@ -23,19 +24,17 @@ namespace Remiworks.Attributes.Test.Initialization
         
         private readonly Mock<IBusProvider> _busProviderMock = new Mock<IBusProvider>();
         private readonly Mock<IEventListener> _eventListenerMock = new Mock<IEventListener>();
+        private readonly Mock<ICommandListener> _commandListenerMock = new Mock<ICommandListener>();
 
         private Initializer _sut;
 
         [TestInitialize]
         public void Initialize()
         {
-            _busProviderMock
-                .Setup(b => b.CreateConnection())
-                .Verifiable();
-
             var serviceProvider = new ServiceCollection()
                 .AddTransient(s => _eventListenerMock.Object)
-                .AddTransient(b => _busProviderMock.Object)
+                .AddTransient(s => _commandListenerMock.Object)
+                .AddTransient(s => _busProviderMock.Object)
                 .BuildServiceProvider();
             
             SetupEventListener(Queue1, Topic1, typeof(Person));
@@ -44,14 +43,6 @@ namespace Remiworks.Attributes.Test.Initialization
             SetupEventListener(Queue2, Topic4, typeof(Person));
 
             _sut = new Initializer(serviceProvider);
-        }
-
-        [TestMethod]
-        public void InitializeCallsCreateConnection()
-        {
-            _sut.Initialize(Assembly.GetCallingAssembly());
-
-            _busProviderMock.VerifyAll();
         }
 
         [TestMethod]
@@ -68,8 +59,9 @@ namespace Remiworks.Attributes.Test.Initialization
                 .Setup(e => e.SetupQueueListenerAsync(
                     queueName, 
                     topic, 
-                    It.IsAny<EventReceivedForTopic>(), 
-                    parameterType))
+                    It.IsAny<EventReceived>(), 
+                    parameterType,
+                    It.IsAny<string>()))
                 .Verifiable();
         }
     }

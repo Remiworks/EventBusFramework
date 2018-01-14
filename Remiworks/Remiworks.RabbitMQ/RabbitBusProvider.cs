@@ -30,8 +30,12 @@ namespace Remiworks.RabbitMQ
             BusOptions = busOptions;
         }
 
-        public void CreateConnection()
+        public void EnsureConnection()
         {
+            //TODO unit tests
+            if (_connection != null && _connection.IsOpen)
+                return;
+
             var factory = new ConnectionFactory()
             {
                 HostName = BusOptions.Hostname,
@@ -44,11 +48,9 @@ namespace Remiworks.RabbitMQ
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-
-            _channel.ExchangeDeclare(BusOptions.ExchangeName, ExchangeType);
         }
 
-        public void BasicConsume(string queueName, EventReceivedCallback callback)
+        public void BasicConsume(string queueName, EventReceivedCallback callback, bool autoAck = true)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(callback, nameof(callback));
@@ -57,27 +59,54 @@ namespace Remiworks.RabbitMQ
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
 
             QueueDeclare(queueName);
-            _channel.BasicConsume(queueName, true, consumer);
+            
+            _channel.BasicConsume(
+                queue: queueName, 
+                autoAck: autoAck, 
+                consumer: consumer);
         }
 
-        public void CreateTopicsForQueue(string queueName, params string[] topics)
+        public void BasicQos(uint prefetchSize, ushort prefetchCount)
+        {
+            _channel.BasicQos(
+                prefetchSize: prefetchSize, 
+                prefetchCount: prefetchCount, 
+                global: false);
+        }
+
+        public void BasicAcknowledge(ulong deliveryTag, bool multiple)
+        {
+            _channel.BasicAck(
+                deliveryTag: deliveryTag, 
+                multiple: multiple);
+        }
+
+        public void BasicTopicBind(string queueName, string topic)
+        {
+            BasicTopicBind(queueName, topic, BusOptions.ExchangeName);
+        }
+
+        public void BasicTopicBind(string queueName, string topic, string exchangeName)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
-            if (topics == null || !topics.Any()) throw new ArgumentNullException(nameof(topics));
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
+
+            _channel.ExchangeDeclare(exchangeName, BusOptions.ExchangeType);
 
             QueueDeclare(queueName);
-
-            topics
-                .Where(t => t != null)
-                .ToList()
-                .ForEach(topic => _channel.QueueBind(queueName, BusOptions.ExchangeName, topic));
+            _channel.QueueBind(queueName, exchangeName, topic);
         }
 
         public void BasicPublish(EventMessage eventMessage)
         {
+            BasicPublish(eventMessage, BusOptions.ExchangeName);
+        }
+
+        public void BasicPublish(EventMessage eventMessage, string exchangeName)
+        {
             EnsureArg.IsNotNull(eventMessage, nameof(eventMessage));
             EnsureArg.IsNotNullOrWhiteSpace(
-                eventMessage.JsonMessage, 
+                eventMessage.JsonMessage,
                 $"{nameof(eventMessage)}.{nameof(eventMessage.JsonMessage)}");
 
             var properties = _channel.CreateBasicProperties();
@@ -102,37 +131,10 @@ namespace Remiworks.RabbitMQ
                 properties.Timestamp = new AmqpTimestamp(eventMessage.Timestamp.Value);
             }
 
-            _channel.BasicPublish(exchange: BusOptions.ExchangeName,
+            _channel.BasicPublish(exchange: exchangeName,
                                  routingKey: eventMessage.RoutingKey,
                                  basicProperties: properties,
                                  body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
-        }
-
-        public void SetupRpcListeners(string queueName, string[] keys, CommandReceivedCallback callback)
-        {
-            EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
-            EnsureArg.IsNotNull(callback, nameof(callback));
-
-            _channel.QueueDeclare(
-                queue: queueName,
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-
-            _channel.BasicQos(0, 1, false);
-
-            keys.ToList().ForEach(key =>
-                _channel.QueueBind(queueName, BusOptions.ExchangeName, key));
-
-            var consumer = new EventingBasicConsumer(_channel);
-
-            consumer.Received += (sender, args) => Task.Run(() => HandleReceivedCommand(callback, args));
-
-            _channel.BasicConsume(
-                queue: queueName,
-                autoAck: false,
-                consumer: consumer);
         }
 
         private static void HandleReceivedEvent(BasicDeliverEventArgs args, EventReceivedCallback callback)
@@ -157,75 +159,11 @@ namespace Remiworks.RabbitMQ
                 Timestamp = args.BasicProperties.Timestamp.UnixTime,
                 ReplyQueueName = args.BasicProperties.ReplyTo,
                 Type = args.BasicProperties.Type,
-                IsError = isError != null && isError.Value
+                IsError = isError != null && isError.Value,
+                DeliveryTag = args.DeliveryTag
             };
 
             callback(eventMessage);
-        }
-
-        private async Task HandleReceivedCommand(CommandReceivedCallback function, BasicDeliverEventArgs args)
-        {
-            var replyProps = _channel.CreateBasicProperties();
-            replyProps.CorrelationId = args.BasicProperties.CorrelationId;
-
-            var message = Encoding.UTF8.GetString(args.Body);
-
-            Guid? correlationId = null;
-
-            if (args.BasicProperties.CorrelationId != null &&
-               Guid.TryParse(args.BasicProperties.CorrelationId, out Guid parsedId))
-            {
-                correlationId = parsedId;
-            }
-
-            var eventMessage = new EventMessage()
-            {
-                JsonMessage = message,
-                RoutingKey = args.RoutingKey,
-                CorrelationId = correlationId,
-                Timestamp = args.BasicProperties.Timestamp.UnixTime,
-                ReplyQueueName = args.BasicProperties.ReplyTo,
-                Type = args.BasicProperties.Type
-            };
-
-            string response = await InvokeCommandReceivedCallbackAsync(function, replyProps, eventMessage);
-
-            var responseBytes = Encoding.UTF8.GetBytes(response);
-
-            _channel.BasicPublish(
-                exchange: "",
-                routingKey: args.BasicProperties.ReplyTo,
-                basicProperties: replyProps,
-                body: responseBytes);
-
-            _channel.BasicAck(
-                deliveryTag: args.DeliveryTag,
-                multiple: false);
-        }
-
-        private static async Task<string> InvokeCommandReceivedCallbackAsync(CommandReceivedCallback function, IBasicProperties replyProps, EventMessage eventMessage)
-        {
-            var response = "";
-            replyProps.Headers = new Dictionary<string, object>();
-
-            try
-            {
-                response = await function(eventMessage);
-                replyProps.Headers.Add("isError", false);
-            }
-            catch (TargetInvocationException ex)
-            {
-                var exception = new CommandPublisherException(ex.InnerException.Message, ex.InnerException);
-                response = JsonConvert.SerializeObject(exception);
-                replyProps.Headers.Add("isError", true);
-            }
-            catch (Exception ex)
-            {
-                var exception = new CommandPublisherException(ex.Message, ex);
-                response = JsonConvert.SerializeObject(exception);
-                replyProps.Headers.Add("isError", true);
-            }
-            return response;
         }
 
         private void QueueDeclare(string queueName)
@@ -236,6 +174,8 @@ namespace Remiworks.RabbitMQ
                 autoDelete: false);
         }
 
+        #region IDisposable
+        
         private bool _isDisposed = false;
 
         protected virtual void Dispose(bool disposing)
@@ -256,5 +196,6 @@ namespace Remiworks.RabbitMQ
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        #endregion
     }
 }

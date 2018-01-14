@@ -11,17 +11,17 @@ namespace Remiworks.RabbitMQ.Test
     [TestClass]
     public class RabbitBusProviderParameterTests
     {
-        private const string TopicsParamName = "topics";
+        private const string TopicsParamName = "topic";
         private const string CallbackParamName = "callback";
         private const string QueueNameParamName = "queueName";
         private const string EventMessageParamName = "eventMessage";
         private const string JsonMessageParamName = "eventMessage.JsonMessage";
         private const string BusOptionsParamName = "busOptions";
 
-        private readonly string[] _topics = new string[] { "SomeTopic1", "SomeTopic2" };
+        private const string Topic = "SomeTopic1";
 
         private readonly Mock<BusOptions> _busOptionsMock = new Mock<BusOptions>();
-        private readonly CommandReceivedCallback _commandReceivedCallback = (p) => { return Task.FromResult("callback"); };
+        private readonly CommandReceivedCallbackS _commandReceivedCallback = (p) => { return Task.FromResult("callback"); };
 
         private RabbitBusProvider _sut;
 
@@ -84,7 +84,7 @@ namespace Remiworks.RabbitMQ.Test
         public void CreateQueueWithTopicsThrows_ArgumentNullException_WhenQueueNameIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() => 
-                _sut.CreateTopicsForQueue(null, _topics));
+                _sut.BasicTopicBind(null, Topic));
 
             exception.ParamName.ShouldBe(QueueNameParamName);
         }
@@ -93,7 +93,7 @@ namespace Remiworks.RabbitMQ.Test
         public void CreateQueueWithTopicsThrows_ArgumentException_WhenQueueNameIsEmpty()
         {
             var exception = Should.Throw<ArgumentException>(() => 
-                _sut.CreateTopicsForQueue("", _topics));
+                _sut.BasicTopicBind("", Topic));
 
             exception.ParamName.ShouldBe(QueueNameParamName);
         }
@@ -102,7 +102,7 @@ namespace Remiworks.RabbitMQ.Test
         public void CreateQueueWithTopicsThrows_ArgumentException_WhenQueueNameIsWhiteSpace()
         {
             var exception = Should.Throw<ArgumentException>(() => 
-                _sut.CreateTopicsForQueue(" ", _topics));
+                _sut.BasicTopicBind(" ", Topic));
 
             exception.ParamName.ShouldBe(QueueNameParamName);
         }
@@ -111,16 +111,7 @@ namespace Remiworks.RabbitMQ.Test
         public void CreateQueueWithTopicsThrows_ArgumentNullException_WhenTopicsIsNull()
         {
             var exception = Should.Throw<ArgumentNullException>(() => 
-                _sut.CreateTopicsForQueue("SomeQueue", null));
-
-            exception.ParamName.ShouldBe(TopicsParamName);
-        }
-
-        [TestMethod]
-        public void CreateQueueWithTopicsThrows_ArgumentNullException_WhenTopicsIsEmpty()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() => 
-                _sut.CreateTopicsForQueue("SomeQueue", new string[] { }));
+                _sut.BasicTopicBind("SomeQueue", null));
 
             exception.ParamName.ShouldBe(TopicsParamName);
         }
@@ -141,42 +132,6 @@ namespace Remiworks.RabbitMQ.Test
                 _sut.BasicPublish(new EventMessage()));
 
             exception.ParamName.ShouldBe(JsonMessageParamName);
-        }
-
-        [TestMethod]
-        public void SetupRpcListenerThrows_ArgumentNullException_WhenQueueNameIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() => 
-                _sut.SetupRpcListeners(null, _topics, _commandReceivedCallback));
-
-            exception.ParamName.ShouldBe(QueueNameParamName);
-        }
-
-        [TestMethod]
-        public void SetupRpcListenerThrows_ArgumentException_WhenQueueNameIsEmpty()
-        {
-            var exception = Should.Throw<ArgumentException>(() =>
-                _sut.SetupRpcListeners("", _topics, _commandReceivedCallback));
-
-            exception.ParamName.ShouldBe(QueueNameParamName);
-        }
-
-        [TestMethod]
-        public void SetupRpcListenerThrows_ArgumentException_WhenQueueNameIsWhitespace()
-        {
-            var exception = Should.Throw<ArgumentException>(() => 
-                _sut.SetupRpcListeners(" ", _topics, _commandReceivedCallback));
-
-            exception.ParamName.ShouldBe(QueueNameParamName);
-        }
-
-        [TestMethod]
-        public void SetupRpcListenerThrows_ArgumentNullException_WhenFuntionIsNull()
-        {
-            var exception = Should.Throw<ArgumentNullException>(() => 
-                _sut.SetupRpcListeners("SomeQueue", _topics, null));
-
-            exception.ParamName.ShouldBe(CallbackParamName);
         }
     }
 }
