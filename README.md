@@ -24,7 +24,7 @@ This framework is an abstraction layer for eventbusses. As of now the only imple
 The core library contains multiple classes to communicate with an eventbus implementation of choice.
 
 ## Adding Remiworks to your project
-Before Remiworks can be used, it needs to be added to your project. This is done via a dependency injection mechanism. This can be be both a simple console project or an more sophisticated MVC projects (which also is a console application).
+Before Remiworks can be used, it needs to be added to your project. This is done via a dependency injection mechanism. This can be both a simple console project or a more sophisticated MVC project (which also is a console application).
 
 ### Project types
 #### Console project
