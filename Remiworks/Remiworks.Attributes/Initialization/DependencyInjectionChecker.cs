@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Remiworks.Core;
-using Remiworks.Core.Event;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Reflection;
 
 namespace Remiworks.Attributes.Initialization
 {
@@ -15,13 +13,18 @@ namespace Remiworks.Attributes.Initialization
 
             foreach (var type in types)
             {
-                try
+                var constructors = type.GetConstructors();
+
+                if (constructors.Length > 0)
                 {
-                    var instance = ActivatorUtilities.CreateInstance(serviceProvider, type);
-                }
-                catch (Exception ex)
-                {
-                    errors.Add(ex.Message);
+                    try
+                    {
+                        var instance = ActivatorUtilities.CreateInstance(serviceProvider, type);
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add(ex.Message);
+                    }
                 }
             }
 

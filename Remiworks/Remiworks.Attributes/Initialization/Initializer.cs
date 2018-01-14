@@ -27,8 +27,31 @@ namespace Remiworks.Attributes.Initialization
         public void Initialize(Assembly executingAssembly)
         {
             var types = executingAssembly.GetTypes();
+            CheckDependencies(types);
+
             InitializeQueueListeners(types);
             Logger.LogInformation($"Initialization completed. Now listening...");
+        }
+
+        private void CheckDependencies(Type[] types)
+        {
+            Logger.LogInformation($"Checking dependencies...");
+            var dependencyChecker = new DependencyInjectionChecker();
+            var errors = dependencyChecker.CheckDependencies(_serviceProvider, types.ToList());
+
+            if (errors.Any())
+            {
+                LogDependencyErrors(errors);
+                throw new DependencyInjectionException("Check the logs for more details!");
+            }
+        }
+
+        private void LogDependencyErrors(List<string> errors)
+        {
+            foreach(var error in errors)
+            {
+                Logger.LogCritical(error);
+            }
         }
 
         private void InitializeQueueListeners(IEnumerable<Type> types)
