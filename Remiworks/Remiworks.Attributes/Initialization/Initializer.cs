@@ -36,17 +36,19 @@ namespace Remiworks.Attributes.Initialization
         private void CheckDependencies(Type[] types)
         {
             Logger.LogInformation($"Checking dependencies...");
-            var dependencyChecker = new DependencyInjectionChecker();
-            var errors = dependencyChecker.CheckDependencies(_serviceProvider, types.ToList());
+
+            var errors = DependencyInjectionChecker.CheckDependencies(_serviceProvider, types.ToList()).ToList();
 
             if (errors.Any())
             {
                 LogDependencyErrors(errors);
-                throw new DependencyInjectionException("Check the logs for more details!");
+
+                throw new AggregateException(
+                    errors.Select(error => new DependencyInjectionException(error)));
             }
         }
 
-        private void LogDependencyErrors(List<string> errors)
+        private void LogDependencyErrors(IEnumerable<string> errors)
         {
             foreach(var error in errors)
             {

@@ -1,13 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Remiworks.Attributes.Initialization
 {
-    public class DependencyInjectionChecker
+    public static class DependencyInjectionChecker
     {
-        public List<string> CheckDependencies(IServiceProvider serviceProvider, List<Type> types)
+        public static IEnumerable<string> CheckDependencies(IServiceProvider serviceProvider, List<Type> types)
         {
             var errors = new List<string>();
 
@@ -19,7 +18,7 @@ namespace Remiworks.Attributes.Initialization
                 {
                     try
                     {
-                        var instance = ActivatorUtilities.CreateInstance(serviceProvider, type);
+                        ActivatorUtilities.CreateInstance(serviceProvider, type);
                     }
                     catch (Exception ex)
                     {

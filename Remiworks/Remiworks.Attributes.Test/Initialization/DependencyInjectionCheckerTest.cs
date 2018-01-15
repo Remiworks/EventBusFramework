@@ -49,9 +49,7 @@ namespace Remiworks.Attributes.Test.Initialization
         [TestMethod]
         public void CheckDependenciesReturnsEmptyStringArray()
         {
-            DependencyInjectionChecker sut = new DependencyInjectionChecker();
-
-            List<string> result = sut.CheckDependencies(_serviceProvider, types);
+            var result = DependencyInjectionChecker.CheckDependencies(_serviceProvider, types).ToList();
 
             result.Count.ShouldBe(0);
         }
@@ -62,13 +60,11 @@ namespace Remiworks.Attributes.Test.Initialization
             _serviceProvider = new ServiceCollection()
                .AddTransient(m => _eventListenerMock.Object)
                .BuildServiceProvider();
-
-            DependencyInjectionChecker sut = new DependencyInjectionChecker();
-
-            List<string> result = sut.CheckDependencies(_serviceProvider, types);
+            
+            var result = DependencyInjectionChecker.CheckDependencies(_serviceProvider, types).ToList();
 
             result.Count.ShouldBe(1);
-            result.First().ShouldBe("Unable to resolve service for type 'Remiworks.Core.IBusProvider' while attempting to activate 'Remiworks.Core.Event.Listener.EventListener'.");
+            result[0].ShouldBe("Unable to resolve service for type 'Remiworks.Core.IBusProvider' while attempting to activate 'Remiworks.Core.Event.Listener.EventListener'.");
         }
 
         [TestMethod]
@@ -79,14 +75,12 @@ namespace Remiworks.Attributes.Test.Initialization
                .AddTransient(m => _eventListenerMock.Object)
                .AddTransient(m => _commandPublisherMock.Object)
                .BuildServiceProvider();
-
-            DependencyInjectionChecker sut = new DependencyInjectionChecker();
-
-            List<string> result = sut.CheckDependencies(_serviceProvider, types);
+            
+            var result = DependencyInjectionChecker.CheckDependencies(_serviceProvider, types).ToList();
 
             result.Count.ShouldBe(2);
-            result.First().ShouldBe("Unable to resolve service for type 'Remiworks.Core.IBusProvider' while attempting to activate 'Remiworks.Core.Event.Listener.EventListener'.");
-            result.Last().ShouldBe("Unable to resolve service for type 'Remiworks.Core.IBusProvider' while attempting to activate 'Remiworks.Core.Command.Publisher.CommandPublisher'.");
+            result[0].ShouldBe("Unable to resolve service for type 'Remiworks.Core.IBusProvider' while attempting to activate 'Remiworks.Core.Event.Listener.EventListener'.");
+            result[1].ShouldBe("Unable to resolve service for type 'Remiworks.Core.IBusProvider' while attempting to activate 'Remiworks.Core.Command.Publisher.CommandPublisher'.");
         }
     }
 }
