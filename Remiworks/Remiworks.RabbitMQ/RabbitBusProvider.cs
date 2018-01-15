@@ -50,7 +50,7 @@ namespace Remiworks.RabbitMQ
             _channel = _connection.CreateModel();
         }
 
-        public void BasicConsume(string queueName, EventReceivedCallback callback, bool autoAck = true)
+        public void BasicConsume(string queueName, EventReceivedCallback callback, bool autoAcknowledge = true)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(callback, nameof(callback));
@@ -62,7 +62,7 @@ namespace Remiworks.RabbitMQ
             
             _channel.BasicConsume(
                 queue: queueName, 
-                autoAck: autoAck, 
+                autoAck: autoAcknowledge, 
                 consumer: consumer);
         }
 
