@@ -6,7 +6,7 @@
     <Description>Provides attributes for the Remiworks event bus framework.</Description>
     <Authors>Rene Buunk, Mike Derksen</Authors>
     <Company />
-    <Version>3.0.1</Version>
+    <Version>3.1.0</Version>
     <PackageProjectUrl>https://github.com/Remiworks/EventBusFramework</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Remiworks/EventBusFramework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
