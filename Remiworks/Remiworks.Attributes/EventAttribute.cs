@@ -3,13 +3,10 @@
 namespace Remiworks.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class EventAttribute : Attribute
+    public class EventAttribute : ListenerAttribute
     {
-        public string Topic { get; }
-
-        public EventAttribute(string topic)
+        public EventAttribute(string topic, string exchangeName = null) : base (topic, exchangeName)
         {
-            Topic = topic;
         }
     }
 }

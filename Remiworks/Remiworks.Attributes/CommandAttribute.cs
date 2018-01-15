@@ -3,13 +3,10 @@
 namespace Remiworks.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class CommandAttribute : Attribute
+    public class CommandAttribute : ListenerAttribute
     {
-        public string Key { get; }
-
-        public CommandAttribute(string commandType)
+        public CommandAttribute(string commandType, string exchangeName = null) : base(commandType, exchangeName)
         {
-            Key = commandType;
         }
     }
 }
