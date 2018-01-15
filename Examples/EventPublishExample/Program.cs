@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using EventPublishExample.Controllers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Remiworks.Core.Models;
 using Remiworks.RabbitMQ.Extensions;
+using Serilog;
 
 namespace EventPublishExample
 {
@@ -11,20 +12,22 @@ namespace EventPublishExample
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine("Instantiating dependency injection boilerplate");
+            var logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
 
-            // This can also be done with an MVC application.
-            // Just hook into the Startup.cs there
+            var loggerFactory = new LoggerFactory()
+                .AddSerilog(logger);
+            
+            
             var serviceProvider = new ServiceCollection()
                 .AddTransient<OrderController>()
-                .AddRabbitMq(new BusOptions())
+                .AddRabbitMq(new BusOptions(), loggerFactory)
                 .BuildServiceProvider();
 
             var controller = serviceProvider.GetService<OrderController>();
 
-            Console.WriteLine("Calling controller to place order");
-
-            // Place order and await the call
             controller
                 .PlaceOrder("Landstraat 3", 126.55M, new List<string> { "iPhone charger", "Pickels", "Banana" })
                 .Wait();

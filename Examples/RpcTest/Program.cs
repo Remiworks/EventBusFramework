@@ -1,19 +1,28 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Remiworks.Core.Models;
 using Remiworks.RabbitMQ.Extensions;
 using RpcTest.Controllers;
+using Serilog;
 
 namespace RpcTest
 {
     public static class Program
     {
         private static void Main(string[] args)
-        {
-            // Register services and add RabbitMQ to the mix
+        {   
+            var logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            var loggerFactory = new LoggerFactory()
+                .AddSerilog(logger);
+            
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SomeController>()
-                .AddRabbitMq(new BusOptions())
+                .AddRabbitMq(new BusOptions(), loggerFactory)
                 .BuildServiceProvider();
             
             var someController = serviceProvider.GetService<SomeController>();
