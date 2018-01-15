@@ -34,7 +34,7 @@ namespace Remiworks.Attributes.Initialization
         private void InitializeQueueListeners(IEnumerable<Type> types)
         {
             Logger.LogInformation("Initializing event listeners");
-
+            
             foreach (var type in types)
             {
                 var queueAttribute = type.GetCustomAttribute<QueueListenerAttribute>();

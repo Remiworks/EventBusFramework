@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Remiworks.Attributes.Models;
 using Remiworks.Core;
 using Remiworks.Core.Event.Listener;
 
@@ -26,38 +28,46 @@ namespace Remiworks.Attributes.Initialization
 
         public void InitializeEventListeners(Type type, string queueName)
         {
-            Logger.LogInformation("Initializing event listeners for type '{0}'", type);
+            Logger.LogInformation("Initializing event listeners for type '{1}'", type);
 
-            foreach (var topicWithMethod in GetTopicsWithMethods(type))
+            foreach (var attributeContent in InitializationUtility.GetAttributeValuesWithMethod<EventAttribute>(type))
             {
-                var parameterType = InitializationUtility.GetParameterTypeOrThrow(topicWithMethod.Value, Logger);
+                var parameterType = InitializationUtility.GetParameterTypeOrThrow(attributeContent.Method, Logger);
+                
+                Logger.LogInformation(
+                    "Initializing listener for topic {1} in type {2}",
+                    attributeContent.Key,
+                    type);
 
                 _eventListener.SetupQueueListenerAsync(
                     queueName,
-                    topicWithMethod.Key,
-                    (parameterObject, _) => InvokeTopic(type, topicWithMethod.Key, topicWithMethod.Value, parameterObject),
+                    attributeContent.Key,
+                    (receivedParameter, receivedTopic) => InvokeTopic(receivedParameter, receivedTopic, attributeContent),
                     parameterType);
             }
         }
 
-        private static Dictionary<string, MethodInfo> GetTopicsWithMethods(Type type)
+        private void InvokeTopic(object receivedParameter, string receivedTopic, AttributeContent attributeContent)
         {
-            return InitializationUtility.GetAttributeValuesWithMethod<EventAttribute>(type, (a) => a.Topic);
-        }
-
-        private void InvokeTopic(Type classType, string topic, MethodBase topicMethod, object methodParameter)
-        {
-            Logger.LogInformation("Invoking event '{0}' in type '{1}'", topic, topicMethod.DeclaringType);
-
-            var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, classType);
+            var declaringType = attributeContent.Method.DeclaringType;
+            
+            Logger.LogInformation(
+                "Invoking event '{1}' in type '{2}'", 
+                attributeContent.Key, 
+                declaringType.FullName);
 
             try
             {
-                topicMethod.Invoke(instance, new object[] { methodParameter });
+                var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, declaringType);
+                attributeContent.Method.Invoke(instance, new[] { receivedParameter});
             }
             catch (TargetInvocationException ex)
             {
-                Logger.LogError(ex.InnerException, "Exception was thrown for event '{}'", instance, topic, topicMethod);
+                Logger.LogError(
+                    ex.InnerException, 
+                    "Exception was thrown for event '{1}' in type {2}",
+                    attributeContent.Key,
+                    declaringType.FullName);
 
                 throw;
             }

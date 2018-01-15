@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Remiworks.Attributes.Models;
 using Remiworks.Core;
 using Remiworks.Core.Command.Listener;
 
@@ -27,43 +28,53 @@ namespace Remiworks.Attributes.Initialization
 
         public void InitializeCommandListeners(Type type, string queueName)
         {
-            Logger.LogInformation("Initializing command listeners for type '{0}'", type);
+            Logger.LogInformation("Initializing command listeners for type '{1}'", type);
 
-            foreach (var keyWithMethod in GetCommandsWithMethods(type))
+            foreach (var attributeContent in InitializationUtility.GetAttributeValuesWithMethod<CommandAttribute>(type))
             {
-                var parameterType = InitializationUtility.GetParameterTypeOrThrow(keyWithMethod.Value, Logger);
+                var parameterType = InitializationUtility.GetParameterTypeOrThrow(attributeContent.Method, Logger);
 
                 _commandListener.SetupCommandListenerAsync(
                     queueName,
-                    keyWithMethod.Key,
-                    parameterObject => InvokeCommand(keyWithMethod.Key, keyWithMethod.Value, parameterObject),
-                    parameterType).Wait();
+                    attributeContent.Key,
+                    receivedParameter => InvokeCommand(receivedParameter, attributeContent),
+                    parameterType,
+                    attributeContent.ExchangeName).Wait();
             }
         }
 
-        private static Dictionary<string, MethodInfo> GetCommandsWithMethods(Type type)
+        private async Task<object> InvokeCommand(object receivedParameter, AttributeContent attributeContent)
         {
-            return InitializationUtility.GetAttributeValuesWithMethod<CommandAttribute>(type, (a) => a.Key);
-        }
-
-        private async Task<object> InvokeCommand(string topic, MethodInfo topicMethod, object methodParameter)
-        {
-            Logger.LogInformation("Invoking command '{0}'", topic);
-
-            var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, topicMethod.DeclaringType);
+            var declaringType = attributeContent.Method.DeclaringType;
+            
+            Logger.LogInformation(
+                "Invoking command '{1}' in type '{2}'", 
+                attributeContent, 
+                declaringType.FullName);
 
             try
             {
-                return topicMethod.ReturnType.BaseType == typeof(Task)
-                    ? await (dynamic)topicMethod.Invoke(instance, new object[] { methodParameter })
-                    : await Task.Run(() => topicMethod.Invoke(instance, new object[] { methodParameter }));
+                var instance = ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, declaringType);
+                
+                return IsTask(attributeContent.Method)
+                    ? await (dynamic)attributeContent.Method.Invoke(instance, new[] { receivedParameter})
+                    : await Task.Run(() => attributeContent.Method.Invoke(instance, new[] { receivedParameter }));
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex.InnerException, "Exception in the class {0} was thrown for the command {1} in method {2}", instance, topic, topicMethod);
+                Logger.LogError(
+                    ex.InnerException, 
+                    "Exception was thrown for command '{1}' in type {2}", 
+                    attributeContent.Key, 
+                    declaringType.FullName);
 
                 throw;
             }
+        }
+
+        private static bool IsTask(MethodInfo method)
+        {
+            return method.ReturnType.BaseType == typeof(Task);
         }
     }
 }

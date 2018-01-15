@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Remiworks.Attributes.Models;
 
 namespace Remiworks.Attributes.Initialization
 {
@@ -28,15 +29,26 @@ namespace Remiworks.Attributes.Initialization
             return parameterType;
         }
 
-        public static Dictionary<string, MethodInfo> GetAttributeValuesWithMethod<TAttribute>(
-            Type type,
-            Func<TAttribute, string> predicate) where TAttribute : Attribute
+        public static IEnumerable<AttributeContent> GetAttributeValuesWithMethod<TAttribute>(Type type) 
+            where TAttribute : ListenerAttribute
         {
             return type.GetMethods()
                 .Where(m => m.GetCustomAttribute<TAttribute>() != null)
-                .ToDictionary(
-                    m => predicate(m.GetCustomAttribute<TAttribute>()),
-                    m => m);
+                .Select(AttributeContentSelector<TAttribute>)
+                .ToList();
+        }
+
+        private static AttributeContent AttributeContentSelector<TAttribute>(MethodInfo method)
+            where TAttribute : ListenerAttribute
+        {
+            var attribute = method.GetCustomAttribute<TAttribute>();
+
+            return new AttributeContent
+            {
+                Method = method,
+                ExchangeName = attribute.ExchangeName,
+                Key = attribute.Topic
+            };
         }
     }
 }
