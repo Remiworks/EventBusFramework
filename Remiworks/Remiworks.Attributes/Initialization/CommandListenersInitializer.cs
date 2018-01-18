@@ -62,11 +62,12 @@ namespace Remiworks.Attributes.Initialization
             }
             catch (Exception ex)
             {
-                Logger.LogError(
-                    ex.InnerException, 
-                    "Exception was thrown for command '{1}' in type {2}", 
-                    attributeContent.Key, 
-                    declaringType.FullName);
+                Logger.LogError("Exception was thrown for command '{1}' in type {2}. Exception message: {3}. InnerException: {4}", 
+                    attributeContent.Key,
+                    declaringType.FullName, 
+                    ex.Message, 
+                    ex.InnerException);
+         
 
                 throw;
             }
