@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using EnsureThat;
-using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Remiworks.Core;
-using Remiworks.Core.Exceptions;
 using Remiworks.Core.Models;
 
 namespace Remiworks.RabbitMQ
 {
     public class RabbitBusProvider : IBusProvider
     {
-        private const string ExchangeType = "topic";
-
         private IConnection _connection;
         private IModel _channel;
 
@@ -59,26 +52,35 @@ namespace Remiworks.RabbitMQ
             consumer.Received += (sender, args) => HandleReceivedEvent(args, callback);
 
             QueueDeclare(queueName);
-            
-            _channel.BasicConsume(
-                queue: queueName, 
-                autoAck: autoAcknowledge, 
-                consumer: consumer);
+
+            lock (_channel)
+            {
+                _channel.BasicConsume(
+                    queue: queueName,
+                    autoAck: autoAcknowledge,
+                    consumer: consumer);
+            }
         }
 
         public void BasicQos(uint prefetchSize, ushort prefetchCount)
         {
-            _channel.BasicQos(
-                prefetchSize: prefetchSize, 
-                prefetchCount: prefetchCount, 
+            lock (_channel)
+            {
+                _channel.BasicQos(
+                prefetchSize: prefetchSize,
+                prefetchCount: prefetchCount,
                 global: false);
+            }
         }
 
         public void BasicAcknowledge(ulong deliveryTag, bool multiple)
         {
-            _channel.BasicAck(
-                deliveryTag: deliveryTag, 
+            lock (_channel)
+            {
+                _channel.BasicAck(
+                deliveryTag: deliveryTag,
                 multiple: multiple);
+            }
         }
 
         public void BasicTopicBind(string queueName, string topic)
@@ -91,10 +93,17 @@ namespace Remiworks.RabbitMQ
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             if (topic == null) throw new ArgumentNullException(nameof(topic));
 
-            _channel.ExchangeDeclare(exchangeName, BusOptions.ExchangeType);
+            lock (_channel)
+            {
+                _channel.ExchangeDeclare(exchangeName, BusOptions.ExchangeType);
+            }
 
             QueueDeclare(queueName);
-            _channel.QueueBind(queueName, exchangeName, topic);
+
+            lock (_channel)
+            {
+                _channel.QueueBind(queueName, exchangeName, topic);
+            }
         }
 
         public void BasicPublish(EventMessage eventMessage)
@@ -131,10 +140,13 @@ namespace Remiworks.RabbitMQ
                 properties.Timestamp = new AmqpTimestamp(eventMessage.Timestamp.Value);
             }
 
-            _channel.BasicPublish(exchange: exchangeName,
-                                 routingKey: eventMessage.RoutingKey,
-                                 basicProperties: properties,
-                                 body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
+            lock (_channel)
+            {
+                _channel.BasicPublish(exchange: exchangeName,
+                                     routingKey: eventMessage.RoutingKey,
+                                     basicProperties: properties,
+                                     body: Encoding.UTF8.GetBytes(eventMessage.JsonMessage));
+            }
         }
 
         private static void HandleReceivedEvent(BasicDeliverEventArgs args, EventReceivedCallback callback)
@@ -168,14 +180,17 @@ namespace Remiworks.RabbitMQ
 
         private void QueueDeclare(string queueName)
         {
-            _channel.QueueDeclare(
-                queue: queueName,
-                exclusive: false,
-                autoDelete: false);
+            lock (_channel)
+            {
+                _channel.QueueDeclare(
+                    queue: queueName,
+                    exclusive: false,
+                    autoDelete: false);
+            }
         }
 
         #region IDisposable
-        
+
         private bool _isDisposed = false;
 
         protected virtual void Dispose(bool disposing)
@@ -196,6 +211,7 @@ namespace Remiworks.RabbitMQ
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable
     }
 }
