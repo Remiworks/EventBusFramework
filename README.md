@@ -13,7 +13,7 @@
         - [Receiving events with Remiworks.Attributes](#receiving-events-with-remiworksattributes)
     - [Commands](#commands)
         - [Sending commands](#sending-commands)
-        - [Receiving events with the IEventListener](#receiving-events-with-the-ieventlistener)
+        - [Receiving commands with the ICommandListener](#receiving-commands-with-the-icommandlistener)
         - [Receiving events with Remiworks.Attributes](#receiving-events-with-remiworksattributes)
 - [Example projects](#example-projects)
 
@@ -225,7 +225,7 @@ public async Task<int> CalculateSomethingOnServer(SomeCommand command)
 }
 ``` 
 
-### Receiving events with the IEventListener
+### Receiving commands with the ICommandListener
 First, add a constructor to the desired class which injects `Remiworks.Core.Command.Listener.ICommandListener`
 
 Secondly, add callbacks for the command without and with a return value. Please note: Right now, using `Task` or `void` as the return type is not supported. Returning null results in the command to be handled correctly on the sending end when used as void. This will be fixed in an future patch.
