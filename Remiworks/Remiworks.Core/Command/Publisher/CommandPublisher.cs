@@ -41,22 +41,24 @@ namespace Remiworks.Core.Command.Publisher
 
             return gotResponse
                 ? JsonConvert.DeserializeObject<T>(responseJson)
-                : throw new TimeoutException(String.Format(TimeoutExceptionMessage, key, queueName));
+                : throw new TimeoutException(string.Format(TimeoutExceptionMessage, key, queueName));
         }
 
-        public async Task<T> SendCommandAsync<T>(object message, string queueName, string key, string exchangeName, int timeout = 5000)
+        public async Task<T> SendCommandAsync<T>(object message, string queueName, string key, string exchangeName,
+            int timeout = 5000)
         {
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(message, nameof(message));
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
+            EnsureArg.IsNotNull(exchangeName, nameof(exchangeName));
 
-            (var gotResponse, var responseJson) = await SendAndListenToCommandAsync(message, queueName, key, exchangeName, timeout);
+            (var gotResponse, var responseJson) =
+                await SendAndListenToCommandAsync(message, queueName, key, timeout, exchangeName);
 
             return gotResponse
                 ? JsonConvert.DeserializeObject<T>(responseJson)
-                : throw new TimeoutException(String.Format(TimeoutExceptionMessage, key, queueName));
+                : throw new TimeoutException(string.Format(TimeoutExceptionMessage, key, queueName));
         }
-
 
         public async Task SendCommandAsync(object message, string queueName, string key, int timeout = 5000)
         {
@@ -64,11 +66,11 @@ namespace Remiworks.Core.Command.Publisher
             EnsureArg.IsNotNull(message, nameof(message));
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
 
-            (var gotResponse, var responseJson) = await SendAndListenToCommandAsync(message, queueName, key, timeout);            
+            (var gotResponse, var responseJson) = await SendAndListenToCommandAsync(message, queueName, key, timeout);
 
-            if(!gotResponse)
+            if (!gotResponse)
             {
-                throw new TimeoutException(String.Format(TimeoutExceptionMessage, key, queueName));
+                throw new TimeoutException(string.Format(TimeoutExceptionMessage, key, queueName));
             }
         }
 
@@ -77,47 +79,23 @@ namespace Remiworks.Core.Command.Publisher
             EnsureArg.IsNotNullOrWhiteSpace(queueName, nameof(queueName));
             EnsureArg.IsNotNull(message, nameof(message));
             EnsureArg.IsNotNullOrWhiteSpace(key, nameof(key));
+            EnsureArg.IsNotNull(exchangeName, nameof(exchangeName));
 
-            (var gotResponse, var responseJson) = await SendAndListenToCommandAsync(message, queueName, key, exchangeName, timeout);
+            (var gotResponse, var responseJson) =
+                await SendAndListenToCommandAsync(message, queueName, key, timeout, exchangeName);
 
             if (!gotResponse)
             {
-                throw new TimeoutException(String.Format(TimeoutExceptionMessage, key, queueName));
+                throw new TimeoutException(string.Format(TimeoutExceptionMessage, key, queueName));
             }
         }
 
-        private async Task<(bool gotResponse, string responseJson)> SendAndListenToCommandAsync(object message, string queueName, string key, int timeout)
-        {
-            if (key.Contains("*") || key.Contains("#")) throw new ArgumentException(NoWildcardExceptionMessage);
-
-            var correlationId = Guid.NewGuid();
-
-            var waitHandle = new ManualResetEvent(false);
-            string responseJson = null;
-            var isError = false;
-
-            _commandCallbacks[correlationId] = (response, responseIsError) =>
-            {
-                responseJson = response;
-                isError = responseIsError;
-                waitHandle.Set();
-            };
-
-            PublishCommandMessage(message, queueName, key, correlationId);
-
-            var gotResponse = await Task.Run(() => waitHandle.WaitOne(timeout));
-
-            if (isError)
-            {
-                var exception = JsonConvert.DeserializeObject<CommandPublisherException>(responseJson);
-
-                throw exception;
-            }
-
-            return (gotResponse, responseJson);
-        }
-
-        private async Task<(bool gotResponse, string responseJson)> SendAndListenToCommandAsync(object message, string queueName, string key, string exchangeName, int timeout)
+        private async Task<(bool gotResponse, string responseJson)> SendAndListenToCommandAsync(
+            object message,
+            string queueName,
+            string key,
+            int timeout,
+            string exchangeName = null)
         {
             if (key.Contains("*") || key.Contains("#")) throw new ArgumentException(NoWildcardExceptionMessage);
 
@@ -148,31 +126,31 @@ namespace Remiworks.Core.Command.Publisher
             return (gotResponse, responseJson);
         }
 
-        private void PublishCommandMessage(object message, string queueName, string key, Guid correlationId)
-        {
-            _busProvider.BasicTopicBind(queueName, key);
-
-            _busProvider.BasicPublish(new EventMessage
-            {
-                CorrelationId = correlationId,
-                RoutingKey = key,
-                JsonMessage = JsonConvert.SerializeObject(message),
-                ReplyQueueName = _callbackQueue
-            });
-        }
-
         private void PublishCommandMessage(object message, string queueName, string key, Guid correlationId, string exchangeName)
         {
-            _busProvider.BasicTopicBind(queueName, key, exchangeName);
-
-            _busProvider.BasicPublish(new EventMessage
+            var eventMessage = new EventMessage
             {
                 CorrelationId = correlationId,
                 RoutingKey = key,
+                Type = key,
                 JsonMessage = JsonConvert.SerializeObject(message),
                 ReplyQueueName = _callbackQueue
-            }, 
-            exchangeName);
+            };
+
+            switch (exchangeName)
+            {
+                case null:
+                    _busProvider.BasicTopicBind(queueName, key);
+                    _busProvider.BasicPublish(eventMessage);
+                    break;
+                case "": // "" is actually a exchange of type 'direct' in rabbitMQ. No topicbind needed in this case
+                    _busProvider.BasicPublish(eventMessage, exchangeName);
+                    break;
+                default:
+                    _busProvider.BasicTopicBind(queueName, key, exchangeName);
+                    _busProvider.BasicPublish(eventMessage, exchangeName);
+                    break;
+            }
         }
 
         private void HandleCommandCallback(EventMessage message)

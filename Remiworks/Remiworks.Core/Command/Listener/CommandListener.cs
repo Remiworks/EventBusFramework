@@ -92,6 +92,7 @@ namespace Remiworks.Core.Command.Listener
                             CorrelationId = receivedEventMessage.CorrelationId,
                             IsError = isError,
                             JsonMessage = JsonConvert.SerializeObject(response),
+                            Type = replyKey,
                             RoutingKey = replyKey
                         });
                     }
@@ -102,6 +103,7 @@ namespace Remiworks.Core.Command.Listener
                             CorrelationId = receivedEventMessage.CorrelationId,
                             IsError = isError,
                             JsonMessage = JsonConvert.SerializeObject(response),
+                            Type = replyKey,
                             RoutingKey = replyKey
                         },
                         exchangeName);
