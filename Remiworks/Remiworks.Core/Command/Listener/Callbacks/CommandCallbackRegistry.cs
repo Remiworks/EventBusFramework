@@ -26,7 +26,7 @@ namespace Remiworks.Core.Command.Listener.Callbacks
 
         protected override bool CanAddCallback(IEnumerable<CallbackForTopic> registeredTopicsForQueue, string topicToAdd)
         {
-            return !registeredTopicsForQueue.Any(t => t.Topic == topicToAdd);
+            return registeredTopicsForQueue.All(t => t.Topic != topicToAdd);
         }
     }
 }
