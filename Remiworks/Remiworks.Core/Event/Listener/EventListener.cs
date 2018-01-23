@@ -59,31 +59,34 @@ namespace Remiworks.Core.Event.Listener
             {
                 void CallbackInvoker(EventMessage eventMessage)
                 {
-                    LogReceivedCallback(queueName, topic, eventMessage.RoutingKey, eventMessage.JsonMessage);
+                    Task.Run(() =>
+                    {
+                        LogReceivedCallback(queueName, topic, eventMessage.RoutingKey, eventMessage.JsonMessage);
 
-                    object deserializedParameter;
+                        object deserializedParameter;
 
-                    try
-                    {
-                        deserializedParameter = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
-                    }
-                    catch (Exception exception)
-                    {
-                        LogFailedJsonConvert(queueName, topic, parameterType, eventMessage.JsonMessage, exception);
-                        throw;
-                    }
+                        try
+                        {
+                            deserializedParameter = JsonConvert.DeserializeObject(eventMessage.JsonMessage, parameterType);
+                        }
+                        catch (Exception exception)
+                        {
+                            LogFailedJsonConvert(queueName, topic, parameterType, eventMessage.JsonMessage, exception);
+                            throw;
+                        }
 
-                    try
-                    {
-                        LogCallingCallback(queueName, topic);
-                        callback(deserializedParameter, eventMessage.RoutingKey);
-                        LogDoneCallingCallback(queueName, topic);
-                    }
-                    catch (Exception exeption)
-                    {
-                        LogFailedCallingCallback(queueName, topic, exeption);
-                        throw;
-                    }
+                        try
+                        {
+                            LogCallingCallback(queueName, topic);
+                            callback(deserializedParameter, eventMessage.RoutingKey);
+                            LogDoneCallingCallback(queueName, topic);
+                        }
+                        catch (Exception exeption)
+                        {
+                            LogFailedCallingCallback(queueName, topic, exeption);
+                            throw;
+                        }
+                    });
                 }
 
                 _callbackRegistry.AddCallbackForQueue(queueName, topic, CallbackInvoker, exchangeName);
