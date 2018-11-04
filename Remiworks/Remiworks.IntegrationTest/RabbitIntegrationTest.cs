@@ -3,7 +3,9 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 using Remiworks.Core.Models;
+using Remiworks.RabbitMQ;
 
 namespace Remiworks.IntegrationTest
 {
@@ -16,7 +18,7 @@ namespace Remiworks.IntegrationTest
         protected const string ExchangeName = "testExchange";
         protected const string TopicType = "topic";
 
-        protected readonly BusOptions BusOptions = new BusOptions()
+        protected static readonly BusOptions BusOptions = new BusOptions()
         {
             Hostname = Host,
             Port = Port,
@@ -27,11 +29,25 @@ namespace Remiworks.IntegrationTest
 
         protected IConnection _connection;
         protected IModel _channel;
-
+        
         [TestInitialize]
         public void BaseInitialize()
         {
-            OpenRabbitConnection();
+            try
+            {
+                OpenRabbitConnection();
+            }
+            catch (BrokerUnreachableException)
+            {
+                Assert.Fail(
+                    $"RabbitMQ not reachable. Make sure that rabbitMq is started and running on {BusOptions.Hostname}:{BusOptions.Port}.");
+            }
+            catch (Exception e)
+            {
+                Assert.Fail(
+                    "An unexpected exception occured while opening a connection " +
+                    $"to RabbitMQ on {BusOptions.Hostname}:{BusOptions.Port}.\nException: {e}");
+            }
         }
 
         [TestCleanup]
