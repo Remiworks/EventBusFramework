@@ -11,16 +11,34 @@ namespace Remiworks.RabbitMQ
 {
     public class RabbitBusProvider : IBusProvider
     {
+        private readonly ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _channel;
 
         public BusOptions BusOptions { get; }
 
-        public RabbitBusProvider(BusOptions busOptions)
+        public RabbitBusProvider(BusOptions busOptions) : this(busOptions, new ConnectionFactory())
+        {
+        }
+
+        public RabbitBusProvider(BusOptions busOptions, ConnectionFactory connectionFactory)
         {
             EnsureArg.IsNotNull(busOptions, nameof(busOptions));
 
+            _connectionFactory = connectionFactory;
             BusOptions = busOptions;
+            
+            ProcessBusOptions();
+        }
+
+        private void ProcessBusOptions()
+        {
+            _connectionFactory.HostName = BusOptions.Hostname;
+            _connectionFactory.VirtualHost = BusOptions.VirtualHost;
+            
+            if (BusOptions.Port != null) _connectionFactory.Port = BusOptions.Port.Value;
+            if (BusOptions.UserName != null) _connectionFactory.UserName = BusOptions.UserName;
+            if (BusOptions.Password != null) _connectionFactory.Password = BusOptions.Password;
         }
 
         public void EnsureConnection()
@@ -29,17 +47,7 @@ namespace Remiworks.RabbitMQ
             if (_connection != null && _connection.IsOpen)
                 return;
 
-            var factory = new ConnectionFactory()
-            {
-                HostName = BusOptions.Hostname,
-                VirtualHost = BusOptions.VirtualHost
-            };
-
-            if (BusOptions.Port != null) factory.Port = BusOptions.Port.Value;
-            if (BusOptions.UserName != null) factory.UserName = BusOptions.UserName;
-            if (BusOptions.Password != null) factory.Password = BusOptions.Password;
-
-            _connection = factory.CreateConnection();
+            _connection = _connectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
         }
 
@@ -199,8 +207,8 @@ namespace Remiworks.RabbitMQ
 
             if (disposing)
             {
-                _connection.Dispose();
-                _channel.Dispose();
+                _connection?.Dispose();
+                _channel?.Dispose();
             }
 
             _isDisposed = true;
