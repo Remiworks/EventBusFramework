@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/Remiworks/EventBusFramework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>RabbitMq Wrapper Framework BusProvider Events Commands Rpc Eventbus</PackageTags>
-    <PackageReleaseNotes>Added new functionality for command listeners</PackageReleaseNotes>
+    <PackageReleaseNotes>Added enum for ExchangeType in BusOptions</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
