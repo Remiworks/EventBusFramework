@@ -35,7 +35,7 @@ Add a reference to `Microsoft.Extensions.DependencyInjection`.
 ```csharp
 var serviceProvider = new ServiceCollection()
     .AddTransient<SomeRandomClass>() // Add your dependency stuff here
-    .AddRabbitMq(new BusOptions()) // Use an RabbitMq implementation (Remiworks.RabbitMQ)
+    .AddRabbitMq(new BusOptions()) // Use a RabbitMq implementation (Remiworks.RabbitMQ)
     .BuildServiceProvider();
 
 // Option 1:
@@ -165,7 +165,7 @@ First, add the attributes library to the dependency injection mechanism
 ```csharp
 var serviceProvider = new ServiceCollection()
     .AddTransient<SomeRandomClass>() // Add your dependency stuff here
-    .AddRabbitMq(new BusOptions()) // Use an RabbitMq implementation (Remiworks.RabbitMQ)
+    .AddRabbitMq(new BusOptions()) // Use a RabbitMq implementation (Remiworks.RabbitMQ)
     .BuildServiceProvider();
 
 serviceProvider.UseAttributes();
