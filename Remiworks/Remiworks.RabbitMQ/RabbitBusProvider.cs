@@ -103,7 +103,7 @@ namespace Remiworks.RabbitMQ
 
             lock (_channel)
             {
-                _channel.ExchangeDeclare(exchangeName, BusOptions.ExchangeType);
+                _channel.ExchangeDeclare(exchangeName, BusOptions.ExchangeType.ToString().ToLower());
             }
 
             QueueDeclare(queueName);
