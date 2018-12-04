@@ -261,7 +261,7 @@ public class SomeRandomClass
 }
 ```
 
-### Receiving events with Remiworks.Attributes
+### Receiving commands with Remiworks.Attributes
 Commands can also be received by using the `Remiworks.Attributes` library. This allowes you to use attributes for command receiving. This can be done as follows:
 
 First, add the attributes library to the dependency injection mechanism
